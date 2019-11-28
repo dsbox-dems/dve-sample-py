@@ -1,0 +1,35 @@
+FROM python:3.7-alpine
+
+RUN adduser -D pyintro
+
+WORKDIR /home/pyintro
+
+RUN apk add --no-cache --virtual .build-deps gcc musl-dev freetds freetds-dev
+
+COPY requirements.txt requirements.txt
+RUN python -m venv venv
+RUN venv/bin/pip install --upgrade pip
+RUN venv/bin/pip install Cython
+RUN venv/bin/pip install -r requirements.txt
+RUN venv/bin/pip install gunicorn
+
+RUN apk del .build-deps gcc musl-dev
+
+#COPY migrations migrations
+#COPY microblog.py config.py boot.sh ./
+
+COPY dev-python-intro dev-python-intro
+COPY bin/unix bin
+COPY config config
+#COPY boot.sh ./
+RUN chmod +x bin/*.sh
+
+ENV FLASK_APP nosqlpoc.py
+ENV VA_COMMAND api
+ENV VA_SHELL_ARGS --
+
+RUN chown -R pyintro:pyintro ./
+USER pyintro
+
+EXPOSE 18080
+ENTRYPOINT ["sh", "./bin/boot.sh"]

@@ -1,0 +1,55 @@
+##
+# Makefile sample
+# @see: https://pypi.org/project/pipenv-to-requirements/
+#
+.PHONY: docs
+# @see: https://github.com/requests/requests/blob/master/Makefile
+r.init:
+	pip install pipenv --upgrade --user
+	pipenv install --dev --skip-lock
+r.test:
+	detox
+r.ci:
+	pipenv run py.test -n 8 --boxed --junitxml=report.xml
+
+r.test-readme:
+	@pipenv run python setup.py check --restructuredtext --strict && ([ $$? -eq 0 ] && echo "README.rst and HISTORY.rst ok") || echo "Invalid markup in README.rst or HISTORY.rst!"
+
+r.flake8:
+	pipenv run flake8 --ignore=E501,F401,E128,E402,E731,F821 requests
+
+r.coverage:
+	pipenv run py.test --cov-config .coveragerc --verbose --cov-report term --cov-report xml --cov=requests tests
+
+r.publish:
+	pip install 'twine>=1.5.0'
+	python setup.py sdist bdist_wheel
+	twine upload dist/*
+	rm -fr build dist .egg requests.egg-info
+
+r.docs:
+	cd docs && make html
+	@echo "\033[95m\n\nBuild successful! View docs/_build/html/index.html.\n\033[0m"
+
+#############################################################################################
+
+s.dev:
+	pipenv install --dev
+	pipenv run pip install -e .
+
+s.dists: requirements sdist bdist wheels
+
+s.requirements:
+	pipenv run lock -r  >requirements.txt
+
+s.sdist: requirements
+	pipenv run python setup.py sdist
+
+s.bdist: requirements
+	pipenv run python setup.py bdist
+
+s.wheels: requirements
+	pipenv run python setup.py bdist_wheel
+
+
+#############################################################################################

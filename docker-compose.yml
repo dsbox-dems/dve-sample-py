@@ -1,0 +1,13 @@
+version: '3.3'
+services:
+  shell:
+    #image: dk-nosql-labs:5000/app/data-bridge
+    build: .
+    ports:
+      - "18080:18080"
+    environment:
+      VA_CLIENT_MODE: "sh"
+    volumes:
+      - ./bin/unix:/home/pyintro/bin
+      - ./config:/home/pyintro/config
+      - ./dev-python-intro:/home/pyintro/dev-python-intro

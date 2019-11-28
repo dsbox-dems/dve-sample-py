@@ -1,0 +1,296 @@
+---
+title: jupyter setup
+subtitle: install pyenv, pipenv, jupyter, pandas
+author: gp
+date: 03/05/2019
+---
+
+
+
+
+
+PYENV
+=====
+
+* https://realpython.com/intro-to-pyenv/
+* https://medium.com/@Joachim8675309/installing-pythons-with-pyenv-54cca2196cd3
+
+
+BUILD DEPS
+----------
+
+```
+
+# @runas(root)
+
+apt install -y make build-essential libssl-dev zlib1g-dev \
+libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev \
+libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
+
+
+
+```
+
+
+Virtual Display
+---------------
+
+* https://pypi.org/project/PyVirtualDisplay/
+* https://github.com/ponty/pyscreenshot
+* 
+
+
+```
+
+# pyvirtualdisplay xvfbwrapper
+
+Y='-y'
+
+apt install $Y xvfb xserver-xephyr vnc4server
+apt install $Y freeglut3-dev ffmpeg
+
+
+# pip install pyvirtualdisplay xvfbwrapper
+
+
+
+
+
+```
+
+
+
+
+
+INSTALL
+-------
+
+```
+
+# @runas(user)
+
+curl https://pyenv.run | bash
+
+
+# install pyenv
+PROJ=pyenv-installer
+SCRIPT_URL=https://github.com/pyenv/$PROJ/raw/master/bin/$PROJ
+curl -L $SCRIPT_URL | bash
+
+# setup
+export PATH="~/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+
+# config
+
+cat >> ~/.bashrc <<\EOF
+
+# ---(pyenv:begin)-----
+
+export PATH="~/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+# ---(pyenv:end)-----
+
+EOF
+
+
+. ~/.bashrc
+
+
+```
+
+VERSION
+-------
+
+```
+
+eval "$(pyenv init -)"
+
+pyenv --version
+
+pyenv versions
+
+pyenv install 3.7.4 
+#pyenv install 3.6.9 
+
+#pyenv install 3.8.0 
+#pyenv install 3.7.3 
+
+pyenv versions
+
+
+
+```
+
+
+
+PIPENV
+=====
+
+
+ACTIVATE
+--------
+
+```
+
+eval "$(pyenv init -)"
+pyenv versions
+
+pyenv shell 3.7.4
+#pyenv shell 3.6.9 
+
+#pyenv shell 3.8.0
+#pyenv shell 3.7.3 
+
+which python
+python --version
+
+pyenv global 3.7.4
+#pyenv global 3.6.9
+
+
+```
+
+
+
+```
+
+python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade pipenv
+python3 -m pip install --upgrade setuptools wheel
+
+pyenv    rehash
+pipenv --version
+
+
+
+
+```
+
+
+```
+
+cat ./Pipfile
+
+
+#eval "$(pyenv init -)"
+
+pyenv shell 3.7.4
+#pyenv shell 3.6.9 
+pipenv --version
+
+pipenv --rm
+
+pipenv install -v --dev --python $(which python)
+
+
+```
+
+
+ACTIVATE
+--------
+
+```
+
+#eval "$(pyenv init -)"
+
+pyenv shell 3.7.4 
+pipenv shell
+
+which python
+which jupyter
+
+python --version
+
+
+jupyter --version
+
+
+
+```
+
+
+
+
+JUPYTER
+-------
+
+```
+
+[ -f ./.python-version ] || echo '3.7.4' > ./.python-version
+
+cat ./.python-version
+
+alias jupyter='eval "$(pyenv init -)"; pyenv exec pipenv run \jupyter'
+
+jupyter --version
+jupyter kernelspec list
+
+[ -d ./notebooks ] && cd ./notebooks; \
+jupyter notebook
+
+
+[ -d ./notebooks ] && cd ./notebooks; \
+jupyter notebook test/pyenv-verify/pyenv-check.ipynb
+
+
+
+##
+#
+#
+
+cd ~/work/bp/...
+
+
+(pipenv run jupyter notebook --notebook-dir=./notebooks --no-browser)
+
+
+
+```
+
+
+
+
+PYCHARM
+-------
+
+```
+
+##
+# (@runas: root)
+#
+
+
+mount /vol/glob/dvd
+
+mkdir -p /opt/local/tools/pycharm/
+cd       /opt/local/tools/pycharm/
+
+tar xvzf /vol/glob/dvd/tools/intellij/pycharm/pycharm-community-*.tar.gz
+
+ls -l
+
+[ -h ./pycharm-ce ] && rm -f ./pycharm-ce
+
+ls -ld $(ls -dt pycharm-community-* | tail -n 1)
+ln -s  $(ls -dt pycharm-community-* | tail -n 1) pycharm-ce
+ls -l 
+
+
+##
+# (@runas: sudoer)
+#
+
+
+/opt/local/tools/pycharm/pycharm-ce/bin/pycharm.sh
+
+
+
+
+```
+
+
