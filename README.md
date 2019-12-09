@@ -2,4 +2,4 @@
 
 sample pyenv+pipenv project 
 
-python setup smoke test
+python setup smoke test.
