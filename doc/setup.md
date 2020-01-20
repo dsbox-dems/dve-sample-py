@@ -114,11 +114,11 @@ pyenv --version
 
 pyenv versions
 
-pyenv install 3.7.4 
-#pyenv install 3.6.9 
+: ${PYRC_PY_VERSION:=3.7.6}; export PYRC_PY_VERSION
+[ -f ~/.python-version ] || echo "${PYRC_PY_VERSION}" > ~/.python-version
 
-#pyenv install 3.8.0 
-#pyenv install 3.7.3 
+
+pyenv install $(cat ~/.python-version)
 
 pyenv versions
 
@@ -140,17 +140,12 @@ ACTIVATE
 eval "$(pyenv init -)"
 pyenv versions
 
-pyenv shell 3.7.4
-#pyenv shell 3.6.9 
-
-#pyenv shell 3.8.0
-#pyenv shell 3.7.3 
+pyenv shell $(cat ~/.python-version)
 
 which python
 python --version
 
-pyenv global 3.7.4
-#pyenv global 3.6.9
+pyenv global $(cat ~/.python-version)
 
 
 ```
@@ -179,9 +174,14 @@ cat ./Pipfile
 
 #eval "$(pyenv init -)"
 
-pyenv shell 3.7.4
-#pyenv shell 3.6.9 
+[ -f ./.python-version ]   && pyenv shell $(cat ./.python-version)
+[ ! -f ./.python-version ] && pyenv shell $(cat ~/.python-version)
+
+
+which python
+python --version
 pipenv --version
+
 
 pipenv --rm
 
@@ -198,7 +198,9 @@ ACTIVATE
 
 #eval "$(pyenv init -)"
 
-pyenv shell 3.7.4 
+[ -f ./.python-version ]   && pyenv shell $(cat ./.python-version)
+[ ! -f ./.python-version ] && pyenv shell $(cat ~/.python-version)
+
 pipenv shell
 
 which python
@@ -220,10 +222,6 @@ JUPYTER
 -------
 
 ```
-
-[ -f ./.python-version ] || echo '3.7.4' > ./.python-version
-
-cat ./.python-version
 
 alias jupyter='eval "$(pyenv init -)"; pyenv exec pipenv run \jupyter'
 
