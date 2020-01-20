@@ -276,6 +276,9 @@ ls -l
 
 [ -h ./pycharm-ce ] && rm -f ./pycharm-ce
 
+chgrp -R staff pycharm-community-*
+chmod -R g+w pycharm-community-*
+
 ls -ld $(ls -dt pycharm-community-* | tail -n 1)
 ln -s  $(ls -dt pycharm-community-* | tail -n 1) pycharm-ce
 ls -l 
@@ -289,6 +292,12 @@ ls -l
 /opt/local/tools/pycharm/pycharm-ce/bin/pycharm.sh
 
 
+# file:///usr/local/share/applications/jetbrains-pycharm-ce.desktop
+
+# /usr/local/bin/charm
+
+
+# clear; ls /home | grep -v -e lost -e dsbox -e dsuser -e dsguest | xargs -I{} echo 'sudo -u {} cp -rv /etc/skel/.config/xfce4/panel/launcher-9 .config/xfce4/panel/'
 
 
 ```
