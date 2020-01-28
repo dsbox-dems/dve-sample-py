@@ -77,6 +77,9 @@ PROJ=pyenv-installer
 SCRIPT_URL=https://github.com/pyenv/$PROJ/raw/master/bin/$PROJ
 curl -L $SCRIPT_URL | bash
 
+# update pyenv
+( cd ~/pyenv; git pull )
+
 # setup
 export PATH="~/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
@@ -168,6 +171,9 @@ pipenv --version
 
 
 ```
+#   cd ~/work/vs/dve-sample-py
+
+git pull
 
 cat ./Pipfile
 
@@ -185,8 +191,10 @@ pipenv --version
 
 pipenv --rm
 
-pipenv install -v --dev --python $(which python)
+pipenv install --dev --python $(which python)
 
+
+# pipenv install -v --dev --python $(which python)
 
 ```
 
@@ -265,6 +273,7 @@ PYCHARM
 
 mount /vol/glob/dvd
 
+# rm -rf /opt/local/tools/pycharm/
 mkdir -p /opt/local/tools/pycharm/
 cd       /opt/local/tools/pycharm/
 
@@ -274,12 +283,28 @@ ls -l
 
 [ -h ./pycharm-ce ] && rm -f ./pycharm-ce
 
-chgrp -R staff pycharm-community-*
+chgrp -R users pycharm-community-*
 chmod -R g+w pycharm-community-*
 
 ls -ld $(ls -dt pycharm-community-* | tail -n 1)
 ln -s  $(ls -dt pycharm-community-* | tail -n 1) pycharm-ce
 ls -l 
+
+
+ls -l /usr/bin/*charm*
+ls -l /usr/local/bin/*charm*
+[ -f /usr/bin/pycharm ] && [ ! -f /usr/bin/pycharm-36 ] && mv /usr/bin/pycharm /usr/bin/pycharm-36
+ln -s /usr/local/bin/charm /usr/local/bin/pycharm
+ls -l /usr/bin/*charm*
+ls -l /usr/local/bin/*charm*
+
+
+ls -l /usr/share/applications/*charm*
+ls -l /usr/local/share/applications/*charm*
+mkdir -p /usr/local/doc/pycharm-36
+[ -f /usr/share/applications/pycharm.desktop ] && mv /usr/share/applications/pycharm.desktop /usr/local/doc/pycharm-36
+ls -l /usr/share/applications/*charm*
+ls -l /usr/local/share/applications/*charm*
 
 
 ##
@@ -289,10 +314,21 @@ ls -l
 
 /opt/local/tools/pycharm/pycharm-ce/bin/pycharm.sh
 
-
-# file:///usr/local/share/applications/jetbrains-pycharm-ce.desktop
-
+##
+# - create system script:
 # /usr/local/bin/charm
+#
+# - create desktop entry:
+# file:///usr/local/share/applications/jetbrains-pycharm-ce.desktop
+#
+
+
+##
+# (@runas: root)
+#
+
+
+#ln -s /usr/local/share/applications/jetbrains-pycharm-ce.desktop /usr/share/applications/jetbrains-pycharm-ce.desktop
 
 
 # clear; ls /home | grep -v -e lost -e dsbox -e dsuser -e dsguest | xargs -I{} echo 'sudo -u {} cp -rv /etc/skel/.config/xfce4/panel/launcher-9 .config/xfce4/panel/'
