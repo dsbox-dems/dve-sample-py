@@ -78,7 +78,7 @@ SCRIPT_URL=https://github.com/pyenv/$PROJ/raw/master/bin/$PROJ
 curl -L $SCRIPT_URL | bash
 
 # update pyenv
-( cd ~/pyenv; git pull )
+( cd ~/.pyenv; git pull )
 
 # setup
 export PATH="~/.pyenv/bin:$PATH"
@@ -171,11 +171,15 @@ pipenv --version
 
 
 ```
-#   cd ~/work/vs/dve-sample-py
 
+
+(mkdir -p ~/work/vs; cd  ~/work/vs; [ -d dve-sample-py ] || git clone https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git )
+
+cd ~/work/vs/dve-sample-py
 git pull
 
-cat ./Pipfile
+ls -l ./Pipfile*
+# cat   ./Pipfile
 
 
 #eval "$(pyenv init -)"
@@ -219,7 +223,9 @@ python --version
 
 jupyter --version
 
+python -m site
 
+#pycharm
 
 ```
 
@@ -249,8 +255,7 @@ jupyter notebook test/pyenv-verify/pyenv-check.ipynb
 #
 #
 
-cd ~/work/bp/...
-
+cd ~/work/vs/dve-sample-py
 
 (pipenv run jupyter notebook --notebook-dir=./notebooks --no-browser)
 
@@ -311,6 +316,7 @@ ls -l /usr/local/share/applications/*charm*
 # (@runas: sudoer)
 #
 
+rm -rf ~/.PyCharm*
 
 /opt/local/tools/pycharm/pycharm-ce/bin/pycharm.sh
 
