@@ -117,7 +117,7 @@ pyenv --version
 
 pyenv versions
 
-: ${PYRC_PY_VERSION:=3.7.6}; export PYRC_PY_VERSION
+: ${PYRC_PY_VERSION:=3.8.0}; export PYRC_PY_VERSION
 [ -f ~/.python-version ] || echo "${PYRC_PY_VERSION}" > ~/.python-version
 
 

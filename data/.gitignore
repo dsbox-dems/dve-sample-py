@@ -1,0 +1,15 @@
+*
+
+!.gitignore
+!README.md
+
+!int/
+!int/*
+
+!ext/
+!ext/*
+
+!tmp/
+!tmp/*
+
+
