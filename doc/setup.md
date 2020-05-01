@@ -92,7 +92,7 @@ cat >> ~/.bashrc <<\EOF
 
 # ---(pyenv:begin)-----
 
-export PATH="~/.pyenv/bin:$PATH"
+export PATH=~/.pyenv/bin:$PATH
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 
