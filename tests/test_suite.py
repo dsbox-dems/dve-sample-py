@@ -3,9 +3,13 @@ import unittest
 from tests.test_common import CommonTest
 
 
+def load_test(c):
+    return  unittest.defaultTestLoader.loadTestsFromTestCase(c)
+
+
 def all_tests():
     test_suite = unittest.TestSuite()
-    test_suite.addTest(CommonTest())
+    test_suite.addTest(load_test(CommonTest))
     return test_suite
 
 
