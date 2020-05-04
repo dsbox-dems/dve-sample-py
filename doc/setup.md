@@ -161,6 +161,11 @@ python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade pipenv
 python3 -m pip install --upgrade setuptools wheel
 
+python3 -m pip install --upgrade ipython
+
+
+
+
 pyenv    rehash
 pipenv --version
 
@@ -195,7 +200,10 @@ pipenv --version
 
 pipenv --rm
 
-pipenv install --dev --python $(which python)
+pipenv install --dev
+
+# pipenv install --dev --python $(which python)
+
 
 
 # pipenv install -v --dev --python $(which python)

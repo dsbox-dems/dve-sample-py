@@ -26,10 +26,12 @@ XSverify_ssl = true
 
 numpy = "*"
 scipy = "*"
+statsmodels = "*"
 matplotlib = "*"
 pandas = "*"
 pandas-datareader = '*'
 jupyter = "*"
+ipython = "*"
 
 #time = '*'
 
@@ -80,7 +82,7 @@ jupyter = "*"
 
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
 
 
 [pipenv]
