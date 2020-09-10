@@ -33,6 +33,16 @@ pandas-datareader = '*'
 jupyter = "*"
 ipython = "*"
 
+# misc
+
+jmespath = '*'
+colorama = '*'
+requests = '*'
+python-dateutil = '*'
+progress = '*'
+tqdm = '*'
+
+
 #time = '*'
 
 #maths = '*'
