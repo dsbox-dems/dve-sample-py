@@ -1,6 +1,6 @@
 ---
-title: jupyter setup
-subtitle: install pyenv, pipenv, jupyter, pandas
+title: python setup
+subtitle: install pyenv, pipenv, poetry, ipython, jupyter, pandas
 author: gp
 date: 03/05/2019
 ---
@@ -12,8 +12,8 @@ date: 03/05/2019
 PYENV
 =====
 
-* https://realpython.com/intro-to-pyenv/
-* https://medium.com/@Joachim8675309/installing-pythons-with-pyenv-54cca2196cd3
+* [Installing Pythons with PyEnv](https://medium.com/@Joachim8675309/installing-pythons-with-pyenv-54cca2196cd3)
+* [Managing Multiple Python Versions With pyenv](https://realpython.com/intro-to-pyenv/)
 
 
 BUILD DEPS
