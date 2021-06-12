@@ -82,7 +82,7 @@ curl -L $SCRIPT_URL | bash
 
 # setup
 export PATH="~/.pyenv/bin:$PATH"
-eval "$(pyenv init -)"
+eval "$(pyenv init)"
 eval "$(pyenv virtualenv-init -)"
 
 
@@ -93,6 +93,8 @@ cat >> ~/.bashrc <<\EOF
 # ---(pyenv:begin)-----
 
 export PATH=~/.pyenv/bin:$PATH
+eval "$(pyenv init --path)"                                                                     
+
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 
@@ -182,6 +184,13 @@ pipenv --version
 
 cd ~/work/vs/dve-sample-py
 git pull
+
+[ -f ~/.python-version ] && cp -pv ~/.python-version ~/work/vs/dve-sample-py/.python-version
+cd ~/work/vs/dve-sample-py; git checkput -b "py-$(cat ./.python-version)"
+
+
+
+
 
 ls -l ./Pipfile*
 # cat   ./Pipfile
