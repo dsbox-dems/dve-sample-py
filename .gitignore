@@ -24,10 +24,6 @@
 
 !.python-version
 
-# temp files
-*.log
-derby.log
-
 
 # python
 venv/
@@ -43,8 +39,25 @@ venv/
 *.o
 *.so
 
-*.pyc
 
+############
+# setup.py #
+############
+
+/build/
+/dist/
+
+*.pyc
+*.egg
+*.whl
+
+*.egg-info/
+
+##########
+# pytest #
+##########
+
+/.pytest_cache/
 
 # Packages #
 ############
@@ -64,6 +77,8 @@ venv/
 *.log
 *.tlog
 *.sqlite
+/logs/
+
 
 # OS generated files #
 ######################
@@ -91,3 +106,4 @@ Thumbs.db
 
 # SPARK
 metastore_db/
+/doc/_build/
