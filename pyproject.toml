@@ -30,6 +30,7 @@ python = "^3.9"
 # cachetools = "*"
 # certifi = "*"
 # chardet  = "*"
+click = '*'
 # cycler = "*"
 # decorator = "*"
 # flask = '*'
@@ -117,6 +118,7 @@ pyproject-flake8 = "*"
 jedi = "*"
 autopep8 = "*"
 yapf = '*'
+pyright = '*'
 #codecov = "*"
 black = { extras = ["jupyter"], version = "*" }
 isort = "*"
