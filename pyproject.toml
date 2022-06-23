@@ -14,7 +14,7 @@ packages = [{ include = "*", from = "src" }]
 dve = "dve.cli:main"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 
 # Keras = "*"
 # Keras-applications = "*"
@@ -159,7 +159,7 @@ profile = "black"
 
 [tool.black]
 line-length = 88
-target-version = ['py39']
+target-version = ['py310']
 include = '\.pyi?$'
 exclude = '''
 
