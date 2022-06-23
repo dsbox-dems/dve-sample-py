@@ -1,0 +1,128 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+XSverify_ssl = true
+
+
+
+[dev-packages]
+
+##
+# build
+#
+setuptools = "*"
+pip = "*"
+#wheel = "*"
+
+
+##
+# test
+#
+pytest = {version="*"}
+mock = "*"
+more-itertools = "*"
+py = "*"
+
+##
+# repl
+#
+tornado = "*"
+jupyter-core ="*"
+notebook ="*"
+ipykernel = "*"
+jupyter = "*"
+ipython = "*"
+
+##
+# tools
+#
+#python-language-server = {extras = ["all"],version = "*"}
+
+
+
+[packages]
+
+##
+# env
+#
+six = "*"
+
+##
+# utils
+#
+colorama = "*"
+python-dateutil = '*'
+progress = '*'
+rootpath = "*"
+tqdm = '*'
+
+##
+# misc
+#
+#Markdown = "*"
+
+##
+# conf
+#
+PyYaml = "*"
+
+##
+# api
+#
+flask = "*"
+jmespath = '*'
+requests = "*"
+requests-oauthlib = "*"
+oauthlib = "*"
+urllib3 = "*"
+# google-auth = "*"
+# google-auth-oauthlib = "*"
+# google-pasta = "*"
+
+
+##
+# sci
+#
+numpy = "*"
+scipy = "*"
+statsmodels = "*"
+sympy = "*"
+
+
+##
+# data
+#
+pandas = "*"
+pandas-datareader = '*'
+
+##
+# plot
+#
+matplotlib = "*"
+
+
+##
+# ml
+#
+# Keras = "*"
+# Keras-applications = "*"
+# Keras-preprocessing = "*"
+# PyWavelets = "*"
+# gym = {extras = ["atari"], version = "*"}
+# opencv-python = "*"
+# scikit-learn = "*"
+# scikit-image = "*"
+# sklearn = "*"
+# tensorboard = "*"
+# tensorflow = "*"
+# tensorflow-estimator = "*"
+
+
+
+
+[requires]
+python_version = "3.9"
+
+
+[pipenv]
+allow_prereleases = true
