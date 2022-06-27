@@ -14,18 +14,23 @@
 
 
 * @TASKS
-** TODO LAB: mp101
-*** TODO VM: mp101-v01
-**** TODO install apps
-**** TODO install matlab
-**** TODO config sudo, libreoffice
-**** TODO config desktop (skel)
-**** TODO update dsuser skel
-**** TODO create accounts + mount
-*** TODO VM: mp101-x31
-**** TODO install apps
-**** TODO config sudo, libreoffice
-**** TODO config desktop (skel)
+** TODO Python Project Environment
+*** TODO makefile setup
+**** TODO pyenv install setup
+**** TODO poetry makefile setup
+*** TODO makefile tasks
+**** TODO unit test
+**** TODO lint, check 
+**** TODO dist package
+*** TODO podman support
+**** TODO pyenv image layer
+**** TODO poetry image layer
+**** TODO runtime image layer
+**** TODO worker image layer
+*** TODO job tracking
+**** TODO job entry args
+**** TODO job logging
+**** TODO job tracking
 
 
 * REFERENCES
