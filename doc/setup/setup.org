@@ -27,19 +27,23 @@
 **** TODO config sudo, libreoffice
 **** TODO config desktop (skel)
 
-* REFERENCES
 
-- [[https://py-pkgs.org/][Python Packages]]
-- [[https://python-poetry.org/][Poetry]]
-- [[https://pipenv.pypa.io/en/latest/][Pipenv: Python Dev Workflow for Human]]
+* REFERENCES
+** pyenv references
 - [[https://medium.com/@Joachim8675309/installing-pythons-with-pyenv-54cca2196cd3][Installing Pythons with PyEnv]]
 - [[https://realpython.com/intro-to-pyenv/][Managing Multiple Python Versions With pyenv]]
-- [[https://realpython.com/python-wheels/][What Are Python Wheels and Why Should You Care?]]
-- [[https://lucumr.pocoo.org/2014/1/27/python-on-wheels/][Python on Wheels]]
+** poetry references
+- [[https://python-poetry.org/][Poetry]]
+- [[https://pipenv.pypa.io/en/latest/][Pipenv: Python Dev Workflow for Human]]
 - [[https://plugins.jetbrains.com/plugin/14307-poetry][Poetry PyCharm Plugin]]
 - [[https://visualstudiomagazine.com/articles/2021/04/20/vscode-python-421.aspx][VS Code Python Tooling Gets 'Most Requested' Feature: Poetry Support]]
 - [[https://www.pythoncheatsheet.org/blog/python-projects-with-poetry-and-vscode-part-1/][Python projects with Poetry and VSCode]]
+** python projects
+- [[https://py-pkgs.org/][Python Packages]]
+- [[https://realpython.com/python-wheels/][What Are Python Wheels and Why Should You Care?]]
+- [[https://lucumr.pocoo.org/2014/1/27/python-on-wheels/][Python on Wheels]]
 - [[https://xkcd.com/1987/][Python Environment]]
+
 
 * STATUS
 ** Access Check
@@ -276,9 +280,8 @@
 
 #+END_SRC
 
+
 * POETRY
-
-
 ** Install
 
 
