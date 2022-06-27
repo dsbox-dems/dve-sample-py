@@ -1,6 +1,12 @@
--#+TITLE: setup.org
+# ---
+#+TITLE: setup.org: pyenv/poetry user setup
+#+SUBTITLE:  python project enviroment
+#+AUTHOR: --
+#+DATE: <2022-06-25>
+# ---
 
-##PROPERTY: header-args:bash :dir /ssh:nvs@s11|sudo:s11:/root
+#+PROPERTY: header-args:bash :dir /ssh:nvs@s60|sudo:dsuser@s60:/home/dsuser
+##PROPERTY: header-args:bash :dir /ssh:nvs@s11|sudo:dsuser@d60:/home/dsuser
 
 :PROPERTIES:
 :header-args:R:          :session *R*
@@ -21,47 +27,88 @@
 **** TODO config sudo, libreoffice
 **** TODO config desktop (skel)
 
-
 * REFERENCES
-
 
 - [[https://py-pkgs.org/][Python Packages]]
 - [[https://python-poetry.org/][Poetry]]
-- [[https://pipenv.pypa.io/en/latest/][Pipenv: Python Dev Workflow for
-  Human]]
-- [[https://medium.com/@Joachim8675309/installing-pythons-with-pyenv-54cca2196cd3][Installing
-  Pythons with PyEnv]]
-- [[https://realpython.com/intro-to-pyenv/][Managing Multiple Python
-  Versions With pyenv]]
-- [[https://realpython.com/python-wheels/][What Are Python Wheels and
-  Why Should You Care?]]
-- [[https://lucumr.pocoo.org/2014/1/27/python-on-wheels/][Python on
-  Wheels]]
-- [[https://plugins.jetbrains.com/plugin/14307-poetry][Poetry PyCharm
-  Plugin]]
-- [[https://visualstudiomagazine.com/articles/2021/04/20/vscode-python-421.aspx][VS
-  Code Python Tooling Gets 'Most Requested' Feature: Poetry Support]]
-- [[https://www.pythoncheatsheet.org/blog/python-projects-with-poetry-and-vscode-part-1/][Python
-  projects with Poetry and VSCode]]
+- [[https://pipenv.pypa.io/en/latest/][Pipenv: Python Dev Workflow for Human]]
+- [[https://medium.com/@Joachim8675309/installing-pythons-with-pyenv-54cca2196cd3][Installing Pythons with PyEnv]]
+- [[https://realpython.com/intro-to-pyenv/][Managing Multiple Python Versions With pyenv]]
+- [[https://realpython.com/python-wheels/][What Are Python Wheels and Why Should You Care?]]
+- [[https://lucumr.pocoo.org/2014/1/27/python-on-wheels/][Python on Wheels]]
+- [[https://plugins.jetbrains.com/plugin/14307-poetry][Poetry PyCharm Plugin]]
+- [[https://visualstudiomagazine.com/articles/2021/04/20/vscode-python-421.aspx][VS Code Python Tooling Gets 'Most Requested' Feature: Poetry Support]]
+- [[https://www.pythoncheatsheet.org/blog/python-projects-with-poetry-and-vscode-part-1/][Python projects with Poetry and VSCode]]
 - [[https://xkcd.com/1987/][Python Environment]]
 
+* STATUS
+** Access Check
+
+
+#+NAME: whoami
+#+HEADER: :dir /ssh:nvs@s11|sudo:s11:/root
+#+BEGIN_SRC bash
+  whoami
+#+END_SRC
+
+#+RESULTS: whoami
+: root
+
+#+NAME: hostnamectl
+#+BEGIN_SRC bash
+  hostnamectl
+#+END_SRC
+
+#+RESULTS: hostnamectl
+
+#+NAME: ip
+#+BEGIN_SRC bash
+  ip -br -4 a
+#+END_SRC
+
+#+NAME: uptime
+#+BEGIN_SRC bash
+  uptime
+#+END_SRC
+
+#+RESULTS: uptime
+
+#+NAME: date
+#+BEGIN_SRC bash
+  date
+#+END_SRC
+
+#+RESULTS: date
+
+
 * PYENV
-
-
 ** Build Dependencies
 
 
-#+BEGIN_SRC bash
-  
+#+BEGIN_SRC bash :eval no
+
   # python build-deps
 
   sudo apt install -y \
-      make build-essential libssl-dev zlib1g-dev \
-      libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev \
-      libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
+       make \
+       build-essential \
+       libssl-dev \
+       zlib1g-dev \
+       libbz2-dev \
+       libreadline-dev \
+       libsqlite3-dev \
+       wget \
+       curl \
+       llvm \
+       libncurses5-dev \
+       libncursesw5-dev \
+       xz-utils \
+       tk-dev \
+       libffi-dev \
+       liblzma-dev \
+       python-openssl
 
 #+END_SRC
-
 
 ** Install
 
@@ -185,10 +232,10 @@
   python --version
 
   pyenv global $(cat ~/.python-version)
+  
 #+END_SRC
 
 ** Tools
-
 
 #+BEGIN_SRC bash
 
@@ -260,7 +307,6 @@
 
   #   cd ~/work/vs/dve-sample-py
 
-
   cat ./pyproject.toml
 
 
@@ -288,6 +334,7 @@
   poetry install
 
   poetry show
+  
 #+END_SRC
 
 ** ACTIVATE
