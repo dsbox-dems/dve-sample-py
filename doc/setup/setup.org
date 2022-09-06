@@ -132,25 +132,29 @@
 
   # ===( profile )===========================
 
-  #WARN: source ~/.bashrc at end
 
-  cat >> ~/.profile <<\EOF
-  #!/bin/sh
-  # -*- mode: shell-script;-*-
-  export PY_RC_PROFILE=1
+  # ===( rc )===========================
+
+  cat <<'  EOF' | sed -e 's/^ *//'  >> ~/.bashrc
+  # ---(pyenv:begin)-----
 
   ##
   #  pyenv environment
   #
   if [ ! -f ~/.py-env.off ]; then
-  if [ -d $HOME/.pyenv ]; then    
-      export PY_RC_ENV=1
-  py_rc_env_sh() {
-  export PYENV_ROOT="$HOME/.pyenv"
-  export PATH="$PYENV_ROOT/bin:$PATH"
-  eval "$(pyenv init --path)"
-  }
-  py_rc_env_sh
+  if [ -d $HOME/.pyenv ]; then
+  # ~/.profile   
+  if [ -z "$PY_RC_ENV" ]; then
+     export PY_RC_ENV=1
+     command -v conda >/dev/null && conda deactivate || true              
+     [ -z "$PYENV_ROOT" ] && export PYENV_ROOT="$HOME/.pyenv"
+     if [ -n "$PYENV_ROOT" ] ; then
+        command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+     fi
+     eval "$(pyenv init --path)"
+  fi   
+  # ~/.(bash|zsh)rc
+  eval "$(pyenv init -)"
   fi
   fi
 
@@ -158,42 +162,65 @@
   #  poetry environment
   #
   if [ ! -f ~/.py-poetry.off ]; then
-  if [ -d $HOME/.poetry ]; then    
+  if [ -x $HOME/.local/bin/poetry ]; then    
       export PY_RC_POETRY=1
   py_rc_poetry_sh() {
-  export PATH="$HOME/.poetry/bin:$PATH"
+     command -v poetry >/dev/null || export PATH="$HOME/.poetry/bin:$PATH"
+  }
+  py_rc_poetry_sh
+  fi
+  fi
+  # ---(pyenv:end)-----
+  EOF
+
+
+  cat <<'  EOF' | sed -e 's/^ *//'  >> ~/.zshrc
+
+  # ---(pyenv:begin)-----
+
+  ##
+  #  pyenv environment
+  #
+
+  if [ ! -f ~/.py-env.off ]; then
+  if [ -d $HOME/.pyenv ]; then
+
+  # ~/.profile   
+
+  if [ -z "$PY_RC_ENV" ]; then
+     export PY_RC_ENV=1
+
+     command -v conda >/dev/null && conda deactivate || true              
+
+     [ -z "$PYENV_ROOT" ] && export PYENV_ROOT="$HOME/.pyenv"
+     if [ -n "$PYENV_ROOT" ] ; then
+        command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+     fi
+     eval "$(pyenv init --path)"
+
+  fi   
+
+  # ~/.(bash|zsh)rc
+
+  eval "$(pyenv init -)"
+
+  fi
+  fi
+
+  ##
+  #  poetry environment
+  #
+
+  if [ ! -f ~/.py-poetry.off ]; then
+  if [ -x $HOME/.local/bin/poetry ]; then    
+      export PY_RC_POETRY=1
+  py_rc_poetry_sh() {
+     [ -z "$PYTHON_KEYRING_BACKEND" ] && export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
   }
   py_rc_poetry_sh
   fi
   fi
 
-  EOF
-
-
-
-  # ===( rc )===========================
-
-  cat >> ~/.bashrc <<\EOF
-
-  # ---(pyenv:begin)-----
-  if [ ! -f ~/.py-env.off ]; then
-  if [ -d $HOME/.pyenv ]; then
-     eval "$(pyenv init -)"
-  fi
-  fi
-  # ---(pyenv:end)-----
-
-  EOF
-
-
-  cat >> ~/.zshrc <<\EOF
-
-  # ---(pyenv:begin)-----
-  if [ ! -f ~/.py-env.off ]; then
-  if [ -d $HOME/.pyenv ]; then
-     eval "$(pyenv init -)"
-  fi
-  fi
   # ---(pyenv:end)-----
 
   EOF
@@ -202,8 +229,8 @@
 
   # ===( reload )===========================
 
-  exec $SHELL --login
-  
+  unset PY_RC_ENV; exec $SHELL --login
+
 #+END_SRC
 
 ** Version
@@ -219,7 +246,7 @@
 
   pyenv versions
 
-  : ${PYRC_PY_VERSION:=3.7.6}; export PYRC_PY_VERSION
+  : ${PYRC_PY_VERSION:=3.10.5}; export PYRC_PY_VERSION
   [ -f ~/.python-version ] || echo "${PYRC_PY_VERSION}" > ~/.python-version
 
 
@@ -230,7 +257,7 @@
 
   # ===( activate )===========================
 
-  exec $SHELL --login
+  unset PY_RC_ENV; exec $SHELL --login
 
   eval "$(pyenv init -)"
   pyenv versions
@@ -280,6 +307,8 @@
 
   # rehash
 
+  unset PY_RC_ENV; exec $SHELL --login
+
   pycowsay 'moooo!'
 
 
@@ -292,20 +321,22 @@
 
 #+BEGIN_SRC bash
 
-  # ===( get )===========================
+    # ===( get )===========================
 
-  curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python 
+    curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python 
 
 
-  # ===( reload )===========================
+    # ===( reload )===========================
 
-  exec $SHELL --login
+    unset PY_RC_ENV; exec $SHELL --login
 
-  # ===( check )===========================
+    # ===( check )===========================
 
-  poetry --version
-  poetry self update
-  
+    poetry --version
+
+    PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"  \
+                          poetry self update
+
 #+END_SRC
 
 ** Build
@@ -313,7 +344,18 @@
 
 #+BEGIN_SRC bash
 
-  #   cd ~/work/vs/dve-sample-py
+  #   
+
+  if [ ! -d ~/work/vs/dve-sample-py ]; then
+      mkdir -p ~/work/vs
+      cd       ~/work/vs
+      git clone https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git
+  fi      
+  cd ~/work/vs/dve-sample-py
+  git remote update
+  git pull
+
+  #
 
   cat ./pyproject.toml
 
@@ -336,13 +378,15 @@
   poetry env list
   poetry env info
 
+  
+  poetry cache clear --all pypi
 
   # poetry lock
 
   poetry install
 
   poetry show
-  
+
 #+END_SRC
 
 ** ACTIVATE
