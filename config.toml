@@ -1,0 +1,29 @@
+[meta]
+project = "dve-sample-py"
+package = "dve"
+
+[data]
+
+[data.db]
+
+[data.db.demo_my]
+
+type = "mysql"
+pool_name = "demo_my"
+pool_size = 3
+host = "localhost"
+port = 3306
+user = "demo"
+password = "Sec3et!"
+database = "demo"
+uri =  "mysql+mysqlconnector://$USER:$PASS@$HOST:$PORT/$DB"
+
+[data.db.demo_pg]
+
+type = "postgresql"
+host = "localhost"
+port = 5432
+user = "demo"
+password = "Sec3et!"
+database = "demo"
+uri =  "postgresql://$USER:$PASS@$HOST:$PORT/$DB"
