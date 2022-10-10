@@ -72,6 +72,7 @@ psycopg = "*"
 # pyparsing = "*"
 # python-dateutil = "*"
 # pytz = "*"
+pyyaml = "*"
 requests = "*"
 requests-oauthlib = "*"
 # rootpath = "*"
@@ -89,6 +90,8 @@ sympy = "*"
 # termcolor = "*"
 
 # time ="*"
+
+toml = "*"
 
 # torch = "*"
 # torchvision = "*"
