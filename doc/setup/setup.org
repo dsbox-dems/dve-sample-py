@@ -246,8 +246,11 @@
 
   pyenv versions
 
-  : ${PYRC_PY_VERSION:=3.10.5}; export PYRC_PY_VERSION
+  PYRC_PY_CURRENT=$(curl https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/raw/main/.python-version); echo $PYRC_PY_CURRENT
+
+  : ${PYRC_PY_VERSION:=$PYRC_PY_CURRENT}; export PYRC_PY_VERSION
   [ -f ~/.python-version ] || echo "${PYRC_PY_VERSION}" > ~/.python-version
+  cat ~/.python-version
 
 
   pyenv install $(cat ~/.python-version)
@@ -268,14 +271,14 @@
   python --version
 
   pyenv global $(cat ~/.python-version)
-  
+
 #+END_SRC
 
 ** Tools
 
 #+BEGIN_SRC bash
 
-  exec $SHELL --login
+  unset PY_RC_ENV; exec $SHELL --login
 
   which python
   python --version
@@ -353,6 +356,8 @@
   fi      
   cd ~/work/vs/dve-sample-py
   git remote update
+  git branch -az
+  git status
   git pull
 
   #
@@ -378,7 +383,7 @@
   poetry env list
   poetry env info
 
-  
+
   poetry cache clear --all pypi
 
   # poetry lock
