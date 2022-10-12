@@ -1,11 +1,11 @@
 import os.path
-import toml
+from piny import YamlLoader
 
 from dve.config import data
 
 _config = dict()
 
-CONFIG_F_MAIN = "./config.toml"
+CONFIG_F_MAIN = "./config.yaml"
 CONFIG_S_MAIN = "main"
 CONFIG_S_DEFAULT = CONFIG_S_MAIN
 
@@ -18,6 +18,7 @@ def config_name(what=CONFIG_S_DEFAULT):
         raise ValueError(f'Config Name unknown: "{what}", cannot load')
     return result
 
+
 def config_path(what=CONFIG_S_DEFAULT):
     name = config_name(what)
     fn = os.path.join(data.DATA_WORK, name)
@@ -29,18 +30,8 @@ def load_config(what=CONFIG_S_DEFAULT):
     fn = config_path(what)
     if not os.path.exists(fn):
         raise ValueError(f"Config Name {what} file not found: {fn}")
-    raw_config = None
     try:
-        with (open(fn)) as fd:
-            raw_config = fd.read()
-    except Exception as ex:
-        print(type(ex))
-        print(ex.args)
-        print(ex)
-        raise ex
-
-    try:
-        result = toml.loads(raw_config)
+        result = YamlLoader(path=fn).load()
         return result
     except Exception as ex:
         print(type(ex))
