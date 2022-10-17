@@ -19,11 +19,11 @@ data:
         name: "demo_my"
         size: 3
         
-      host: ${X_DB_DEMO_HOST:-"localhost"}
-      port: ${X_DB_DEMO_PORT:-"3306"}
-      user: ${X_DB_DEMO_USER:-"demo"}
-      password: ${X_DB_DEMO_PASSWORD:-"<Sec3et!>"}
-      database: ${X_DB_DEMO_DATABASE:-"demo"}
+      host: ${X_DB_DEMO_HOST:-localhost}
+      port: ${X_DB_DEMO_PORT:-3306}
+      user: ${X_DB_DEMO_USER:-demo}
+      password: ${X_DB_DEMO_PASSWORD:-<Sec3et!>}
+      database: ${X_DB_DEMO_DATABASE:-demo}
       
       uri: "{type}+{driver}://{user}:{password}@{host}:{port}/{database}"
 
@@ -37,11 +37,11 @@ data:
         name: "demo_my"
         size: 3
         
-      host: ${X_DB_DEMO_HOST:-"localhost"}
-      port: ${X_DB_DEMO_PORT:-"5432"}
-      user: ${X_DB_DEMO_USER:-"demo"}
-      password: ${X_DB_DEMO_PASSWORD:-"<Sec3et!>"}
-      database: ${X_DB_DEMO_DATABASE:-"demo"}
+      host: ${X_DB_DEMO_HOST:-localhost}
+      port: ${X_DB_DEMO_PORT:-5432}
+      user: ${X_DB_DEMO_USER:-demo}
+      password: ${X_DB_DEMO_PASSWORD:-<Sec3et!>}
+      database: ${X_DB_DEMO_DATABASE:-demo}
       
       uri: "{type}://{user}:{password}@{host}:{port}/{database}"
 

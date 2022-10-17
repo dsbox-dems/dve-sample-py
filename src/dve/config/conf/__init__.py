@@ -9,6 +9,9 @@ CONFIG_F_MAIN = "./config.yaml"
 CONFIG_S_MAIN = "main"
 CONFIG_S_DEFAULT = CONFIG_S_MAIN
 
+def config_unload_all():
+    global _config
+    _config = dict()
 
 def config_name(what=CONFIG_S_DEFAULT):
     result = None
