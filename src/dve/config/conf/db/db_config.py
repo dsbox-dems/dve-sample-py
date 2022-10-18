@@ -62,11 +62,11 @@ class AbsDbConfig(DbConfig):
         if not "uri" in cfg:
             raise ValueError(f"alias not found for db source: {self.name}")
         uri = str(cfg["uri"])
-        result = uri.format(cfg)
+        result = uri.format(**cfg)
         return result
 
 
-def db_config(name: str) -> DbConfig:
+def get_db_config(name: str) -> DbConfig:
     result = AbsDbConfig.get_instance(name)
     return result
 
