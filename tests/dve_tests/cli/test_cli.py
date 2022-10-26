@@ -35,6 +35,8 @@ class CliTest(unittest.TestCase):
             main(argv)
         assert "auto:test" in out.getvalue()
 
+    @pytest.mark.skip(reason="feature delayed: numactl support")
+    @unittest.skip("feature delayed: numactl support")
     def test_auto_spawn(self):
         argv = ["-v", "--exec", "main", "--cmd", "auto", "--name", "auto"]
         log.debug("+++ cli.main:" + str(argv))

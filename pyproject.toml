@@ -10,6 +10,12 @@ homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
 repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
 packages = [{ include = "*", from = "src" }]
 
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+res = [ "resources/*", "resources/*/*" ]
+
 [tool.poetry.scripts]
 dve = "dve.cli:main"
 
@@ -56,6 +62,11 @@ click = '*'
 # joblib = "*"
 # kiwisolver = "*"
 matplotlib = "*"
+
+mysql-connector-python = "*"
+# requires: sudo apt install default-libmysqlclient-dev
+mysqlclient = "*"
+
 # networkx = "*"
 numpy = "*"
 oauthlib = "*"
@@ -63,22 +74,31 @@ oauthlib = "*"
 # opt-einsum = "*"
 pandas = "*"
 pandas-datareader = '*'
+piny = "*"
 pip = "*"
 # protobuf = "*"
+
+# requires: sudo apt install libpq-dev
+#psycopg2 = "*"
+psycopg2-binary = "*"
+
 # pyasn1 = "*"
 # pyasn1-modules = "*"
 # pyparsing = "*"
 # python-dateutil = "*"
 # pytz = "*"
+pyyaml = "*"
 requests = "*"
 requests-oauthlib = "*"
 # rootpath = "*"
 # rsa = "*"
+seaborn = "*"
 # scikit-learn = "*"
 # scikit-image = "*"
 scipy = "*"
 six = ">=1.7.0,<=1.15.0"
 # sklearn = "*"
+SQLAlchemy = "*"
 sympy = "*"
 # tensorflow = "^2.5.0"
 # tensorflow-estimator = "^2.5.0"
@@ -86,6 +106,8 @@ sympy = "*"
 # termcolor = "*"
 
 # time ="*"
+
+toml = "*"
 
 # torch = "*"
 # torchvision = "*"
@@ -186,7 +208,7 @@ exclude = '''
 [build-system]
 requires = [
     "poetry-core>=1.0.0",
-    "setuptools >= 42",
+    "setuptools",
     "wheel",
     "incremental",
 ]
