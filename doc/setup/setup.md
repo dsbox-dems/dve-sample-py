@@ -1,5 +1,8 @@
 ---
-title: python setup subtitle: install pyenv, pipenv, pipx, ipython, jupyter, cookiecutter author: gp date: 15/06/2021
+title: python setup
+subtitle: install pyenv, pipenv, pipx, ipython, jupyter, cookiecutter
+author: gp
+date: 15/06/2021
 ---
 
 

@@ -1,7 +1,6 @@
 import unittest
 
-from dve_tests.config.data.test_config_data import ConfigDataTest
-from dve_tests.config.conf.test_config_model import ConfigModelTest
+from dve_tests.resources.sql.test_resources_sql import ResourcesSqlTest
 
 
 def load_test(c):
@@ -10,8 +9,7 @@ def load_test(c):
 
 def all_tests():
     test_suite = unittest.TestSuite()
-#    test_suite.addTest(load_test(ConfigDataTest))
-#    test_suite.addTest(load_test(ConfigModelTest))
+#    test_suite.addTest(load_test(ResourcesSqlTest))
     return test_suite
 
 
