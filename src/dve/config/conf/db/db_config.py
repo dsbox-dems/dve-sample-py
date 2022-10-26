@@ -1,4 +1,3 @@
-import re
 from dve.config.conf.db import DbConfig
 from dve.config.conf import AppConfig, AppConfigEx
 
