@@ -9,7 +9,7 @@ def load_test(c):
 
 def all_tests():
     test_suite = unittest.TestSuite()
-#    test_suite.addTest(load_test(ResourcesSqlTest))
+    #    test_suite.addTest(load_test(ResourcesSqlTest))
     return test_suite
 
 
