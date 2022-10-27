@@ -55,7 +55,7 @@ PY_RUN := ${POETRY} run
 
 # ---(commands)------------------------------------------------
 
-.PHONY: all test check docs man vignettes readme build install clean init
+.PHONY: all test check docs man vignettes readme format build install clean init
 
 
 all: # @HELP/base make: "init,check,test,docs,build"  targets
@@ -91,6 +91,27 @@ README.rst:
 readme: # @HELP/base runs: `knitr::knit("README.Rmd")` 
 readme: README.rst
 
+format: # @HELP/baseformat code with black
+format: 
+	${POETRY} run black
+
+
+
+#requirements: .requirements.txt
+#env: .venv/bin/activate
+#.requirements.txt: requirements.txt
+#	$(shell . .venv/bin/activate && pip install -r requirements.txt)
+#.PHONY: update
+#update: env
+#	.venv/bin/python3 -m pip install -U pip
+#	poetry update
+#	poetry export -f requirements.txt --output requirements.txt --without-hashes
+#.PHONY: format
+#format: env
+#	$(shell . .venv/bin/activate && isort ./)
+#	$(shell . .venv/bin/activate && black ./)
+
+
 build: # @HELP/base runs: `devtools::build()`
 build: 
 	${POETRY} build
@@ -105,6 +126,12 @@ uninstall:
 
 clean: # @HELP/base clean all files in .gitignore
 	git clean -Xdf
+
+# find . -name '*.pyc' -delete
+# find . -name '__pycache__' -delete
+# find . -name 'poetry.lock' -delete
+# find . -name 'Pipefile.lock' -delete
+
 
 init: # @HELP/base initialize local (temp,logs) directories
 	@mkdir -p ${LOGS_DIR}
