@@ -10,8 +10,8 @@ def load_test(c):
 
 def all_tests():
     test_suite = unittest.TestSuite()
-#    test_suite.addTest(load_test(ConfigDataTest))
-#    test_suite.addTest(load_test(ConfigModelTest))
+    #    test_suite.addTest(load_test(ConfigDataTest))
+    #    test_suite.addTest(load_test(ConfigModelTest))
     return test_suite
 
 

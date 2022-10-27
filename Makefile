@@ -93,7 +93,7 @@ readme: README.rst
 
 format: # @HELP/baseformat code with black
 format: 
-	${POETRY} run black
+	${POETRY} run black $(SRC) $(TESTS)
 
 
 
