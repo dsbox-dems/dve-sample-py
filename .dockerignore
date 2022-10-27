@@ -1,2 +1,15 @@
-#
+docker/
+.dockerignore
+etc/custom/
+inst/extdata/ext/
+.git/
+.github/
+.gitignore
+.gitlab/
+logs/
+temp/
+.RData/
+.Rproj.user/
+.Rhistory
+*.Rproj
 

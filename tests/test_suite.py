@@ -12,10 +12,10 @@ def load_test(c):
 
 def all_tests():
     test_suite = unittest.TestSuite()
-#    test_suite.addTests(load_test(CommonTest))
-#    test_suite.addTests(load_test(test_config.all_tests))
-#    test_suite.addTests(load_test(CliTest))
-#    test_suite.addTests(load_test(test_resources.all_tests))
+    #    test_suite.addTests(load_test(CommonTest))
+    #    test_suite.addTests(load_test(test_config.all_tests))
+    #    test_suite.addTests(load_test(CliTest))
+    #    test_suite.addTests(load_test(test_resources.all_tests))
     return test_suite
 
 

@@ -35,3 +35,5 @@ pom.xml text eol=lf
 *.docx binary
 *.xslx binary
 *.pptx binary
+/NEWS.md merge=union
+/.Rbuildignore merge=union
