@@ -19,4 +19,6 @@ DATA_HOME = conf_dir("PC_DATA_HOME", "./data/ext/home")
 DATA_HOST = conf_dir("PC_DATA_HOST", "./data/ext/host")
 DATA_USER = conf_dir("PC_DATA_USER", "./data/ext/user")
 
+DATA_DNET = conf_dir("PC_DATA_DNET", "./data/ext/dnet")
+
 DATA_DESK = conf_dir("PC_DATA_DESK", "~/Desktop")
