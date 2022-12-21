@@ -448,3 +448,87 @@
   (poetry run jupyter notebook --notebook-dir=./notebooks --no-browser)
 
 #+END_SRC
+
+
+* JULIA
+** Install
+
+
+#+BEGIN_SRC bash
+
+      # ===( get )===========================
+
+      sudo mkdir -p       /opt/local/julia
+      sudo chgrp -R users /opt/local/julia
+      sudo chmod -R g+sw  /opt/local/julia
+
+
+      mkdir -p /opt/local/julia/Julia
+      cd       /opt/local/julia/Julia
+
+      wget https://julialang-s3.julialang.org/bin/linux/x64/1.8/julia-1.8.3-linux-x86_64.tar.gz
+
+      [ -L ./julia ] && rm ./julia
+
+      ln -s ./julia-1.8.3 julia
+
+
+
+      # ===( profile )===========================
+
+      sudo cat >> /etc/profile.d/ZC96-julia.sh <<'EOF'
+
+  if  [ "$(id -u)" != "0" ]; then
+
+  set -a
+  : ${JU_BASE:="/opt/local/julia/Julia"}
+  : ${JU_HOME:="$JU_BASE/julia"}
+  set +a
+  export PATH=$JU_HOME/bin:$PATH
+
+
+  fi
+
+
+    EOF
+
+    . /etc/profile.d/ZC96-julia.sh
+
+    which julia
+
+    julia --version
+    julia <<< 'versioninfo();'
+
+
+#+END_SRC
+
+** Build
+
+
+#+BEGIN_SRC bash
+
+
+      # packages
+
+  poetry shell
+
+  poetry env info
+
+  export PYTHON=$(which python)
+
+      julia << 'EOF'
+  ]
+      status
+      update
+      
+      activate .
+      instantiate
+      status
+
+    EOF        
+
+
+#+END_SRC
+
+
+
