@@ -252,8 +252,11 @@
   [ -f ~/.python-version ] || echo "${PYRC_PY_VERSION}" > ~/.python-version
   cat ~/.python-version
 
+  [ -f ~/.python-version ]   && env PYTHON_CONFIGURE_OPTS="--enable-shared"  pyenv install  $(cat ~/.python-version)
 
-  pyenv install $(cat ~/.python-version)
+  [ -f ./.python-version ]   && env PYTHON_CONFIGURE_OPTS="--enable-shared"  pyenv install  $(cat ./.python-version)
+  [ ! -f ./.python-version ] && env PYTHON_CONFIGURE_OPTS="--enable-shared"  pyenv install  $(cat ~/.python-version)
+  
 
   pyenv versions
 
