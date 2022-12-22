@@ -47,17 +47,18 @@ click = '*'
 # pygithub = '*'
 # pyyaml = '*'
 
-
-
 # gast = "*"
 # gpyopt = "*"
 # google-auth = "*"
 # google-auth-oauthlib = "*"
 # google-pasta = "*"
+#   graphframes = '*'
+# graphviz = '*'
 # grpcio = "*"
 # gym = "^0.18.3"
 # h5py = "*"
 # idna = "*"
+# igraph = '*'
 # imageio = "*"
 # joblib = "*"
 # kiwisolver = "*"
@@ -77,6 +78,10 @@ pandas-datareader = '*'
 piny = "*"
 pip = "*"
 # protobuf = "*"
+
+#   pyarrow = "7.0.0"
+#   pyspark = "3.3.0"
+
 
 # requires: sudo apt install libpq-dev
 #psycopg2 = "*"
@@ -128,6 +133,8 @@ pytest = { version = "*" }
 pytest-flask = "*"
 pytest-cov = "*"
 unittest2 = { version = "*" }
+#   pyspark-test = "*"
+#   chispa = "*"
 coverage= "*"
 bumpversion = "*"
 colorama = "*"
