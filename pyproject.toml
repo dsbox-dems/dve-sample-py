@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "dve_sample_py"
 version = "2.0.0a1"
-description = "Python Template Project with Docker API Service and Jypyter Support"
+description = "Python Template Project with Podman and Jypyter Support"
 authors = ["Datalab DEMS <datalab@unimib.it>"]
 license = "GNU General Public License v3.0"
 readme = "README.rst"
@@ -52,13 +52,17 @@ click = '*'
 # google-auth = "*"
 # google-auth-oauthlib = "*"
 # google-pasta = "*"
-#   graphframes = '*'
+
+# graphframes = '*'
 # graphviz = '*'
+
 # grpcio = "*"
 # gym = "^0.18.3"
 # h5py = "*"
 # idna = "*"
+
 # igraph = '*'
+
 # imageio = "*"
 # joblib = "*"
 # kiwisolver = "*"
@@ -68,7 +72,9 @@ mysql-connector-python = "*"
 # requires: sudo apt install default-libmysqlclient-dev
 mysqlclient = "*"
 
+# neo4j = "*"
 # networkx = "*"
+
 numpy = "*"
 oauthlib = "*"
 # opencv-python = "^4.5.2.54"
@@ -133,6 +139,7 @@ pytest = { version = "*" }
 pytest-flask = "*"
 pytest-cov = "*"
 unittest2 = { version = "*" }
+#   pytest-spark = "*"
 #   pyspark-test = "*"
 #   chispa = "*"
 coverage= "*"

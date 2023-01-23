@@ -3,8 +3,7 @@ from textwrap import dedent
 import re
 from datetime import datetime
 
-from dve.common.util.time import timer
-
+from vce.common.util.time import timer
 
 import logging
 

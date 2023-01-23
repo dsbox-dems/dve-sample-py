@@ -5,7 +5,7 @@ import glob
 import sys
 from tempfile import NamedTemporaryFile
 
-import dve.common.util.time as tm
+import vce.common.util.time as tm
 
 from dve.config.data import DATA_TEMP
 

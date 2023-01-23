@@ -5,8 +5,7 @@ import sys
 import time
 import random
 
-from dve.common.util.trace import trace_logger
-
+from vce.common.util.trace import trace_logger
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 

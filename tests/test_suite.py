@@ -1,6 +1,6 @@
 import unittest
 
-from dve_tests.common.test_common import CommonTest
+from vce_tests.common.test_common import CommonTest
 from dve_tests.config import test_config
 from dve_tests.cli.test_cli import CliTest
 from dve_tests.resources import test_resources

@@ -10,8 +10,8 @@ from collections import namedtuple
 # import dve.cli as cli
 import dve.scripts.runner as runner
 
-import dve.common.util.time as tm
-import dve.common.util.file as fu
+import vce.common.util.time as tm
+import vce.common.util.file as fu
 
 from dve.config.data import DATA_WORK
 
@@ -45,7 +45,6 @@ def to_parms(parms):
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 X_SCRIPT = "finbert_x.py"
-
 
 DD_PARMS = to_parms(
     [

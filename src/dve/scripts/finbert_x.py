@@ -17,8 +17,7 @@ import sys
 from collections import namedtuple
 import argparse
 from datetime import datetime
-from dve.common.util.trace import trace_logger
-
+from vce.common.util.trace import trace_logger
 
 # In[2]:
 
@@ -39,7 +38,6 @@ def getLogger():
 log = getLogger()
 
 trc = trace_logger("fbx")
-
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -77,7 +75,6 @@ df = None
 sentence = None
 dat = None
 
-
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[4]:
@@ -110,7 +107,6 @@ def argparser(options=None):
     # """Parent Argument Parser."""
     # import dve.scripts.runner as auto_runner
     # parser = auto_runner.argparser(options)
-
     """Base Argument Parser."""
     parser = argparse.ArgumentParser(add_help=False, conflict_handler="resolve")
 
@@ -302,7 +298,6 @@ def load_data(dd_conf=dd_conf):
 
 # In[8]:
 
-
 InputData = namedtuple("InputData", ["df", "id", "sentence", "dat"])
 
 
@@ -475,7 +470,6 @@ def collect_data(dd_conf=dd_conf):
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 # In[13]:
 
 
@@ -552,7 +546,6 @@ def main(argv=None):
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 # In[14]:
 
