@@ -17,7 +17,8 @@ include-package-data = true
 res = [ "resources/*", "resources/*/*" ]
 
 [tool.poetry.scripts]
-dve = "dve.cli:main"
+main = "dve.cli:main"
+demo = "vce.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"

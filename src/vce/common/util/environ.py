@@ -1,6 +1,36 @@
 # coding: utf-8
 import contextlib
 import os
+from typing import Any, Optional
+
+
+def env_get(name: str) -> Optional[str]:
+    return os.getenv(name)
+
+
+def env_str(name: str, value: str) -> str:
+    return os.getenv(name, value)
+
+
+def env_val(name: str, value: Any) -> Any:
+    val = env_get(name)
+    return val if val is not None else value
+
+
+def env_int(name: str, value: int) -> int:
+    val = env_get(name)
+    return int(val) if val is not None else value
+
+
+def env_float(name: str, value: float) -> float:
+    val = env_get(name)
+    return float(val) if val is not None else value
+
+
+def env_bool(name: str, value: bool = False) -> bool:
+    val = env_get(name)
+    trues = {"True", "true", "yes", "y", "1"}
+    return val in trues if val is not None else value
 
 
 @contextlib.contextmanager

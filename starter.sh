@@ -89,14 +89,15 @@ main() {
             ;;
     esac
 
-    : ${E_EXEC_NAME:="runner.sh"}
+    : ${E_EXEC_VENV:="poetry run"}
+    : ${E_EXEC_NAME:="main"}
     : ${E_EXEC_ARGS:=($@)}
 
     if [ -z "$E_EXEC_FILE" ]; then
         if [ -f "$E_EXEC_DIR/$E_EXEC_NAME" ]; then
-            E_EXEC_FILE="$E_EXEC_DIR/$E_EXEC_NAME"
+            E_EXEC_FILE="$E_EXEC_VENV $E_EXEC_DIR/$E_EXEC_NAME"
         else    
-            E_EXEC_FILE="$E_EXEC_NAME"
+            E_EXEC_FILE="$E_EXEC_VENV $E_EXEC_NAME"
         fi
     fi
 

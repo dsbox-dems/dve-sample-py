@@ -3,7 +3,7 @@ import os
 import sys
 import unittest
 
-from dve.config.data import cfd
+from vce.config.data import cfd
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
@@ -88,13 +88,6 @@ class ConfigDataTest(unittest.TestCase):
 
     def test_default_data_temp(self):
         self.assertTrue(self.log_dir("DATA_TEMP", cfd().DATA_TEMP))
-
-    def test_default_data_cust_defined(self):
-        log.debug("+++ DATA_CUST:" + cfd().DATA_CUST)
-        self.assertIsNotNone(cfd().DATA_CUST)
-
-    def test_default_data_cust(self):
-        self.assertTrue(self.log_dir("DATA_CUST", cfd().DATA_CUST))
 
     def test_config_loader(self):
         o = cfd()

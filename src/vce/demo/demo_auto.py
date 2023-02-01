@@ -2,17 +2,17 @@ import sys
 import logging
 
 from vce.cli.ctl import std_main
-from dve.cli.args import get_auto_argparser
+from vce.cli.args import get_auto_argparser
 
 import vce.cli.parms as sp
 
-from dve.config.data import cfd
+from vce.config.data import cfd
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # ---------------------------------------------------------------
 
-import dve.scripts.dummy.dummy_script as dummy_script
+import vce.demo.dummy.demo_script as dummy_script
 
 # ---------------------------------------------------------------
 
@@ -72,9 +72,9 @@ def exec(xargs, argv=None, *args, **kwargs):
         name = "auto"
 
     if name == "auto":
-        RC = auto_exec(name, args, argv, **kwargs)
+        RC = auto_exec(name, xargs, argv, *args, **kwargs)
     else:
-        RC = auto_dispatch(name, args, argv, **kwargs)
+        RC = auto_dispatch(name, xargs, argv, *args, **kwargs)
     return RC
 
 

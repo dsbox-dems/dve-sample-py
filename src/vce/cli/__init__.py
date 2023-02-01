@@ -1,7 +1,7 @@
 import logging
 
 from vce.cli.ctl import std_main
-from dve.cli.args import get_main_argparser
+from vce.cli.args import get_main_argparser
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -20,10 +20,10 @@ def exec(xargs, argv=None, *args, **kwargs):
 
     entry = xargs.exec
     if entry == "_":
-        entry = "main"
+        entry = "demo"
 
-    if entry == "main":
-        import dve.scripts.runner as runner
+    if entry == "demo":
+        import vce.demo.demo_runner as runner
 
         RC = runner.main(argv, *args, **kwargs)
     else:
@@ -31,12 +31,11 @@ def exec(xargs, argv=None, *args, **kwargs):
     return RC
 
 
-@std_main(log=log, debug=True)
+@std_main(debug=True)
 def main(argv=None, *args, **kwargs):
-    log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
+    """Process command line arguments."""
     xargs = parse_args(argv, *args, **kwargs)
-    RC = exec(xargs, argv, *args, **kwargs)
-    log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
+    RC = exec(xargs, argv=argv, *args, **kwargs)
     return RC
 
 

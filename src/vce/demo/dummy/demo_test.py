@@ -3,9 +3,10 @@
 
 # In[1]:
 
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+# from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import numpy as np
-import torch
+
+# import torch
 import math
 import pandas as pd
 import time
@@ -21,8 +22,7 @@ from vce.common.util.trace import trace_logger
 
 # In[2]:
 
-from dve.config.data import DATA_HOME
-from dve.config.data import DATA_TEMP
+from vce.config.data import cfd
 
 import logging
 
@@ -232,8 +232,8 @@ def config_data():
     dd_slots = slots_num()
     dd_group = args.group
     dd_filename = args.filename
-    dd_path = f"{DATA_HOME}/{dd_group}"
-    dd_temp = f"{DATA_TEMP}/{__name__}/{dd_jobid}/{dd_slots}"
+    dd_path = f"{cfd().DATA_HOME}/{dd_group}"
+    dd_temp = f"{cfd().DATA_TEMP}/{__name__}/{dd_jobid}/{dd_slots}"
     dd_indir = "Output R"
     dd_outdir = "Output Python"
 
@@ -516,7 +516,7 @@ def run_collector():
     return RC
 
 
-def main(argv=None):
+def main(argv=None, **kwargs):
     global args
 
     print(argv)
