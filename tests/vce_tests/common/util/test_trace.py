@@ -32,7 +32,6 @@ class TraceUtilTest(unittest.TestCase):
         trc = trace_logger("test-trace", item_samples=1)
 
         with trc:
-
             self.sleep()
             trc.update(1)
 
@@ -40,13 +39,11 @@ class TraceUtilTest(unittest.TestCase):
             trc.update(1)
 
             with trc:
-
                 for _ in range(3):
                     self.sleep()
                     trc.update(1)
 
                 with trc:
-
                     for _ in range(5):
                         self.sleep()
                         trc.update(1)
@@ -55,7 +52,6 @@ class TraceUtilTest(unittest.TestCase):
             trc.update(1)
 
             with trc:
-
                 for _ in range(2):
                     self.sleep()
                     trc.update(1)
@@ -65,28 +61,24 @@ class TraceUtilTest(unittest.TestCase):
 
         self.assertTrue(True)
 
-    @unittest.skip
+    @unittest.skip("trc.update not ready yet")
     def test_trace_updates(self):
         log.debug("+++ test trace updates:" + str(datetime.datetime.now()))
 
         trc = trace_logger("test-trace", item_samples=1500)
 
         with trc:
-
             with trc:
-
                 trc.update(1000)
                 trc.update(1000)
 
                 with trc:
-
                     for _ in range(50000):
                         trc.update()
 
                 trc.update(10)
 
                 with trc:
-
                     trc.all()
 
                     for _ in range(20):
@@ -96,28 +88,24 @@ class TraceUtilTest(unittest.TestCase):
 
         self.assertTrue(True)
 
-    @unittest.skip
+    @unittest.skip("trc.update not ready yet")
     def test_trace_summaries(self):
         log.debug("+++ test trace summaries:" + str(datetime.datetime.now()))
 
         trc = trace_logger("test-trace")
 
         with trc:
-
             with trc:
-
                 trc.update(1000)
                 trc.update(1000)
 
                 with trc:
-
                     for _ in range(50000):
                         trc.update()
 
                 trc.update(10)
 
                 with trc:
-
                     trc.all()
 
                     for _ in range(20):
@@ -127,25 +115,22 @@ class TraceUtilTest(unittest.TestCase):
 
         self.assertTrue(True)
 
-    @unittest.skip
+    @unittest.skip("trc.ctx: not implemented")
     def test_trace_context(self):
         log.debug("+++ test trace context:" + str(datetime.datetime.now()))
 
         trc = trace_logger("test-trace", item_samples=1500)
 
         with trc:
-
             trc.ctx()["A"] = "a1"
 
             with trc:
-
                 trc.ctx()["B"] = "b1"
 
                 trc.update(1000)
                 trc.update(1000)
 
                 with trc:
-
                     trc.ctx()["C"] = "c1"
 
                     for _ in range(5000):
@@ -154,7 +139,6 @@ class TraceUtilTest(unittest.TestCase):
                 trc.update(10)
 
                 with trc:
-
                     trc.all()
 
                     trc.ctx()["C"] = "c2"
@@ -166,25 +150,22 @@ class TraceUtilTest(unittest.TestCase):
 
         self.assertTrue(True)
 
-    @unittest.skip
+    @unittest.skip("trc.update not ready yet")
     def test_trace_verbose(self):
         log.debug("+++ test trace verbose:" + str(datetime.datetime.now()))
 
         trc = trace_logger("test-trace", item_samples=1500, verbose=1)
 
         with trc:
-
             trc.ctx()["A"] = "a1"
 
             with trc:
-
                 trc.ctx()["B"] = "b1"
 
                 trc.update(1000)
                 trc.update(1000)
 
                 with trc:
-
                     trc.ctx()["C"] = "c1"
 
                     for _ in range(5000):
@@ -193,7 +174,6 @@ class TraceUtilTest(unittest.TestCase):
                 trc.update(10)
 
                 with trc:
-
                     trc.all()
 
                     trc.ctx()["C"] = "c2"

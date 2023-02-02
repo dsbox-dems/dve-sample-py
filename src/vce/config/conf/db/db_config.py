@@ -1,5 +1,5 @@
-from dve.config.conf.db import DbConfig
-from dve.config.conf import AppConfig, AppConfigEx
+from vce.config.conf.db import DbConfig
+from vce.config.conf import AppConfig, AppConfigEx
 
 DB_TYPE_GENERIC = "generic"
 DB_TYPE_MYSQL = "mysql"

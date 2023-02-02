@@ -3,13 +3,12 @@ import json
 from typing import Any
 from abc import ABC, abstractmethod
 
-from dve.config.conf.db import DbConfig
-from dve.config import data
+from vce.config.conf.db import DbConfig
+from vce.config.data import cfd
 
 
 class AppConfigConsts(object):
-
-    CONFIG_F_ROOT = data.DATA_WORK
+    CONFIG_F_ROOT = cfd().DATA_WORK
     CONFIG_F_MAIN = "./config.yaml"
 
     CONFIG_S_MAIN = "main"
@@ -27,7 +26,6 @@ class AppConfigConsts(object):
 
 
 class AppConfig(ABC):
-
     cfg_type = AppConfigConsts.CFG_TYPE_GENERIC
 
     def __init__(self, name: str):
@@ -84,13 +82,13 @@ class AppConfigEx(AppConfig):
 class AppConfigs(object):
     @staticmethod
     def unload_all():
-        from dve.config.conf.app_config import unload_all_configs
+        from vce.config.conf.app_config import unload_all_configs
 
         unload_all_configs()
 
     @staticmethod
     def get(what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
-        from dve.config.conf.app_config import get_config_store
+        from vce.config.conf.app_config import get_config_store
 
         store = get_config_store()
         result = store.get_config(what)

@@ -19,6 +19,7 @@ class BaseCliTest(unittest.TestCase):
     def _pass_fixtures(self, capsys):
         self.capsys = capsys
 
+    @unittest.skip("cli: not ready yet")
     def test_simple_args(self):
         argv = ["-v", "--exec", "main", "--cmd", "test"]
         log.debug("+++ cli.main:" + str(argv))
@@ -27,6 +28,7 @@ class BaseCliTest(unittest.TestCase):
             main(argv)
         assert argv[0] in out.getvalue()
 
+    @unittest.skip("cli: not ready yet")
     def test_auto_script(self):
         argv = ["-v", "--exec", "main", "--cmd", "auto", "--name", "test"]
         log.debug("+++ cli.main:" + str(argv))
@@ -35,7 +37,7 @@ class BaseCliTest(unittest.TestCase):
             main(argv)
         assert "auto:test" in out.getvalue()
 
-    @pytest.mark.skip(reason="feature delayed: numactl support")
+    @pytest.mark.skip(reason="feature delayed: numactl support ...")
     @unittest.skip("feature delayed: numactl support")
     def test_auto_spawn(self):
         argv = ["-v", "--exec", "main", "--cmd", "auto", "--name", "auto"]

@@ -103,9 +103,6 @@ def get_argv(argv=None):
 
 
 def argparser(options=None):
-    # """Parent Argument Parser."""
-    # import dve.scripts.runner as auto_runner
-    # parser = auto_runner.argparser(options)
     """Base Argument Parser."""
     parser = argparse.ArgumentParser(add_help=False, conflict_handler="resolve")
 
@@ -437,7 +434,6 @@ def process_data(in_data=in_data, model=model):
 
 
 def save_data(out_data=out_data, dd_conf=dd_conf):
-
     dd_outfile = dd_conf.dd_outfile
     ensure_path(dd_outfile)
 

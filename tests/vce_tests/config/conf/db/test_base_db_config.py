@@ -2,7 +2,7 @@ import logging
 import sys
 import unittest
 
-from dve.config import conf
+from vce.config import conf
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 

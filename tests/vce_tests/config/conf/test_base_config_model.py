@@ -2,7 +2,7 @@ import logging
 import sys
 import unittest
 
-from dve.config import conf
+from vce.config import conf
 from vce.common.util import environ
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
@@ -83,7 +83,6 @@ class ConfigModelTest(unittest.TestCase):
             X_DB_DEMO_PASSWORD=exp["password"],
             X_DB_DEMO_DATABASE=exp["database"],
         ):
-
             cfg = conf.get_config()
             act = cfg.get_value("data/db/demo_my")
             log.debug(f"+++ CONFIG DB(e) (demo.my): {cfg.dump_object(act)}")
@@ -108,7 +107,6 @@ class ConfigModelTest(unittest.TestCase):
             X_DB_DEMO_PASSWORD=exp["password"],
             X_DB_DEMO_DATABASE=exp["database"],
         ):
-
             cfg = conf.get_config()
             act = cfg.get_value("data/db/demo_pg")
             log.debug(f"+++ CONFIG DB(e) (demo.pg): {cfg.dump_object(act)}")

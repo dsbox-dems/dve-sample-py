@@ -2,8 +2,8 @@ import os.path
 from typing import Any
 from piny import YamlLoader
 
-from dve.config.conf.db import DbConfig
-from dve.config.conf import AppConfigConsts, AppConfig, AppConfigEx
+from vce.config.conf.db import DbConfig
+from vce.config.conf import AppConfigConsts, AppConfig, AppConfigEx
 
 
 class AbsAppConfig(AppConfigEx):
@@ -17,7 +17,7 @@ class AbsAppConfig(AppConfigEx):
         return result
 
     def db(self, db_name: str) -> DbConfig:
-        from dve.config.conf.db.db_config import DbConfigFactory
+        from vce.config.conf.db.db_config import DbConfigFactory
 
         result = DbConfigFactory.get_instance(self, db_name)
         return result
@@ -80,7 +80,6 @@ class AbsAppConfig(AppConfigEx):
 
 
 class ErrAbsConfig(AbsAppConfig):
-
     cfg_type = AppConfigConsts.CFG_TYPE_ERROR
 
     def __init__(self, name: str, ex: Exception):
@@ -89,7 +88,6 @@ class ErrAbsConfig(AbsAppConfig):
 
 
 class YamlAppConfig(AbsAppConfig):
-
     cfg_type = AppConfigConsts.CFG_TYPE_YAML
 
     def __init__(self, name: str, conf: Any):
@@ -142,7 +140,6 @@ class AppConfigStore(object):
             raise ex
 
     def get_config(self, what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
-
         if what in self._config:
             handle = self._config[what]
             result = handle["data"]
