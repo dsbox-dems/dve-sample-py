@@ -65,6 +65,25 @@ class AbsAppConfig(AppConfigEx):
         result = int(obj)
         return result
 
+    def get_float(self, key: str, defValue: float = 0) -> float:
+        obj = None
+        try:
+            obj = self.get_value(key)
+        except ValueError:
+            return defValue
+        result = float(obj)
+        return result
+
+    def get_bool(self, key: str, defValue: bool = False) -> bool:
+        obj = None
+        try:
+            obj = self.get_value(key)
+        except ValueError:
+            return defValue
+        s = str(obj).lower()
+        result = s in {"y", "yes", "t", "true", "1"}
+        return result
+
     def get_str(self, key: str, defValue: str = "") -> str:
         obj = None
         try:

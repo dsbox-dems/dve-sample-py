@@ -8,8 +8,7 @@ def conf_dir(env_key, default_value):
 
 
 @dataclass
-class DataConfig(vcd.DataConfigDefaults):
-
+class DataConfig(vcd.DataConfig):
     DATA_CUST = conf_dir("PC_DATA_CUST", "./data/ext/cust")
 
     # DATA_WORK = conf_dir("PC_DATA_HOME", "./.")

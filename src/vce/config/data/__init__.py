@@ -19,8 +19,7 @@ def conf_dir(env_key, default_value):
 
 
 @dataclass
-class DataConfigDefaults(object):
-
+class DataConfig(object):
     DATA_WORK = conf_dir("PC_DATA_HOME", "./.")
 
     DATA_LOGS = conf_dir("PC_DATA_HOME", "./logs")
@@ -37,8 +36,8 @@ class DataConfigDefaults(object):
     DATA_DESK = conf_dir("PC_DATA_DESK", "~/Desktop")
 
 
-_cfd = DataConfigDefaults()
+_cfd = DataConfig()
 
 
-def cfd() -> DataConfigDefaults:
+def cfd() -> DataConfig:
     return _cfd

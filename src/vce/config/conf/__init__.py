@@ -52,7 +52,15 @@ class AppConfig(ABC):
         pass
 
     @abstractmethod
+    def get_bool(self, key: str, defValue: bool = False) -> bool:
+        pass
+
+    @abstractmethod
     def get_int(self, key: str, defValue: int = 0) -> int:
+        pass
+
+    @abstractmethod
+    def get_float(self, key: str, defValue: float = 0.0) -> float:
         pass
 
     @abstractmethod
