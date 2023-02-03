@@ -73,7 +73,7 @@ check: init
 	@echo "+++ Running Mypy..."; $(POETRY) run mypy $(SRC) $(TESTS) || true
 	@echo "+++ Running Flake8..."; $(POETRY) run pflake8  || true # This is not a typo
 	@echo "+++ Running Pylint..."; $(POETRY) run pylint $(SRC) || true
-	@echo "+++ }}} CHECK \\\\\\\\\";
+	@echo "+++ }}} CHECK \\\\\\\\\ ";
 
 docs: # @HELP/base make: "man,readme,vignettes"  targets
 docs: man readme vignettes
@@ -125,12 +125,13 @@ uninstall:
 	${RSCRIPT} -e 'devtools::uninstall()'
 
 clean: # @HELP/base clean all files in .gitignore
-	git clean -Xdf
+	@echo "+++ {{{ CLEAN /////////";
+	@echo "+++ Running  py3clean..."; $(POETRY) run py3clean -v $(SRC) $(TESTS) || true
+	@echo "+++ Cleaning pytest cache..."; [ -d .pytest_cache ] && rm -rf .pytest_cache || true
+	@echo "+++ NOT Cleaning build, dist ..."; echo "rm -rf ./build ./dist"  || true
+	@echo "+++ NOT Running git clean ..."; echo "git clean -Xdf"  || true
+	@echo "+++ }}} CLEAN \\\\\\\\\ ";
 
-# find . -name '*.pyc' -delete
-# find . -name '__pycache__' -delete
-# find . -name 'poetry.lock' -delete
-# find . -name 'Pipefile.lock' -delete
 
 
 init: # @HELP/base initialize local (temp,logs) directories

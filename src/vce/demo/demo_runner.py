@@ -2,7 +2,7 @@ import sys
 import logging
 
 from vce.cli.ctl import std_main
-from vce.cli.args import get_runner_argparser
+from vce.cli.xargs import get_runner_argparser
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -16,7 +16,6 @@ def parse_args(argv=None, *args, **kwargs):
 
 
 def exec(xargs, argv=None, *args, **kwargs):
-
     cmd = xargs.cmd
     if cmd == "_":
         cmd = "auto"

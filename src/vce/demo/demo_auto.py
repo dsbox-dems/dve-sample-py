@@ -2,7 +2,7 @@ import sys
 import logging
 
 from vce.cli.ctl import std_main
-from vce.cli.args import get_auto_argparser
+from vce.cli.xargs import get_auto_argparser
 
 import vce.cli.parms as sp
 
@@ -13,25 +13,38 @@ from vce.config.data import cfd
 # ---------------------------------------------------------------
 
 import vce.demo.dummy.demo_script as dummy_script
+import vce.demo.dummy.demo_test as dummy_test
 
 # ---------------------------------------------------------------
 
 JOB_SPECS = sp.init_specs(
     [
         sp.spec(
-            "job-001",
-            "group-a",
+            "demo-01",
+            "group-demo",
             dummy_script.main,
-            sp.parm(p1=1.0, p2="abc", p3=[1, 2, 3]),
+            sp.parm(p1=1.0, p2="abc", p3=[7, 8, 9]),
+        ),
+        sp.spec(
+            "test-00",
+            "test-demo",
+            dummy_test.main,
+            sp.parm(p1=0.0, p2="xyz", p3=[0, 0, 0]),
         ),
         sp.spec(
             "test-01",
-            "test-auto",
-            dummy_script.main,
-            sp.parm(p1=1.0, p2="abc", p3=[1, 2, 3]),
+            "test-demo",
+            dummy_test.main,
+            sp.parm(p1=-1.0, p2="xyz", p3=[1, 2, 3]),
+        ),
+        sp.spec(
+            "test-02",
+            "test-demo",
+            dummy_test.main,
+            sp.parm(p1=-2.0, p2="xyz", p3=[4, 5, 6]),
         ),
     ],
-    auto="job-001",
+    auto="test-00",
 )
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +79,6 @@ def parse_args(argv=None, *args, **kwargs):
 
 
 def exec(xargs, argv=None, *args, **kwargs):
-
     name = xargs.name
     if name == "_":
         name = "auto"

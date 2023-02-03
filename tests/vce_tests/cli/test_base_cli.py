@@ -6,6 +6,8 @@ import unittest
 from contextlib import redirect_stdout
 
 from vce.cli import main
+from vce.config import conf
+from vce.common.util import environ
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
@@ -19,28 +21,43 @@ class BaseCliTest(unittest.TestCase):
     def _pass_fixtures(self, capsys):
         self.capsys = capsys
 
-    @unittest.skip("cli: not ready yet")
-    def test_simple_args(self):
-        argv = ["-v", "--exec", "main", "--cmd", "test"]
+    def test_runner_args(self):
+        argv = ["-v", "--exec", "demo", "--cmd", "test"]
         log.debug("+++ cli.main:" + str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
         assert argv[0] in out.getvalue()
 
-    @unittest.skip("cli: not ready yet")
-    def test_auto_script(self):
-        argv = ["-v", "--exec", "main", "--cmd", "auto", "--name", "test"]
+    def x_test_auto_default(self):
+        argv = []
         log.debug("+++ cli.main:" + str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
-        assert "auto:test" in out.getvalue()
+        assert "auto:test-00" in out.getvalue()
 
-    @pytest.mark.skip(reason="feature delayed: numactl support ...")
-    @unittest.skip("feature delayed: numactl support")
-    def test_auto_spawn(self):
-        argv = ["-v", "--exec", "main", "--cmd", "auto", "--name", "auto"]
+    def x_test_auto_environ(self):
+        with environ.modified_environ(
+            X_E_AUTO="auto:test-01",
+        ):
+            argv = []
+            log.debug("+++ cli.main:" + str(argv))
+            out = io.StringIO()
+            with redirect_stdout(out):
+                main(argv)
+                assert "auto:test-01" in out.getvalue()
+
+    def x_test_auto_script(self):
+        argv = ["--name", "test-02"]
+        log.debug("+++ cli.main:" + str(argv))
+        out = io.StringIO()
+        with redirect_stdout(out):
+            main(argv)
+        assert "auto:test-02" in out.getvalue()
+
+    def x_test_auto_spawn(self):
+        argv = ["--name", "demo-01"]
         log.debug("+++ cli.main:" + str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
@@ -48,11 +65,11 @@ class BaseCliTest(unittest.TestCase):
         assert "auto:spawn" in out.getvalue()
 
     def setUp(self):
-        # self.conf_dir = os.environ['CONFIG_DIR']
-        log = logging.getLogger(__name__)
+        conf.AppConfigs.unload_all()
         pass
 
     def tearDown(self):
+        conf.AppConfigs.unload_all()
         pass
 
 

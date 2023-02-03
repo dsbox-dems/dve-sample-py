@@ -218,7 +218,7 @@ class TraceFrame:
             python tests/vce_tests/common/util/test_trace.py |& \
             grep -v '__main__'  | \
             cut -f2- | \
-            grep '^\{' ; \
+            grep '^\''{' ; \
             echo ' {} ]' \
         ) | \
         jq '.'
@@ -235,7 +235,7 @@ class TraceFrame:
             grep -v '__main__'  | \
             grep '"tag": {"s": "._3_", "w": "+"}' | \
             cut -f2,4,8,9,10 | \
-            grep '^\{' ; \
+            grep '^\''{' ; \
             echo ' {} ]' \
         ) | \
         jq '.'

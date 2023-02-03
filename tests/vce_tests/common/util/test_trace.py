@@ -5,6 +5,8 @@ import sys
 import time
 import random
 
+import vce.common.util.environ as en
+
 from vce.common.util.trace import trace_logger
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
@@ -15,7 +17,9 @@ log = logging.getLogger(__name__)
 class TraceUtilTest(unittest.TestCase):
     warnings_no = 0
 
-    DELAY_DEFAULT = 0.1
+    # DELAY_DEFAULT = 0.1
+    X_E_TEST_DELAY_DEFAULT = "X_E_TEST_DELAY_DEFAULT"
+    DELAY_DEFAULT = en.env_float(X_E_TEST_DELAY_DEFAULT, 0.0)
 
     def rand(self, value):
         return (random.random() + 0.5) * value
@@ -25,7 +29,6 @@ class TraceUtilTest(unittest.TestCase):
             d = self.rand(delay)
             time.sleep(d)
 
-    # @unittest.skip
     def test_trace_callee(self):
         log.debug("+++ test trace callee:" + str(datetime.datetime.now()))
 
@@ -61,7 +64,6 @@ class TraceUtilTest(unittest.TestCase):
 
         self.assertTrue(True)
 
-    @unittest.skip("trc.update not ready yet")
     def test_trace_updates(self):
         log.debug("+++ test trace updates:" + str(datetime.datetime.now()))
 
@@ -88,7 +90,6 @@ class TraceUtilTest(unittest.TestCase):
 
         self.assertTrue(True)
 
-    @unittest.skip("trc.update not ready yet")
     def test_trace_summaries(self):
         log.debug("+++ test trace summaries:" + str(datetime.datetime.now()))
 
@@ -115,7 +116,6 @@ class TraceUtilTest(unittest.TestCase):
 
         self.assertTrue(True)
 
-    @unittest.skip("trc.ctx: not implemented")
     def test_trace_context(self):
         log.debug("+++ test trace context:" + str(datetime.datetime.now()))
 
@@ -150,7 +150,6 @@ class TraceUtilTest(unittest.TestCase):
 
         self.assertTrue(True)
 
-    @unittest.skip("trc.update not ready yet")
     def test_trace_verbose(self):
         log.debug("+++ test trace verbose:" + str(datetime.datetime.now()))
 

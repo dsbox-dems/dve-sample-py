@@ -7,8 +7,8 @@ from shlex import join
 from textwrap import dedent
 from collections import namedtuple
 
-import vce.cli as cli
-from vce.cli import std_main, std_unknown
+from vce.cli.ctl import std_main
+from vce.cli.xargs import get_numa_argparser
 
 import vce.common.util.time as tm
 import vce.common.util.file as fu
@@ -306,22 +306,10 @@ def exec_test(name, args, argv=None, **kwargs):
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-def argparser(options=None, **kwargs):
-    """Base Argument Parser."""
-    parser = cli.argparser(options)
-
-    parser.add_argument("-n", "--name", type=str, help="stage execute", default="_")
-    return parser
-
-
-def parse_args(argv=None, **kwargs):
-    """Process command line arguments."""
-    if not argv:
-        argv = sys.argv[1:]
-
-    parser = argparser(**kwargs)
-    args, unknown = parser.parse_known_args(argv)
-    return std_unknown(args, unknown, **kwargs)
+def parse_args(argv=None, *args, **kwargs):
+    parser = get_numa_argparser()
+    result = parser.parse_args(argv, *args, **kwargs)
+    return result
 
 
 def exec(args, argv=None, **kwargs):

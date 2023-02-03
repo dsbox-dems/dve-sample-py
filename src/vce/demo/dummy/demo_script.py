@@ -3,46 +3,34 @@
 
 # In[1]:
 
-import numpy as np
 import pandas as pd
 
-import time
 import os
 import os.path
-import re
-import glob
 import sys
 from collections import namedtuple
-import argparse
 from datetime import datetime
 from typing import Optional
 
 # In[2]:
 
+from vce.cli.ctl import std_main
+from vce.cli.xargs import get_demo_argparser
+
 from vce.common.util.trace import trace_logger
 from vce.config.data import cfd
-from vce.cli import std_main, std_unknown
 
 # In[3]:
 
 import logging
 
-
-def getLogger():
-    logging.basicConfig(level=logging.DEBUG)  # TODO: config/verbose
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    # logget.setLevel(logging.INFO)
-    return logger
-
-
-log = getLogger()
-
-trc = trace_logger("fbx")
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(__name__)
+trc = trace_logger("dmy")
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# In[3]:
+# In[4]:
 
 RC = 0
 
@@ -66,17 +54,11 @@ ARGV_DEFAULT = [
 ARGV_NOTEBOOK = ARGV_DEFAULT
 
 # -----
-
 args = None
-in_data = None
-out_data = None
-df = None
-sentence = None
-dat = None
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# In[4]:
+# In[5]:
 
 
 def in_notebook():
@@ -92,7 +74,7 @@ def in_notebook():
     return True
 
 
-def get_argv(argv=None):
+def get_argv(argv: Optional[list[str]] = None) -> list[str]:
     if argv is not None:
         return argv
     if in_notebook():
@@ -102,77 +84,13 @@ def get_argv(argv=None):
     return ARGV_DEFAULT
 
 
-def argparser(options=None):
-    """Base Argument Parser."""
-    parser = argparse.ArgumentParser(add_help=False, conflict_handler="resolve")
-
-    parser.add_argument("-j", "--jobname", type=str, help="job name", default="_")
-    parser.add_argument("-g", "--group", type=str, help="job group", default="_")
-    parser.add_argument(
-        "-f", "--filename", type=str, help="data file name", default="_"
-    )
-    return parser
-
-
-def parse_args(argv=None):
-    """Process command line arguments."""
-    argv = get_argv(argv)
-    global args
-    parser = argparser()
-    # args = parser.parse_args(argv)
-    args, unknown = parser.parse_known_args(argv)
-    return std_unknown(args, unknown)
+def parse_args(argv=None, *args, **kwargs):
+    parser = get_demo_argparser()
+    result = parser.parse_args(argv, *args, **kwargs)
+    return result
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-def is_core_parallel():
-    slots = os.getenv("X_CORE_SLOTS")
-    if not slots:
-        return False
-    return int(slots) > 0
-
-
-def is_core_simple():
-    return not is_core_parallel()
-
-
-def is_core_mode(mode):
-    if is_core_simple:
-        return False
-    env_mode = os.getenv("X_CORE_MODE")
-    if not env_mode:
-        return False
-    return int(env_mode) == mode
-
-
-def is_core_worker():
-    if is_core_simple:
-        return True
-    return is_core_mode(0)
-
-
-def is_core_distributor():
-    return is_core_mode(1)
-
-
-def is_core_collector():
-    return is_core_mode(2)
-
-
-def slot_idx():
-    slot = os.getenv("X_CORE_SLOT")
-    if not slot:
-        return 0
-    return int(slot)
-
-
-def slots_num():
-    slots = os.getenv("X_CORE_SLOTS")
-    if not slots:
-        return 1
-    return int(slots)
 
 
 def jobid():
@@ -184,22 +102,24 @@ def jobid():
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# In[5]:
+# In[6]:
 
-Model = namedtuple("Model", ["finbert", "tokenizer"])
+Model = namedtuple("Model", ["spec", "parms"])
+
+model: Optional[Model] = None
 
 
 def retrieve_model():
     global model
-    finbert = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
-    tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
-    model = Model(finbert, tokenizer)
+    spec = dict()
+    parms = dict()
+    model = Model(spec, parms)
     return model
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-# In[6]:
+# In[7]:
 
 DataConf = namedtuple(
     "DataConf",
@@ -235,11 +155,11 @@ def arg_filename(args):
 
 
 def arg_slotid(args):
-    return slot_idx()
+    return 0
 
 
 def arg_slotnum(args):
-    return slots_num()
+    return 1
 
 
 def config_data() -> DataConf:
@@ -252,30 +172,12 @@ def config_data() -> DataConf:
     dd_filename = arg_filename(args)
     dd_path = f"{cfd().DATA_HOME}/{dd_group}"
     dd_temp = f"{cfd().DATA_TEMP}/{__name__}/{dd_jobid}/{dd_slots}"
-    dd_indir = "Output R"
-    dd_outdir = "Output Python"
+    dd_indir = "in"
+    dd_outdir = "out"
 
-    if is_core_parallel():
-        if is_core_collector():
-            dd_part = f"{dd_temp}/{{dd_slot}}/"
-            dd_infile = f"{dd_path}/{dd_indir}/{dd_filename}"
-            dd_outfile = f"{dd_part}/{dd_indir}/{dd_filename}"
-        elif is_core_worker():
-            dd_part = f"{dd_temp}/{dd_slot}/"
-            dd_infile = f"{dd_part}/{dd_indir}/{dd_filename}"
-            dd_outfile = f"{dd_temp}/{dd_outdir}/{dd_filename}"
-        elif is_core_collector():
-            dd_part = f"{dd_temp}/{{dd_slot}}/"
-            dd_infile = f"{dd_part}/{dd_outdir}/{dd_filename}"
-            dd_outfile = f"{dd_path}/{dd_outdir}/{dd_filename}"
-        else:
-            raise ValueError("is_core_parallel")
-    elif is_core_simple():
-        dd_part = f"{dd_temp}/_/"
-        dd_infile = f"{dd_path}/{dd_indir}/{dd_filename}"
-        dd_outfile = f"{dd_path}/{dd_outdir}/{dd_filename}"
-    else:
-        raise ValueError("is_core_what")
+    dd_part = f"{dd_temp}/{{dd_slot}}/"
+    dd_infile = f"{dd_path}/{dd_indir}/{dd_filename}"
+    dd_outfile = f"{dd_part}/{dd_indir}/{dd_filename}"
 
     dd_conf = DataConf(
         dd_jobid=dd_jobid,
@@ -306,8 +208,9 @@ def ensure_path(filename):
     return filename
 
 
-def load_data(dd_conf=dd_conf):
+def load_data(dd_conf: Optional[DataConf] = dd_conf):
     global df
+    assert dd_conf is not None
     dd_infile = dd_conf.dd_infile
     df = pd.read_csv(dd_infile, sep=";")
     # print (df)
@@ -316,98 +219,22 @@ def load_data(dd_conf=dd_conf):
 
 # In[8]:
 
-InputData = namedtuple("InputData", ["df", "id", "sentence", "dat"])
+InputData = namedtuple("InputData", ["df"])
+
+in_data: Optional[InputData] = None
 
 
-def prepare_data(df=df, model=model):
-    global sentence, dat, in_data
-    tokenizer = model.tokenizer
-    sentence = df["text"]
-    dat = df["created_at"]
-    id = df["id"]
-    # print(*sentence,sep="\n")
-    # print(dat)
-    alert = 0
-    i = 0
-    t11 = time.time()
-    for ind in range(len(sentence)):
-        inputs2 = tokenizer(sentence[ind], return_tensors="pt", padding=True)
-        if len(inputs2["input_ids"][0]) >= 512:
-            alert = 1
-            i = ind
+def prepare_data(df=df, model: Optional[Model] = model):
+    global in_data
+    assert model is not None
+    # spec = model.spec
+    # parms = model.parms
 
-    if alert == 1:
-        print(
-            "Attenzione la stringa n  "
-            + str(i)
-            + " con id numero "
-            + str(id[i])
-            + " produce troppi indici"
-        )
-    else:
-        print("ok")
-
-    t12 = time.time()
-    print(t12 - t11)
-
-    in_data = InputData(df=df, id=id, sentence=sentence, dat=dat)
+    in_data = InputData(df=df)
     return in_data
 
 
 # In[9]:
-
-
-def softmax(x):
-    """Compute softmax values for each sets of scores in x."""
-    e_x = np.exp(x - np.max(x, axis=1)[:, None])
-    return e_x / np.sum(e_x, axis=1)[:, None]
-
-
-def evaluate_model(limits, in_data=in_data, model=model):
-    t1 = time.time()
-    finbert, tokenizer = model.finbert, model.tokenizer
-    id, sentence, dat = in_data.id, in_data.sentence, in_data.dat
-    labels = {0: "positive", 1: "negative", 2: "neutral"}
-    results = pd.DataFrame(
-        columns=[
-            "id",
-            "data",
-            "sentence",
-            "logit_positive",
-            "logit_negative",
-            "logit_neutral",
-            "prediction",
-            "sentiment_score",
-        ]
-    )
-
-    rows = []
-
-    for idk in range(limits):
-        inputs = tokenizer(sentence[idk], return_tensors="pt", padding=True)
-        # print(idk)
-        with torch.no_grad():
-            logits = softmax(np.array(finbert(**inputs)[0]))
-            prediction = labels[np.argmax(logits)]
-            sentiment_score = pd.Series(logits[:, 0] - logits[:, 1])
-            first_result = {
-                "id": id[idk],
-                "data": dat[idk],
-                "sentence": sentence[idk],
-                "logit_positive": logits[0][0],
-                "logit_negative": logits[0][1],
-                "logit_neutral": logits[0][2],
-                "prediction": prediction,
-                "sentiment_score": sentiment_score,
-            }
-            rows.append(first_result)
-            trc.update()
-
-    results = results.append(rows, ignore_index=True, sort=False)
-    t2 = time.time()
-    print(t2 - t1)
-    return results
-
 
 OutputData = namedtuple(
     "OutputData",
@@ -416,15 +243,21 @@ OutputData = namedtuple(
     ],
 )
 
+out_data: Optional[OutputData] = None
 
-def process_data(in_data=in_data, model=model):
-    # lim = 1000
-    lim = len(in_data.sentence)
+
+def evaluate_model(lim, in_data=in_data, model=model):
+    result = {}
+    return result
+
+
+def process_data(
+    in_data=in_data, model=model, dd_conf: Optional[DataConf] = dd_conf
+) -> OutputData:
+    assert dd_conf is not None
+    lim = 1
     with trc:
         out = evaluate_model(lim, in_data=in_data, model=model)
-        # print(out)
-        # ciclo()
-        # print(out.iloc[999,0:7])
         global out_data
         out_data = OutputData(out=out)
         return out_data
@@ -433,60 +266,17 @@ def process_data(in_data=in_data, model=model):
 # In[10]:
 
 
-def save_data(out_data=out_data, dd_conf=dd_conf):
+def save_data(
+    out_data: Optional[OutputData] = out_data, dd_conf: Optional[DataConf] = dd_conf
+):
+    assert dd_conf is not None
+    assert out_data is not None
+
     dd_outfile = dd_conf.dd_outfile
     ensure_path(dd_outfile)
 
     out = out_data.out
     out.to_csv(dd_outfile, sep=";", index=False, encoding="utf-8-sig")
-
-
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-# In[11]:
-
-
-def distribute_data(dd_conf: Optional[DataConf] = dd_conf):
-    assert dd_conf is not None
-
-    num_chunks = dd_conf.dd_slots
-
-    dd_infile = dd_conf.dd_infile
-    dd_outfile = dd_conf.dd_outfile
-
-    with open(dd_infile) as f:
-        lines_count = sum(1 for _ in f)
-
-    chunksize = lines_count // num_chunks
-    i = 0
-    with pd.read_csv(dd_infile, chunksize=chunksize) as reader:
-        for chunk in reader:
-            f = ensure_path(dd_outfile.format(dd_slot=i))
-            chunk.to_csv(f)
-            i = i + 1
-
-
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-# In[12]:
-
-
-def collect_data(dd_conf: Optional[DataConf] = dd_conf):
-    assert dd_conf is not None
-
-    dd_temp = dd_conf.dd_temp
-    dd_outdir = dd_conf.dd_outdir
-    dd_outfile = dd_conf.dd_outfile
-    ensure_path(dd_outfile)
-
-    os.chdir(dd_temp)
-
-    extension = "csv"
-    all_csvfiles = [i for i in glob.glob("*.{}".format(extension))]
-    all_outfiles = filter(lambda x: re.search(rf"{dd_outdir}", x), all_csvfiles)
-
-    combined_csv = pd.concat([pd.read_csv(f) for f in all_outfiles])
-    combined_csv.to_csv(dd_outfile, index=False, encoding="utf-8-sig")
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -502,12 +292,12 @@ def pre_eval():
     return in_data, model, dd_conf
 
 
-def do_eval(in_data=in_data, model=model):
-    out_data = process_data(in_data=in_data, model=model)
+def do_eval(in_data=in_data, model=model, dd_conf: Optional[DataConf] = dd_conf):
+    out_data = process_data(in_data=in_data, model=model, dd_conf=dd_conf)
     return out_data
 
 
-def post_eval(out_data=out_data, dd_conf=dd_conf):
+def post_eval(out_data=out_data, dd_conf: Optional[DataConf] = dd_conf):
     save_data(out_data=out_data, dd_conf=dd_conf)
 
 
@@ -515,29 +305,11 @@ def run_worker():
     in_data, model, dd_conf = pre_eval()
     out_data = do_eval(in_data=in_data, model=model)
     post_eval(out_data=out_data, dd_conf=dd_conf)
-
-
-def do_distribute(dd_conf=dd_conf):
-    distribute_data(dd_conf=dd_conf)
-
-
-def run_distributor():
-    dd_conf = config_data()
-    do_distribute(dd_conf=dd_conf)
     return RC
 
 
-def do_collect(dd_conf=dd_conf):
-    collect_data(dd_conf=dd_conf)
-
-
-def run_collector():
-    dd_conf = config_data()
-    do_collect(dd_conf=dd_conf)
-    return RC
-
-
-def main(argv=None, **kwargs):
+@std_main(log=log, debug=True)
+def main(argv=None):
     global args
 
     print(argv)
@@ -546,21 +318,8 @@ def main(argv=None, **kwargs):
     argv = get_argv(argv)
 
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    args = parse_args(argv, **kwargs)
-
-    if is_core_parallel():
-        if is_core_distributor():
-            run_distributor()
-        elif is_core_worker():
-            run_worker()
-        elif is_core_collector():
-            run_collector()
-        else:
-            raise ValueError("is_core_parallel")
-    elif is_core_simple():
-        run_worker()
-    else:
-        raise ValueError("is_core_what")
+    args = parse_args(argv)
+    run_worker()
 
     log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC

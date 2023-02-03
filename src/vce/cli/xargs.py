@@ -5,11 +5,17 @@ from abc import ABC, abstractmethod
 
 
 class AppArgsConsts(object):
-
     ARG_TYPE_GENERIC = "generic"
+
     ARG_TYPE_MAIN = "main"
     ARG_TYPE_RUNNER = "runner"
     ARG_TYPE_AUTO = "auto"
+
+    ARG_TYPE_TEST = "test"
+    ARG_TYPE_DEMO = "demo"
+
+    ARG_TYPE_NUMA = "numa"
+    ARG_TYPE_PART = "part"
 
     ARGS_ENV_AUTO = "X_E_AUTO"
 
@@ -32,7 +38,6 @@ class IAppArgs(ABC):
 
 
 class AppBaseArgs(IAppArgs):
-
     arg_type = AppArgsConsts.ARG_TYPE_GENERIC
 
     def __init__(self, parent: Optional[IAppArgs] = None, *args, **kwargs):
@@ -68,14 +73,13 @@ class AppBaseArgs(IAppArgs):
             argv = sys.argv[1:]
 
         parser = self.get_parser()
-        args, unknown = parser.parse_known_args(argv)
-        result = self.handle_unknown(args, unknown, *args, **kwargs)
+        xargs, unknown = parser.parse_known_args(argv)
+        result = self.handle_unknown(xargs, unknown, *args, **kwargs)
         self.xargs = result
         return result
 
 
 class AppMainArgs(AppBaseArgs):
-
     arg_type = AppArgsConsts.ARG_TYPE_MAIN
 
     def __init__(self, parent=None, *args, **kwargs):
@@ -102,7 +106,6 @@ def get_main_argparser(*args, **kwargs) -> AppMainArgs:
 
 
 class AppRunnerArgs(AppBaseArgs):
-
     arg_type = AppArgsConsts.ARG_TYPE_RUNNER
 
     def __init__(self, parent=None, *args, **kwargs):
@@ -128,19 +131,15 @@ def get_runner_argparser(*args, **kwargs) -> AppRunnerArgs:
     return result
 
 
-class AppAutoArgs(AppBaseArgs):
-
+class AppAutoArgs(AppRunnerArgs):
     arg_type = AppArgsConsts.ARG_TYPE_AUTO
 
     def __init__(self, parent=None, *args, **kwargs):
         super().__init__(parent=parent, *args, **kwargs)
 
-    def base_parser(self) -> argparse.ArgumentParser:
-        return super().base_parser()
-
     def auto_parser(self) -> argparse.ArgumentParser:
         """Auto Script Argument Parser."""
-        parser = self.base_parser()
+        parser = self.runner_parser()
         parser.add_argument(
             "--name", "-n", type=str, help="job params entry key", default="_"
         )
@@ -152,4 +151,100 @@ class AppAutoArgs(AppBaseArgs):
 
 def get_auto_argparser(*args, **kwargs) -> AppAutoArgs:
     result = AppAutoArgs(*args, **kwargs)
+    return result
+
+
+class AppTestArgs(AppAutoArgs):
+    arg_type = AppArgsConsts.ARG_TYPE_TEST
+
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent=parent, *args, **kwargs)
+
+    def test_parser(self) -> argparse.ArgumentParser:
+        parser = self.auto_parser()
+        parser.add_argument(
+            "--demo-arg-1", "-1", type=str, help="demo script arg 1", default="A"
+        )
+        return parser
+
+    def get_parser(self) -> argparse.ArgumentParser:
+        return self.test_parser()
+
+
+def get_test_argparser(*args, **kwargs) -> AppTestArgs:
+    result = AppTestArgs(*args, **kwargs)
+    return result
+
+
+class AppDemoArgs(AppAutoArgs):
+    arg_type = AppArgsConsts.ARG_TYPE_DEMO
+
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent=parent, *args, **kwargs)
+
+    def demo_parser(self) -> argparse.ArgumentParser:
+        parser = self.auto_parser()
+        parser.add_argument(
+            "--demo-arg-1", "-1", type=str, help="demo script arg 1", default="A"
+        )
+        return parser
+
+    def get_parser(self) -> argparse.ArgumentParser:
+        return self.demo_parser()
+
+
+def get_demo_argparser(*args, **kwargs) -> AppDemoArgs:
+    result = AppDemoArgs(*args, **kwargs)
+    return result
+
+
+# ///[ NUMA ]///////////////////////////////////////////////////
+
+
+class AppNumaArgs(AppAutoArgs):
+    arg_type = AppArgsConsts.ARG_TYPE_NUMA
+
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent=parent, *args, **kwargs)
+
+    def numa_parser(self) -> argparse.ArgumentParser:
+        """Auto Script Argument Parser."""
+        parser = self.auto_parser()
+        parser.add_argument(
+            "--numa-enable", "-r", type=str, help="enable numa execution", default="0"
+        )
+        return parser
+
+    def get_parser(self) -> argparse.ArgumentParser:
+        return self.auto_parser()
+
+
+def get_numa_argparser(*args, **kwargs) -> AppNumaArgs:
+    result = AppNumaArgs(*args, **kwargs)
+    return result
+
+
+class AppPartArgs(AppNumaArgs):
+    arg_type = AppArgsConsts.ARG_TYPE_PART
+
+    def __init__(self, parent=None, *args, **kwargs):
+        super().__init__(parent=parent, *args, **kwargs)
+
+    def part_parser(self) -> argparse.ArgumentParser:
+        parser = self.numa_parser()
+        parser.add_argument(
+            "--part-arg-1",
+            "-1",
+            type=str,
+            help="demo part (numa) script arg 1",
+            default="X",
+        )
+        return parser
+
+    def get_parser(self) -> argparse.ArgumentParser:
+        return self.part_parser()
+
+
+def get_part_argparser(*args, **kwargs) -> AppPartArgs:
+    result = AppPartArgs(*args, **kwargs)
     return result
