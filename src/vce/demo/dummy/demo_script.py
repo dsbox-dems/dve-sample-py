@@ -84,9 +84,9 @@ def get_argv(argv: Optional[list[str]] = None) -> list[str]:
     return ARGV_DEFAULT
 
 
-def parse_args(argv=None, *args, **kwargs):
+def parse_args(argv=None, **kwargs):
     parser = get_demo_argparser()
-    result = parser.parse_args(argv, *args, **kwargs)
+    result = parser.parse_args(argv, **kwargs)
     return result
 
 
@@ -224,7 +224,7 @@ InputData = namedtuple("InputData", ["df"])
 in_data: Optional[InputData] = None
 
 
-def prepare_data(df=df, model: Optional[Model] = model):
+def prepare_data(df, model: Optional[Model] = model):
     global in_data
     assert model is not None
     # spec = model.spec

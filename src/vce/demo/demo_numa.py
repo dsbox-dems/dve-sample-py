@@ -306,9 +306,9 @@ def exec_test(name, args, argv=None, **kwargs):
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-def parse_args(argv=None, *args, **kwargs):
+def parse_args(argv=None, **kwargs):
     parser = get_numa_argparser()
-    result = parser.parse_args(argv, *args, **kwargs)
+    result = parser.parse_args(argv, **kwargs)
     return result
 
 

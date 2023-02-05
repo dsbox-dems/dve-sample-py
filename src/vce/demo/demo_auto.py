@@ -53,15 +53,15 @@ logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
-def exec_spec(spec: sp.JobSpec, argv=None, *args, **kwargs):
+def exec_spec(spec: sp.JobSpec, argv=None, **kwargs):
     script_main = spec.call.get_main()
     RC = script_main(argv, spec=spec, **kwargs)
     return RC
 
 
-def auto_dispatch(name, xargs, argv=None, *args, **kwargs):
+def auto_dispatch(name, xargs, argv=None, **kwargs):
     spec = JOB_SPECS.get_job_spec(name)
-    exec_spec(spec=spec, name=name, xargs=xargs, argv=argv, *args, **kwargs)
+    exec_spec(spec=spec, name=name, xargs=xargs, argv=argv, **kwargs)
 
 
 def auto_exec(name, args, argv=None, **kwargs):
@@ -72,29 +72,29 @@ def auto_exec(name, args, argv=None, **kwargs):
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-def parse_args(argv=None, *args, **kwargs):
+def parse_args(argv=None, **kwargs):
     parser = get_auto_argparser()
-    result = parser.parse_args(argv, *args, **kwargs)
+    result = parser.parse_args(argv, **kwargs)
     return result
 
 
-def exec(xargs, argv=None, *args, **kwargs):
+def exec(xargs, argv=None, **kwargs):
     name = xargs.name
     if name == "_":
         name = "auto"
 
     if name == "auto":
-        RC = auto_exec(name, xargs, argv, *args, **kwargs)
+        RC = auto_exec(name, xargs, argv, **kwargs)
     else:
-        RC = auto_dispatch(name, xargs, argv, *args, **kwargs)
+        RC = auto_dispatch(name, xargs, argv, **kwargs)
     return RC
 
 
 @std_main(log=log, debug=True)
-def main(argv=None, *args, **kwargs):
+def main(argv=None, **kwargs):
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    xargs = parse_args(argv, *args, **kwargs)
-    RC = exec(xargs, argv, *args, **kwargs)
+    xargs = parse_args(argv, **kwargs)
+    RC = exec(xargs, argv, **kwargs)
     log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC
 

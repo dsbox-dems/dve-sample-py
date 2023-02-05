@@ -19,8 +19,19 @@ RC_C_OK = 0
 RC = RC_C_OK
 
 
-def do_process(xargs, argv=None, *args, **kwargs):
-    log.info(">> @" + __name__ + ".proc(argv=" + str(argv) + ")")
+def do_process(xargs, argv=None, **kwargs):
+    msgs = [
+        f">> @{__name__}.proc(argv=<{str(argv)}>)",
+        f">> @{__name__}.proc(args=<{str(args)}>)",
+        f">> @{__name__}.proc(kwargs=<{str(kwargs)}>)",
+    ]
+    msg = " ".join(msgs)
+
+    log.info(msgs[0])
+    log.debug(msgs[0])
+    log.debug(msgs[0])
+
+    print(msg)
 
     return RC
 
@@ -28,22 +39,23 @@ def do_process(xargs, argv=None, *args, **kwargs):
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-def parse_args(argv=None, *args, **kwargs):
+def parse_args(argv=None, **kwargs):
     parser = get_test_argparser()
-    result = parser.parse_args(argv, *args, **kwargs)
+    result = parser.parse_args(argv, **kwargs)
     return result
 
 
-def exec(xargs, argv=None, *args, **kwargs):
-    RC = do_process(xargs, argv=argv, *args, **kwargs)
+def exec(xargs, argv=None, **kwargs):
+    RC = do_process(xargs=xargs, argv=argv, **kwargs)
     return RC
 
 
 @std_main(log=log, debug=True)
-def main(argv=None, *args, **kwargs):
+def main(argv=None, **kwargs):
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    xargs = parse_args(argv, *args, **kwargs)
-    RC = exec(xargs, argv, *args, **kwargs)
+    kwargs['argvx']  = argv
+    xargs = parse_args(argv=argv, **kwargs)
+    kwargs['xargs']  = xargs
     log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC
 

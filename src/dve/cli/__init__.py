@@ -1,7 +1,7 @@
 import logging
 
 from vce.cli.ctl import std_main
-from dve.cli.args import get_main_argparser
+from dve.cli.xargs import get_main_argparser
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -17,7 +17,6 @@ def parse_args(argv=None, *args, **kwargs):
 
 
 def exec(xargs, argv=None, *args, **kwargs):
-
     entry = xargs.exec
     if entry == "_":
         entry = "main"

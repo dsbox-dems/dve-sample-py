@@ -6,13 +6,11 @@ import vce.common.util.environ as en
 
 
 class JobParmsConsts(object):
-
     ENV_AUTO = "X_E_AUTO"
 
 
 @dataclass(kw_only=True)
 class JobName:
-
     id: str
     ns: str
 
@@ -22,12 +20,10 @@ JobNameT = TypeVar("JobNameT", bound=JobName, covariant=True)
 
 @dataclass(kw_only=True)
 class JobCall:
-
     func: Optional[Callable] = None
     source: Optional[str] = None
 
     def get_main(self) -> Callable:
-
         if self.func:
             return self.func
 
@@ -36,8 +32,8 @@ class JobCall:
 
         script = self.source
 
-        def script_wrapper(argv, *args, **kwargs):
-            rc = proc.call_script(script=script, argv=argv, *args, **kwargs)
+        def script_wrapper(argv, **kwargs):
+            rc = proc.call_script(script=script, argv=argv, **kwargs)
             return rc
 
         return script_wrapper
@@ -48,7 +44,6 @@ JobCallT = TypeVar("JobCallT", bound=JobCall, covariant=True)
 
 @dataclass(kw_only=True)
 class JobParm:
-
     v: dict
 
 
@@ -57,7 +52,6 @@ JobParmT = TypeVar("JobParmT", bound=JobParm, covariant=True)
 
 @dataclass(kw_only=True)
 class JobSpec:
-
     name: JobName
     call: JobCall
     parm: JobParm
@@ -68,7 +62,6 @@ JobSpecT = TypeVar("JobSpecT", bound=JobSpec, covariant=True)
 
 @dataclass
 class JobSpecs:
-
     specs: Sequence[JobSpec]
     auto: Optional[str] = None
 

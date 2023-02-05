@@ -396,6 +396,8 @@
   poetry install
 
   poetry show
+  poetry show --tree
+  
 
 #+END_SRC
 

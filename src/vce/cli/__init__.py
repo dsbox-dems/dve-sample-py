@@ -10,13 +10,13 @@ log = logging.getLogger(__name__)
 RC = 0
 
 
-def parse_args(argv=None, *args, **kwargs):
+def parse_args(argv=None, **kwargs):
     parser = get_main_argparser()
-    result = parser.parse_args(argv, *args, **kwargs)
+    result = parser.parse_args(argv, **kwargs)
     return result
 
 
-def exec(xargs, argv=None, *args, **kwargs):
+def exec(xargs, argv=None, **kwargs):
     entry = xargs.exec
     if entry == "_":
         entry = "demo"
@@ -24,17 +24,17 @@ def exec(xargs, argv=None, *args, **kwargs):
     if entry == "demo":
         import vce.demo.demo_runner as runner
 
-        RC = runner.main(argv, *args, **kwargs)
+        RC = runner.main(argv, **kwargs)
     else:
         raise ValueError(f"invalid command: {entry}!")
     return RC
 
 
 @std_main(debug=True)
-def main(argv=None, *args, **kwargs):
+def main(argv=None, **kwargs):
     """Process command line arguments."""
-    xargs = parse_args(argv, *args, **kwargs)
-    RC = exec(xargs, argv=argv, *args, **kwargs)
+    xargs = parse_args(argv, **kwargs)
+    RC = exec(xargs, argv=argv, **kwargs)
     return RC
 
 

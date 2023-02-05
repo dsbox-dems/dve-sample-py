@@ -29,7 +29,7 @@ class IAppArgs(ABC):
         pass
 
     @abstractmethod
-    def parse_args(self, argv=None, *args, **kwargs) -> dict:
+    def parse_args(self, argv=None, **kwargs) -> dict:
         pass
 
     @abstractmethod
@@ -40,7 +40,7 @@ class IAppArgs(ABC):
 class AppBaseArgs(IAppArgs):
     arg_type = AppArgsConsts.ARG_TYPE_GENERIC
 
-    def __init__(self, parent: Optional[IAppArgs] = None, *args, **kwargs):
+    def __init__(self, parent: Optional[IAppArgs] = None, **kwargs):
         self.parent = parent
         self.xargs = dict()
 
@@ -63,18 +63,18 @@ class AppBaseArgs(IAppArgs):
         )
         return parser
 
-    def handle_unknown(self, xargs, unknown) -> dict:
+    def handle_unknown(self, xargs, unknown, **kwargs) -> dict:
         """Runner Script Argument Parser."""
         return xargs
 
-    def parse_args(self, argv=None, *args, **kwargs) -> dict:
+    def parse_args(self, argv=None, **kwargs) -> dict:
         """Process command line arguments."""
         if not argv:
             argv = sys.argv[1:]
 
         parser = self.get_parser()
         xargs, unknown = parser.parse_known_args(argv)
-        result = self.handle_unknown(xargs, unknown, *args, **kwargs)
+        result = self.handle_unknown(xargs=xargs, unknown=unknown)
         self.xargs = result
         return result
 
@@ -82,8 +82,8 @@ class AppBaseArgs(IAppArgs):
 class AppMainArgs(AppBaseArgs):
     arg_type = AppArgsConsts.ARG_TYPE_MAIN
 
-    def __init__(self, parent=None, *args, **kwargs):
-        super().__init__(parent=parent, *args, **kwargs)
+    def __init__(self, parent=None, **kwargs):
+        super().__init__(parent=parent, **kwargs)
 
     def base_parser(self) -> argparse.ArgumentParser:
         return super().base_parser()
@@ -108,8 +108,8 @@ def get_main_argparser(*args, **kwargs) -> AppMainArgs:
 class AppRunnerArgs(AppBaseArgs):
     arg_type = AppArgsConsts.ARG_TYPE_RUNNER
 
-    def __init__(self, parent=None, *args, **kwargs):
-        super().__init__(parent=parent, *args, **kwargs)
+    def __init__(self, parent=None, **kwargs):
+        super().__init__(parent=parent, **kwargs)
 
     def base_parser(self) -> argparse.ArgumentParser:
         return super().base_parser()
@@ -134,8 +134,8 @@ def get_runner_argparser(*args, **kwargs) -> AppRunnerArgs:
 class AppAutoArgs(AppRunnerArgs):
     arg_type = AppArgsConsts.ARG_TYPE_AUTO
 
-    def __init__(self, parent=None, *args, **kwargs):
-        super().__init__(parent=parent, *args, **kwargs)
+    def __init__(self, parent=None, **kwargs):
+        super().__init__(parent=parent, **kwargs)
 
     def auto_parser(self) -> argparse.ArgumentParser:
         """Auto Script Argument Parser."""
@@ -157,8 +157,8 @@ def get_auto_argparser(*args, **kwargs) -> AppAutoArgs:
 class AppTestArgs(AppAutoArgs):
     arg_type = AppArgsConsts.ARG_TYPE_TEST
 
-    def __init__(self, parent=None, *args, **kwargs):
-        super().__init__(parent=parent, *args, **kwargs)
+    def __init__(self, parent=None, **kwargs):
+        super().__init__(parent=parent, **kwargs)
 
     def test_parser(self) -> argparse.ArgumentParser:
         parser = self.auto_parser()
@@ -179,8 +179,8 @@ def get_test_argparser(*args, **kwargs) -> AppTestArgs:
 class AppDemoArgs(AppAutoArgs):
     arg_type = AppArgsConsts.ARG_TYPE_DEMO
 
-    def __init__(self, parent=None, *args, **kwargs):
-        super().__init__(parent=parent, *args, **kwargs)
+    def __init__(self, parent=None, **kwargs):
+        super().__init__(parent=parent, **kwargs)
 
     def demo_parser(self) -> argparse.ArgumentParser:
         parser = self.auto_parser()
@@ -204,8 +204,8 @@ def get_demo_argparser(*args, **kwargs) -> AppDemoArgs:
 class AppNumaArgs(AppAutoArgs):
     arg_type = AppArgsConsts.ARG_TYPE_NUMA
 
-    def __init__(self, parent=None, *args, **kwargs):
-        super().__init__(parent=parent, *args, **kwargs)
+    def __init__(self, parent=None, **kwargs):
+        super().__init__(parent=parent, **kwargs)
 
     def numa_parser(self) -> argparse.ArgumentParser:
         """Auto Script Argument Parser."""
@@ -227,8 +227,8 @@ def get_numa_argparser(*args, **kwargs) -> AppNumaArgs:
 class AppPartArgs(AppNumaArgs):
     arg_type = AppArgsConsts.ARG_TYPE_PART
 
-    def __init__(self, parent=None, *args, **kwargs):
-        super().__init__(parent=parent, *args, **kwargs)
+    def __init__(self, parent=None, **kwargs):
+        super().__init__(parent=parent, **kwargs)
 
     def part_parser(self) -> argparse.ArgumentParser:
         parser = self.numa_parser()
