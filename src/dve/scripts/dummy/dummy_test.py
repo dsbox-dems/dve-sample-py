@@ -19,15 +19,18 @@ RC_C_OK = 0
 
 RC = RC_C_OK
 
+
 def ea(name: str, **kwargs):
     return kwargs[name] if name in kwargs else None
 
+
 def ep(**kwargs):
-    spec = ea('job_spec', **kwargs)
+    spec = ea("job_spec", **kwargs)
     return spec.parm if spec else None
 
+
 def do_process(argv, xargs, **kwargs):
-    tag = 'x-test'
+    tag = "x-test"
     msgs = [
         f">> @{tag}.file(name=<{__name__}>)",
         f">> @{tag}.args(argv=<{str(argv)}>)",
@@ -38,14 +41,14 @@ def do_process(argv, xargs, **kwargs):
         f">> @{tag}.spec(job_spec=<{str(ea('job_spec',**kwargs,))}>)",
         f">> @{tag}.spec(job_parm=<{str(ep(**kwargs,))}>)",
         f">> @{tag}.data(work=<{cfd().DATA_WORK},home=<{cfd().DATA_HOME}>)",
-        f">> @{tag}.data(work=<{cfd().DATA_USER},home=<{cfd().DATA_DNET}>)",
+        f">> @{tag}.data(user=<{cfd().DATA_USER},dnet=<{cfd().DATA_DNET}>)",
         f">> @{tag}.arch(plat=<{pf.platform()},arch=<{pf.architecture()}>)",
         f">> @{tag}.arch(mach=<{pf.machine()},proc=<{pf.processor()}>)",
         f">> @{tag}.arch(sys=<{pf.system()},uname=<{pf.uname()}>)",
         f">> @{tag}.arch(kver=<{pf.version()},krel=<{pf.release()}>)",
         f">> @{tag}.vers(lang=<{pf.python_version()},impl=<{pf.python_implementation()}>)",
     ]
-    msg = "\n\n[[[\n" + "\n".join(msgs) +"\n]]]\n\n"
+    msg = "\n\n[[[\n" + "\n".join(msgs) + "\n]]]\n\n"
 
     for i in range(len(msgs)):
         if i == 0:
