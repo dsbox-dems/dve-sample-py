@@ -1,10 +1,11 @@
 import sys
 import logging
+import platform as pf
 
 from vce.cli.ctl import std_main
 from dve.cli.xargs import get_test_argparser
 
-import vce.cli.parms as sp
+import dve.cli.parms as sp
 
 from dve.config.data import cfd
 
@@ -18,9 +19,41 @@ RC_C_OK = 0
 
 RC = RC_C_OK
 
+def ea(name: str, **kwargs):
+    return kwargs[name] if name in kwargs else None
 
-def do_process(xargs, argv=None, *args, **kwargs):
-    log.info(">> @" + __name__ + ".proc(argv=" + str(argv) + ")")
+def ep(**kwargs):
+    spec = ea('job_spec', **kwargs)
+    return spec.parm if spec else None
+
+def do_process(argv, xargs, **kwargs):
+    tag = 'x-test'
+    msgs = [
+        f">> @{tag}.file(name=<{__name__}>)",
+        f">> @{tag}.args(argv=<{str(argv)}>)",
+        f">> @{tag}.args(xargs=<{str(xargs)}>)",
+        f">> @{tag}.args(kwargs=<{str(kwargs)}>)",
+        f">> @{tag}.spec(job_name=<{str(ea('job_name',**kwargs,))}>)",
+        f">> @{tag}.spec(job_xargs=<{str(ea('job_xargs',**kwargs,))}>)",
+        f">> @{tag}.spec(job_spec=<{str(ea('job_spec',**kwargs,))}>)",
+        f">> @{tag}.spec(job_parm=<{str(ep(**kwargs,))}>)",
+        f">> @{tag}.data(work=<{cfd().DATA_WORK},home=<{cfd().DATA_HOME}>)",
+        f">> @{tag}.data(work=<{cfd().DATA_USER},home=<{cfd().DATA_DNET}>)",
+        f">> @{tag}.arch(plat=<{pf.platform()},arch=<{pf.architecture()}>)",
+        f">> @{tag}.arch(mach=<{pf.machine()},proc=<{pf.processor()}>)",
+        f">> @{tag}.arch(sys=<{pf.system()},uname=<{pf.uname()}>)",
+        f">> @{tag}.arch(kver=<{pf.version()},krel=<{pf.release()}>)",
+        f">> @{tag}.vers(lang=<{pf.python_version()},impl=<{pf.python_implementation()}>)",
+    ]
+    msg = "\n\n[[[\n" + "\n".join(msgs) +"\n]]]\n\n"
+
+    for i in range(len(msgs)):
+        if i == 0:
+            log.info(msgs[i])
+        else:
+            log.debug(msgs[i])
+
+    print(msg)
 
     return RC
 
@@ -28,22 +61,24 @@ def do_process(xargs, argv=None, *args, **kwargs):
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-def parse_args(argv=None, *args, **kwargs):
+def parse_args(argv, **kwargs):
     parser = get_test_argparser()
-    result = parser.parse_args(argv, *args, **kwargs)
+    result = parser.parse_args(argv, **kwargs)
     return result
 
 
-def exec(xargs, argv=None, *args, **kwargs):
-    RC = do_process(xargs, argv=argv, *args, **kwargs)
+def exec(argv, xargs, **kwargs):
+    global RC
+    RC = do_process(argv, xargs, **kwargs)
     return RC
 
 
 @std_main(log=log, debug=True)
-def main(argv=None, *args, **kwargs):
+def main(argv, **kwargs):
+    global RC
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    xargs = parse_args(argv, *args, **kwargs)
-    RC = exec(xargs, argv, *args, **kwargs)
+    xargs = parse_args(argv=argv, **kwargs)
+    RC = exec(argv, xargs, **kwargs)
     log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC
 

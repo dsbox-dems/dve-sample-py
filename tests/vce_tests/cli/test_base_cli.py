@@ -21,13 +21,13 @@ class BaseCliTest(unittest.TestCase):
     def _pass_fixtures(self, capsys):
         self.capsys = capsys
 
-    def x_test_runner_args(self):
+    def test_runner_args(self):
         argv = ["-v", "--exec", "demo", "--cmd", "test"]
         log.debug("+++ cli.main:" + str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
-        s = out.getvalue()    
+        s = out.getvalue()
         assert argv[0] in out.getvalue()
 
     def test_auto_default(self):

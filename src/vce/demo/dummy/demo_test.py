@@ -1,12 +1,13 @@
 import sys
 import logging
+import platform as pf
 
 from vce.cli.ctl import std_main
 from vce.cli.xargs import get_test_argparser
 
 import vce.cli.parms as sp
 
-from dve.config.data import cfd
+from vce.config.data import cfd
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -19,17 +20,41 @@ RC_C_OK = 0
 RC = RC_C_OK
 
 
-def do_process(argv, xargs, **kwargs):
-    msgs = [
-        f">> @{__name__}.proc(argv=<{str(argv)}>)",
-        f">> @{__name__}.proc(xargs=<{str(xargs)}>)",
-        f">> @{__name__}.proc(kwargs=<{str(kwargs)}>)",
-    ]
-    msg = " ".join(msgs)
+def ea(name: str, **kwargs):
+    return kwargs[name] if name in kwargs else None
 
-    log.info(msgs[0])
-    log.debug(msgs[1])
-    log.debug(msgs[2])
+
+def ep(**kwargs):
+    spec = ea("job_spec", **kwargs)
+    return spec.parm if spec else None
+
+
+def do_process(argv, xargs, **kwargs):
+    tag = "x-test"
+    msgs = [
+        f">> @{tag}.file(name=<{__name__}>)",
+        f">> @{tag}.args(argv=<{str(argv)}>)",
+        f">> @{tag}.args(xargs=<{str(xargs)}>)",
+        f">> @{tag}.args(kwargs=<{str(kwargs)}>)",
+        f">> @{tag}.spec(job_name=<{str(ea('job_name',**kwargs,))}>)",
+        f">> @{tag}.spec(job_xargs=<{str(ea('job_xargs',**kwargs,))}>)",
+        f">> @{tag}.spec(job_spec=<{str(ea('job_spec',**kwargs,))}>)",
+        f">> @{tag}.spec(job_parm=<{str(ep(**kwargs,))}>)",
+        f">> @{tag}.data(work=<{cfd().DATA_WORK},home=<{cfd().DATA_HOME}>)",
+        f">> @{tag}.data(work=<{cfd().DATA_USER},home=<{cfd().DATA_DNET}>)",
+        f">> @{tag}.arch(plat=<{pf.platform()},arch=<{pf.architecture()}>)",
+        f">> @{tag}.arch(mach=<{pf.machine()},proc=<{pf.processor()}>)",
+        f">> @{tag}.arch(sys=<{pf.system()},uname=<{pf.uname()}>)",
+        f">> @{tag}.arch(kver=<{pf.version()},krel=<{pf.release()}>)",
+        f">> @{tag}.vers(lang=<{pf.python_version()},impl=<{pf.python_implementation()}>)",
+    ]
+    msg = "\n\n[[[\n" + "\n".join(msgs) + "\n]]]\n\n"
+
+    for i in range(len(msgs)):
+        if i == 0:
+            log.info(msgs[i])
+        else:
+            log.debug(msgs[i])
 
     print(msg)
 

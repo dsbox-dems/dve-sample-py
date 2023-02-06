@@ -11,32 +11,27 @@ import os
 import os.path
 import sys
 from collections import namedtuple
-import argparse
 from datetime import datetime
 from typing import Optional
 
 # In[2]:
 
+from vce.cli.ctl import std_main
+from dve.cli.xargs import get_dummy_argparser
+
 from vce.common.util.trace import trace_logger
+from vce.common.util.kernel import in_notebook
+
+import dve.cli.parms as sp
+
 from dve.config.data import cfd
-import dve.cli as cli
-from vce.cli import std_main, std_unknown
 
 # In[3]:
 
 import logging
 
-
-def getLogger():
-    logging.basicConfig(level=logging.DEBUG)  # TODO: config/verbose
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    # logget.setLevel(logging.INFO)
-    return logger
-
-
-log = getLogger()
-
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(__name__)
 trc = trace_logger("dmy")
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,19 +67,6 @@ args = None
 # In[5]:
 
 
-def in_notebook():
-    try:
-        from IPython import get_ipython
-
-        if "IPKernelApp" not in get_ipython().config:  # pragma: no cover
-            return False
-    except ImportError:
-        return False
-    except AttributeError:
-        return False
-    return True
-
-
 def get_argv(argv: Optional[list[str]] = None) -> list[str]:
     if argv is not None:
         return argv
@@ -93,31 +75,6 @@ def get_argv(argv: Optional[list[str]] = None) -> list[str]:
     if len(sys.argv) > 1:
         return sys.argv[1:]
     return ARGV_DEFAULT
-
-
-def argparser(options=None):
-    # """Parent Argument Parser."""
-    # import dve.scripts.runner as auto_runner
-    # parser = auto_runner.argparser(options)
-    """Base Argument Parser."""
-    parser = argparse.ArgumentParser(add_help=False, conflict_handler="resolve")
-
-    parser.add_argument("-j", "--jobname", type=str, help="job name", default="_")
-    parser.add_argument("-g", "--group", type=str, help="job group", default="_")
-    parser.add_argument(
-        "-f", "--filename", type=str, help="data file name", default="_"
-    )
-    return parser
-
-
-def parse_args(argv=None):
-    """Process command line arguments."""
-    argv = get_argv(argv)
-    global args
-    parser = argparser()
-    # args = parser.parse_args(argv)
-    args, unknown = parser.parse_known_args(argv)
-    return std_unknown(args, unknown)
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -172,34 +129,34 @@ DataConf = namedtuple(
 dd_conf: Optional[DataConf] = None
 
 
-def arg_jobid(args):
+def arg_jobid(xargs):
     return jobid()
 
 
-def arg_group(args):
-    return args.group
+def arg_group(xargs):
+    return xargs.group
 
 
-def arg_filename(args):
-    return args.filename
+def arg_filename(xargs):
+    return xargs.filename
 
 
-def arg_slotid(args):
+def arg_slotid(xargs):
     return 0
 
 
-def arg_slotnum(args):
+def arg_slotnum(xargs):
     return 1
 
 
 def config_data() -> DataConf:
-    global dd_conf, args
+    global dd_conf, xargs
 
-    dd_jobid = arg_jobid(args)
-    dd_slot = arg_slotid(args)
-    dd_slots = arg_slotnum(args)
-    dd_group = arg_group(args)
-    dd_filename = arg_filename(args)
+    dd_jobid = arg_jobid(xargs)
+    dd_slot = arg_slotid(xargs)
+    dd_slots = arg_slotnum(xargs)
+    dd_group = arg_group(xargs)
+    dd_filename = arg_filename(xargs)
     dd_path = f"{cfd().DATA_HOME}/{dd_group}"
     dd_temp = f"{cfd().DATA_TEMP}/{__name__}/{dd_jobid}/{dd_slots}"
     dd_indir = "in"
@@ -253,8 +210,10 @@ InputData = namedtuple("InputData", ["df"])
 
 in_data: Optional[InputData] = None
 
+df: pd.DataFrame = pd.DataFrame(columns=["null"])
 
-def prepare_data(df=df, model: Optional[Model] = model):
+
+def prepare_data(df=None, model: Optional[Model] = model):
     global in_data
     assert model is not None
     spec = model.spec
@@ -273,43 +232,18 @@ def evaluate_model(
     t1 = time.time()
     assert model is not None
     assert dd_conf is not None
+    assert in_data is not None
     spec, parms = model.spec, model.parms
-    id, sentence, dat = in_data.id, in_data.sentence, in_data.dat
-    labels = {0: "positive", 1: "negative", 2: "neutral"}
+    df = in_data.df
     results = pd.DataFrame(
         columns=[
             "id",
             "data",
-            "sentence",
-            "logit_positive",
-            "logit_negative",
-            "logit_neutral",
             "prediction",
-            "sentiment_score",
         ]
     )
 
     rows = []
-
-    for idk in range(limits):
-        inputs = tokenizer(sentence[idk], return_tensors="pt", padding=True)
-        # print(idk)
-        with torch.no_grad():
-            logits = softmax(np.array(finbert(**inputs)[0]))
-            prediction = labels[np.argmax(logits)]
-            sentiment_score = pd.Series(logits[:, 0] - logits[:, 1])
-            first_result = {
-                "id": id[idk],
-                "data": dat[idk],
-                "sentence": sentence[idk],
-                "logit_positive": logits[0][0],
-                "logit_negative": logits[0][1],
-                "logit_neutral": logits[0][2],
-                "prediction": prediction,
-                "sentiment_score": sentiment_score,
-            }
-            rows.append(first_result)
-            trc.update()
 
     results = results.append(rows, ignore_index=True, sort=False)
     t2 = time.time()
@@ -331,7 +265,7 @@ def process_data(
     in_data=in_data, model=model, dd_conf: Optional[DataConf] = dd_conf
 ) -> OutputData:
     assert dd_conf is not None
-    lim = len(in_data.sentence)
+    lim = len(in_data.df)
     with trc:
         out = evaluate_model(lim, in_data=in_data, model=model)
         global out_data
@@ -384,9 +318,25 @@ def run_worker():
     return RC
 
 
+# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+def parse_args(argv, **kwargs):
+    parser = get_dummy_argparser()
+    result = parser.parse_args(argv, **kwargs)
+    return result
+
+
+def exec(argv, xargs, **kwargs):
+    global RC
+    RC = run_worker()
+    return RC
+
+
 @std_main(log=log, debug=True)
-def main(argv=None):
-    global args
+def main(argv, **kwargs):
+    global RC
+    global xargs
 
     print(argv)
     print(__name__ + "main:" + str(argv))
@@ -394,8 +344,8 @@ def main(argv=None):
     argv = get_argv(argv)
 
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    args = parse_args(argv)
-    run_worker()
+    xargs = parse_args(argv=argv, **kwargs)
+    RC = exec(argv, xargs, **kwargs)
 
     log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC
@@ -406,4 +356,4 @@ def main(argv=None):
 # In[14]:
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

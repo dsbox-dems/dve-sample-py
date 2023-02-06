@@ -5,13 +5,11 @@ import vce.cli.parms as std_parms
 
 
 class JobParmsConsts(object):
-
     ENV_AUTO = "X_E_AUTO"
 
 
 @dataclass(kw_only=True)
 class JobName(std_parms.JobName):
-
     # id: str
     # ns: str
     pass
@@ -19,7 +17,6 @@ class JobName(std_parms.JobName):
 
 @dataclass(kw_only=True)
 class JobCall(std_parms.JobCall):
-
     # func: Optional[Callable] = None
     # source: Optional[str] = None
     pass
@@ -27,14 +24,12 @@ class JobCall(std_parms.JobCall):
 
 @dataclass(kw_only=True)
 class JobParm(std_parms.JobParm):
-
     # v: dict
     pass
 
 
 @dataclass(kw_only=True)
 class JobSpec:
-
     name: JobName
     call: JobCall
     parm: JobParm
@@ -45,7 +40,6 @@ class JobSpec:
 
 @dataclass
 class JobSpecs:
-
     specs: Sequence[JobSpec]
     auto: Optional[str] = None
 
@@ -67,7 +61,7 @@ class JobSpecs:
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-def parm(*args, **kwargs) -> JobParm:
+def parm(**kwargs) -> JobParm:
     parm = JobParm(v=kwargs)
     return parm
 

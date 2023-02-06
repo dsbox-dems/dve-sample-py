@@ -2,9 +2,9 @@ import sys
 import logging
 
 from vce.cli.ctl import std_main
-from dve.cli.args import get_auto_argparser
+from dve.cli.xargs import get_auto_argparser
 
-import vce.cli.parms as sp
+import dve.cli.parms as sp
 
 from dve.config.data import cfd
 
@@ -13,6 +13,7 @@ from dve.config.data import cfd
 # ---------------------------------------------------------------
 
 import dve.scripts.dummy.dummy_script as dummy_script
+import dve.scripts.dummy.dummy_test as dummy_test
 
 # ---------------------------------------------------------------
 
@@ -27,7 +28,7 @@ JOB_SPECS = sp.init_specs(
         sp.spec(
             "test-01",
             "test-auto",
-            dummy_script.main,
+            dummy_test.main,
             sp.parm(p1=1.0, p2="abc", p3=[1, 2, 3]),
         ),
     ],
@@ -40,49 +41,51 @@ logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
-def exec_spec(spec: sp.JobSpec, argv=None, *args, **kwargs):
+def exec_spec(argv, xargs, name, spec: sp.JobSpec, **kwargs):
     script_main = spec.call.get_main()
-    RC = script_main(argv, spec=spec, **kwargs)
+    kwargs["job_name"] = name
+    kwargs["job_spec"] = spec
+    kwargs["job_xargs"] = xargs
+    RC = script_main(argv, **kwargs)
     return RC
 
 
-def auto_dispatch(name, xargs, argv=None, *args, **kwargs):
+def auto_dispatch(argv, xargs, name, **kwargs):
     spec = JOB_SPECS.get_job_spec(name)
-    exec_spec(spec=spec, name=name, xargs=xargs, argv=argv, *args, **kwargs)
+    exec_spec(argv, xargs, name, spec, **kwargs)
 
 
-def auto_exec(name, args, argv=None, **kwargs):
+def auto_exec(argv, xargs, name, **kwargs):
     auto_id = JOB_SPECS.get_auto_name()
-    return auto_dispatch(auto_id, args, argv, **kwargs)
+    return auto_dispatch(argv, xargs, auto_id, **kwargs)
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-def parse_args(argv=None, *args, **kwargs):
+def parse_args(argv=None, **kwargs):
     parser = get_auto_argparser()
-    result = parser.parse_args(argv, *args, **kwargs)
+    result = parser.parse_args(argv, **kwargs)
     return result
 
 
-def exec(xargs, argv=None, *args, **kwargs):
-
+def exec(argv, xargs, **kwargs):
     name = xargs.name
     if name == "_":
         name = "auto"
 
     if name == "auto":
-        RC = auto_exec(name, args, argv, **kwargs)
+        RC = auto_exec(argv, xargs, name, **kwargs)
     else:
-        RC = auto_dispatch(name, args, argv, **kwargs)
+        RC = auto_dispatch(argv, xargs, name, **kwargs)
     return RC
 
 
 @std_main(log=log, debug=True)
-def main(argv=None, *args, **kwargs):
+def main(argv=None, **kwargs):
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    xargs = parse_args(argv, *args, **kwargs)
-    RC = exec(xargs, argv, *args, **kwargs)
+    xargs = parse_args(argv, **kwargs)
+    RC = exec(argv, xargs, **kwargs)
     log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC
 

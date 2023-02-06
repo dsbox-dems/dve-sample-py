@@ -19,31 +19,32 @@ class CliTest(unittest.TestCase):
     def _pass_fixtures(self, capsys):
         self.capsys = capsys
 
-    def test_simple_args(self):
+    def test_runner_args(self):
         argv = ["-v", "--exec", "main", "--cmd", "test"]
         log.debug("+++ cli.main:" + str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
-        assert argv[0] in out.getvalue()
+        s = out.getvalue()
+        assert argv[0] in s
 
-    def test_auto_script(self):
-        argv = ["-v", "--exec", "main", "--cmd", "auto", "--name", "test"]
+    def test_auto_check(self):
+        argv = ["--name", "test-01"]
         log.debug("+++ cli.main:" + str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
-        assert "auto:test" in out.getvalue()
+        s = out.getvalue()
+        assert "'job_name': 'test-01'" in s
 
-    @pytest.mark.skip(reason="feature delayed: numactl support")
-    @unittest.skip("feature delayed: numactl support")
-    def test_auto_spawn(self):
-        argv = ["-v", "--exec", "main", "--cmd", "auto", "--name", "auto"]
+    def test_runner_check(self):
+        argv = ["-v", "--exec", "main", "--cmd", "auto", "--name", "test-01"]
         log.debug("+++ cli.main:" + str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
-        assert "auto:spawn" in out.getvalue()
+        s = out.getvalue()
+        assert "'job_name': 'test-01'" in s
 
     def setUp(self):
         # self.conf_dir = os.environ['CONFIG_DIR']

@@ -117,7 +117,7 @@ class AppDummyArgs(AppAutoArgs):
         return parser
 
     def get_parser(self) -> argparse.ArgumentParser:
-        return self.demo_parser()
+        return self.dummy_parser()
 
 
 def get_dummy_argparser(*args, **kwargs) -> AppDummyArgs:
