@@ -18,6 +18,7 @@ from vce.cli.ctl import std_main
 from vce.cli.xargs import get_demo_argparser
 
 from vce.common.util.trace import trace_logger
+from vce.common.util.kernel import in_notebook
 from vce.config.data import cfd
 
 # In[3]:
@@ -59,19 +60,6 @@ args = None
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[5]:
-
-
-def in_notebook():
-    try:
-        from IPython import get_ipython
-
-        if "IPKernelApp" not in get_ipython().config:  # pragma: no cover
-            return False
-    except ImportError:
-        return False
-    except AttributeError:
-        return False
-    return True
 
 
 def get_argv(argv: Optional[list[str]] = None) -> list[str]:
@@ -308,9 +296,18 @@ def run_worker():
     return RC
 
 
+# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+def exec(argv, xargs, **kwargs):
+    global RC
+    RC = run_worker()
+    return RC
+
+
 @std_main(log=log, debug=True)
-def main(argv=None):
-    global args
+def main(argv=None, **kwargs):
+    global RC, xargs
 
     print(argv)
     print(__name__ + "main:" + str(argv))
@@ -318,8 +315,8 @@ def main(argv=None):
     argv = get_argv(argv)
 
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    args = parse_args(argv)
-    run_worker()
+    xargs = parse_args(argv, **kwargs)
+    exec(argv, xargs, **kwargs)
 
     log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC

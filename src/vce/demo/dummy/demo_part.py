@@ -21,27 +21,20 @@ from typing import Optional
 
 # In[2]:
 
-from vce.common.util.trace import trace_logger
-from vce.config.data import cfd
-from vce.cli import std_main
+from vce.cli.ctl import std_main
 from vce.cli.xargs import get_part_argparser
+
+from vce.common.util.trace import trace_logger
+from vce.common.util.kernel import in_notebook
+from vce.config.data import cfd
 
 # In[3]:
 
 import logging
 
-
-def getLogger():
-    logging.basicConfig(level=logging.DEBUG)  # TODO: config/verbose
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    # logget.setLevel(logging.INFO)
-    return logger
-
-
-log = getLogger()
-
-trc = trace_logger("fbx")
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(__name__)
+trc = trace_logger("dmy")
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -80,19 +73,6 @@ dat = None
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[4]:
-
-
-def in_notebook():
-    try:
-        from IPython import get_ipython
-
-        if "IPKernelApp" not in get_ipython().config:  # pragma: no cover
-            return False
-    except ImportError:
-        return False
-    except AttributeError:
-        return False
-    return True
 
 
 def get_argv(argv=None):
@@ -548,7 +528,7 @@ def main(argv=None, **kwargs):
     argv = get_argv(argv)
 
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    args = parse_args(argv, **kwargs)
+    xargs = parse_args(argv, **kwargs)
 
     if is_core_parallel():
         if is_core_distributor():

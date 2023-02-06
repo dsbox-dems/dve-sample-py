@@ -10,13 +10,13 @@ log = logging.getLogger(__name__)
 RC = 0
 
 
-def parse_args(argv=None, **kwargs):
+def parse_args(argv, **kwargs):
     parser = get_main_argparser()
     result = parser.parse_args(argv, **kwargs)
     return result
 
 
-def exec(xargs, argv=None, **kwargs):
+def exec(argv, xargs, **kwargs):
     entry = xargs.exec
     if entry == "_":
         entry = "demo"
@@ -34,7 +34,7 @@ def exec(xargs, argv=None, **kwargs):
 def main(argv=None, **kwargs):
     """Process command line arguments."""
     xargs = parse_args(argv, **kwargs)
-    RC = exec(xargs, argv=argv, **kwargs)
+    RC = exec(argv, xargs, **kwargs)
     return RC
 
 

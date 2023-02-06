@@ -72,7 +72,7 @@ X_MP_CONF = dict(
 )
 
 
-def mp_conf(parm=None, name=None, args=None, argv=None):
+def mp_conf(argv, xargs, name, sub, parm, **kwargs):
     return X_MP_CONF[X_ARCH]
 
 
@@ -96,21 +96,22 @@ def to_manylines(command_lines):
     return dedent(command_lines)
 
 
-def run_context(command, parm, name, args, argv=None):
-    conf = mp_conf(parm=parm, name=name, args=args, argv=argv)
+def run_context(argv, xargs, name, sub, parm, **kwargs):
+    conf = mp_conf(argv, xargs, name, sub, parm, **kwargs)
     proc_id = new_proc_id()
     timer = tm.timer()
     prefix = f"//run({proc_id},{init_timer}):"
     ctx = dict(
-        command=command,
+        sub=sub,
         proc_id=proc_id,
         timer=timer,
         prefix=prefix,
         mp_conf=conf,
         parm=parm,
         name=name,
-        args=args,
+        xargs=xargs,
         argv=argv,
+        extra=kwargs,
     )
     return ctx
 
@@ -212,13 +213,13 @@ def run_para(ctx, command):
     return rc
 
 
-def run_command(command, parm, name, args, argv=None):
-    ctx = run_context(command=command, parm=parm, name=name, args=args, argv=argv)
-    log.info(f"> {ctx['prefix']} {command}")
-    if ctx["mp_conf"].enable:
-        rc = run_para(ctx, command)
+def run_command(argv, xargs, name, sub, parm, **kwargs):
+    ctx = run_context(argv, xargs, name, sub, parm, **kwargs)
+    log.info(f"> {ctx['prefix']} {sub}")
+    if ctx["mp_conf"]:  # .enable
+        rc = run_para(ctx, sub)
     else:
-        rc = run_proc(ctx, command)
+        rc = run_proc(ctx, sub)
     log.info(f"< {ctx['prefix']}  (rc:{rc},elapsed{ctx['timer']})")
     return rc
 
@@ -226,7 +227,7 @@ def run_command(command, parm, name, args, argv=None):
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-def cmd_args(parm, name, args, argv=None, **kwargs):
+def cmd_args(argv, xargs, name, parm, **kwargs):
     result = [
         "--jobname",
         parm["job"],
@@ -239,50 +240,47 @@ def cmd_args(parm, name, args, argv=None, **kwargs):
     return s
 
 
-def cmd_script(parm, name, args, argv=None, **kwargs):
-    result = f"python {X_SCRIPT} {cmd_args(parm,name,args,argv)}"
+def cmd_script(argv, xargs, name, parm, **kwargs):
+    script_line = cmd_args(argv, xargs, name, parm, **kwargs)
+    result = f"python {X_SCRIPT} {script_line}"
     return result
 
 
-def call_command(command, name, args, argv=None, **kwargs):
+def call_command(argv, xargs, name, sub, **kwargs):
     parm = dict()
-    run_command(command, parm, name, args, argv)
+    run_command(argv, xargs, name, sub, parm, **kwargs)
 
 
-def call_script(name, args, argv=None, **kwargs):
+def call_script(argv, xargs, name, **kwargs):
     parm = DD_PARMS[name]
-    command = cmd_script(parm, name, args, argv)
-    run_command(command, parm, name, args, argv)
+    sub = cmd_script(argv, xargs, name, parm, **kwargs)
+    run_command(argv, xargs, name, sub, parm, **kwargs)
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-def exec_auto(name, args, argv=None, **kwargs):
-    call_script(name, args, argv, **kwargs)
+def exec_auto(argv, xargs, name, **kwargs):
+    call_script(argv, xargs, name, **kwargs)
 
 
-def exec_demo_script(name, args, argv=None, **kwargs):
-    call_script(name, args, argv, **kwargs)
+def exec_demo_script(argv, xargs, name, **kwargs):
+    call_script(argv, xargs, name, **kwargs)
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-def exec_test_find(name, args, argv=None):
-    call_command(
-        to_oneline(
-            f"""\
+def exec_test_find(argv, xargs, name, **kwargs):
+    sub = to_oneline(
+        f"""\
         find {cfd().DATA_WORK} -name '*.py' | xargs -l1 -I{{}} basename {{}}
     """
-        ),
-        name,
-        args,
-        argv,
     )
+    call_command(argv, xargs, name, sub, **kwargs)
 
 
-def exec_test_numa(name, args, argv=None):
+def exec_test_numa(argv, xargs, name, **kwargs):
     test_script = to_oneline(
         f"""\
         import os;
@@ -294,13 +292,15 @@ def exec_test_numa(name, args, argv=None):
         time.sleep(1);
     """
     )
-    call_command(f"python -c '{test_script}'", name, args, argv)
+    sub = f"python -c '{test_script}'"
+    call_command(argv, xargs, name, sub, **kwargs)
 
 
-def exec_test(name, args, argv=None, **kwargs):
-    # exec_test_find(name, args, argv)
-    exec_test_numa(name, args, argv, **kwargs)
-    print("#<auto:test>:" + str(args))
+def exec_test(argv, xargs, name, **kwargs):
+    msg = f"#<numa.test>: cmd={'test_numa'}, xargs:<{str(xargs)}>, argv:<{str(argv)}>, kwargs:<{str(kwargs)}>"
+    log.info(msg)
+    print(msg)
+    exec_test_numa(argv, xargs, name, **kwargs)
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -312,19 +312,19 @@ def parse_args(argv=None, **kwargs):
     return result
 
 
-def exec(args, argv=None, **kwargs):
+def exec(argv, xargs, **kwargs):
     """Dispatch execution to target entry point."""
 
-    name = args.name
+    name = xargs.name
     if name == "_":
         name = "auto"
 
     if name == "auto":
-        RC = exec_auto(name, args, argv)
+        RC = exec_auto(argv, xargs, name, **kwargs)
     elif name == "demo_script":
-        RC = exec_demo_script(name, args, argv)
+        RC = exec_demo_script(argv, xargs, name, **kwargs)
     elif name == "test":
-        RC = exec_test(name, args, argv)
+        RC = exec_test(argv, xargs, name, **kwargs)
     else:
         raise ValueError(f"invalid spec: {name}!")
     return RC
@@ -336,7 +336,7 @@ def main(argv=None, **kwargs):
     print(__name__ + "main:" + str(argv))
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
     args = parse_args(argv)
-    RC = exec(args, argv)
+    RC = exec(argv, args)
     log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC
 

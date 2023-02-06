@@ -9,13 +9,13 @@ logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
-def parse_args(argv=None, **kwargs):
+def parse_args(argv, **kwargs):
     parser = get_runner_argparser()
     result = parser.parse_args(argv, **kwargs)
     return result
 
 
-def exec(xargs, argv=None, **kwargs):
+def exec(argv, xargs, **kwargs):
     cmd = xargs.cmd
     if cmd == "_":
         cmd = "auto"
@@ -29,7 +29,7 @@ def exec(xargs, argv=None, **kwargs):
 
         RC = script.main(argv, **kwargs)
     elif cmd == "test":
-        msg = f"#<test>: argv:<{str(argv)}>, args:<{str(args)}>, kwargs:<{str(kwargs)}>"
+        msg = f"#<runner.test>: cmd={cmd}, xargs:<{str(xargs)}>, argv:<{str(argv)}>, kwargs:<{str(kwargs)}>"
         log.info(msg)
         print(msg)
         RC = 0
@@ -42,7 +42,7 @@ def exec(xargs, argv=None, **kwargs):
 def main(argv=None, **kwargs):
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
     xargs = parse_args(argv, **kwargs)
-    RC = exec(xargs, argv, **kwargs)
+    RC = exec(argv, xargs, **kwargs)
     log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC
 

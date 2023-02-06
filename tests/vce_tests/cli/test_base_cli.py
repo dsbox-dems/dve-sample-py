@@ -36,26 +36,26 @@ class BaseCliTest(unittest.TestCase):
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
-        assert "auto:test-00" in out.getvalue()
+        assert "'job_name': 'test-00'" in out.getvalue()
 
-    def x_test_auto_environ(self):
+    def test_auto_environ(self):
         with environ.modified_environ(
-            X_E_AUTO="auto:test-01",
+            X_E_AUTO="test-01",
         ):
             argv = []
             log.debug("+++ cli.main:" + str(argv))
             out = io.StringIO()
             with redirect_stdout(out):
                 main(argv)
-                assert "auto:test-01" in out.getvalue()
+                assert "'job_name': 'test-01'" in out.getvalue()
 
-    def x_test_auto_script(self):
+    def test_auto_script(self):
         argv = ["--name", "test-02"]
         log.debug("+++ cli.main:" + str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
-        assert "auto:test-02" in out.getvalue()
+        assert "'job_name': 'test-02'" in out.getvalue()
 
     def x_test_auto_spawn(self):
         argv = ["--name", "demo-01"]
@@ -63,7 +63,7 @@ class BaseCliTest(unittest.TestCase):
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
-        assert "auto:spawn" in out.getvalue()
+        assert "'job_name': 'demo-01'" in out.getvalue()
 
     def setUp(self):
         conf.AppConfigs.unload_all()

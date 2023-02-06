@@ -53,20 +53,23 @@ logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
-def exec_spec(spec: sp.JobSpec, argv=None, **kwargs):
+def exec_spec(argv, xargs, name, spec: sp.JobSpec, **kwargs):
     script_main = spec.call.get_main()
-    RC = script_main(argv, spec=spec, **kwargs)
+    kwargs["job_name"] = name
+    kwargs["job_spec"] = spec
+    kwargs["job_xargs"] = xargs
+    RC = script_main(argv, **kwargs)
     return RC
 
 
-def auto_dispatch(name, xargs, argv=None, **kwargs):
+def auto_dispatch(argv, xargs, name, **kwargs):
     spec = JOB_SPECS.get_job_spec(name)
-    exec_spec(spec=spec, name=name, xargs=xargs, argv=argv, **kwargs)
+    exec_spec(argv, xargs, name, spec, **kwargs)
 
 
-def auto_exec(name, args, argv=None, **kwargs):
+def auto_exec(argv, xargs, name, **kwargs):
     auto_id = JOB_SPECS.get_auto_name()
-    return auto_dispatch(auto_id, args, argv, **kwargs)
+    return auto_dispatch(argv, xargs, auto_id, **kwargs)
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,15 +81,15 @@ def parse_args(argv=None, **kwargs):
     return result
 
 
-def exec(xargs, argv=None, **kwargs):
+def exec(argv, xargs, **kwargs):
     name = xargs.name
     if name == "_":
         name = "auto"
 
     if name == "auto":
-        RC = auto_exec(name, xargs, argv, **kwargs)
+        RC = auto_exec(argv, xargs, name, **kwargs)
     else:
-        RC = auto_dispatch(name, xargs, argv, **kwargs)
+        RC = auto_dispatch(argv, xargs, name, **kwargs)
     return RC
 
 
@@ -94,7 +97,7 @@ def exec(xargs, argv=None, **kwargs):
 def main(argv=None, **kwargs):
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
     xargs = parse_args(argv, **kwargs)
-    RC = exec(xargs, argv, **kwargs)
+    RC = exec(argv, xargs, **kwargs)
     log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC
 

@@ -8,13 +8,13 @@ log = logging.getLogger(__name__)
 
 
 class StdMain(object):
-
     LOG_PREFIX = "#++ "
 
-    def __init__(self, func, log=logging.getLogger(__name__), debug=False):
+    def __init__(self, func, log=logging.getLogger(__name__), debug=False, **kwargs):
         functools.update_wrapper(self, func)
         self.func = func
         self.debug = debug
+        self.extra = kwargs
         self.log = log
         self.num_calls = 0
 
@@ -54,6 +54,6 @@ class StdMain(object):
 
 def std_main(log=logging.getLogger(__name__), debug=False, **kwargs):
     def _std_main(func):
-        return StdMain(func, log=log, debug=debug, **kwargs)
+        return StdMain(func, log, debug, **kwargs)
 
     return _std_main
