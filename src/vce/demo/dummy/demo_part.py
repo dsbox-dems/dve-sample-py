@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# TODO: incomplete <c:NUMA>
+
 # In[1]:
 
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import numpy as np
-import torch
-import math
 import pandas as pd
+
 import time
 import os
 import os.path
@@ -17,29 +17,24 @@ import sys
 from collections import namedtuple
 import argparse
 from datetime import datetime
-from dve.common.util.trace import trace_logger
-
+from typing import Optional
 
 # In[2]:
 
-from dve.config.data import DATA_HOME
-from dve.config.data import DATA_TEMP
+from vce.cli.ctl import std_main
+from vce.cli.xargs import get_part_argparser
+
+from vce.common.util.trace import trace_logger
+from vce.common.util.kernel import in_notebook
+from vce.config.data import cfd
+
+# In[3]:
 
 import logging
 
-
-def getLogger():
-    logging.basicConfig(level=logging.DEBUG)  # TODO: config/verbose
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    # logget.setLevel(logging.INFO)
-    return logger
-
-
-log = getLogger()
-
-trc = trace_logger("fbx")
-
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(__name__)
+trc = trace_logger("dmy")
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -69,31 +64,15 @@ ARGV_NOTEBOOK = ARGV_DEFAULT
 # -----
 
 args = None
-model = None
-dd_conf = None
 in_data = None
 out_data = None
 df = None
 sentence = None
 dat = None
 
-
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[4]:
-
-
-def in_notebook():
-    try:
-        from IPython import get_ipython
-
-        if "IPKernelApp" not in get_ipython().config:  # pragma: no cover
-            return False
-    except ImportError:
-        return False
-    except AttributeError:
-        return False
-    return True
 
 
 def get_argv(argv=None):
@@ -107,10 +86,6 @@ def get_argv(argv=None):
 
 
 def argparser(options=None):
-    # """Parent Argument Parser."""
-    # import dve.scripts.runner as auto_runner
-    # parser = auto_runner.argparser(options)
-
     """Base Argument Parser."""
     parser = argparse.ArgumentParser(add_help=False, conflict_handler="resolve")
 
@@ -122,14 +97,10 @@ def argparser(options=None):
     return parser
 
 
-def parse_args(argv=None):
-    """Process command line arguments."""
-    argv = get_argv(argv)
-    global args
-    parser = argparser()
-    # args = parser.parse_args(argv)
-    args, unknown = parser.parse_known_args(argv)
-    return args
+def parse_args(argv=None, **kwargs):
+    parser = get_part_argparser()
+    result = parser.parse_args(argv, **kwargs)
+    return result
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,8 +170,10 @@ Model = namedtuple("Model", ["finbert", "tokenizer"])
 
 def retrieve_model():
     global model
-    finbert = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
-    tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
+    finbert = (
+        {}
+    )  # AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
+    tokenizer = {}  # AutoTokenizer.from_pretrained("ProsusAI/finbert")
     model = Model(finbert, tokenizer)
     return model
 
@@ -227,17 +200,39 @@ DataConf = namedtuple(
     ],
 )
 
+dd_conf: Optional[DataConf] = None
 
-def config_data():
+
+def arg_jobid(args):
+    return jobid()
+
+
+def arg_group(args):
+    return args.group
+
+
+def arg_filename(args):
+    return args.filename
+
+
+def arg_slotid(args):
+    return slot_idx()
+
+
+def arg_slotnum(args):
+    return slots_num()
+
+
+def config_data() -> DataConf:
     global dd_conf, args
 
-    dd_jobid = jobid()
-    dd_slot = slot_idx()
-    dd_slots = slots_num()
-    dd_group = args.group
-    dd_filename = args.filename
-    dd_path = f"{DATA_HOME}/{dd_group}"
-    dd_temp = f"{DATA_TEMP}/{__name__}/{dd_jobid}/{dd_slots}"
+    dd_jobid = arg_jobid(args)
+    dd_slot = arg_slotid(args)
+    dd_slots = arg_slotnum(args)
+    dd_group = arg_group(args)
+    dd_filename = arg_filename(args)
+    dd_path = f"{cfd().DATA_HOME}/{dd_group}"
+    dd_temp = f"{cfd().DATA_TEMP}/{__name__}/{dd_jobid}/{dd_slots}"
     dd_indir = "Output R"
     dd_outdir = "Output Python"
 
@@ -294,14 +289,13 @@ def ensure_path(filename):
 
 def load_data(dd_conf=dd_conf):
     global df
-    dd_infile = dd_conf.dd_infile
+    dd_infile = "infile.csv"  # dd_conf.dd_infile
     df = pd.read_csv(dd_infile, sep=";")
     # print (df)
     return df
 
 
 # In[8]:
-
 
 InputData = namedtuple("InputData", ["df", "id", "sentence", "dat"])
 
@@ -353,7 +347,7 @@ def softmax(x):
 def evaluate_model(limits, in_data=in_data, model=model):
     t1 = time.time()
     finbert, tokenizer = model.finbert, model.tokenizer
-    id, sentence, dat = in_data.id, in_data.sentence, in_data.dat
+    # id, sentence, dat = in_data.id, in_data.sentence, in_data.dat
     labels = {0: "positive", 1: "negative", 2: "neutral"}
     results = pd.DataFrame(
         columns=[
@@ -370,29 +364,29 @@ def evaluate_model(limits, in_data=in_data, model=model):
 
     rows = []
 
-    for idk in range(limits):
-        inputs = tokenizer(sentence[idk], return_tensors="pt", padding=True)
-        # print(idk)
-        with torch.no_grad():
-            logits = softmax(np.array(finbert(**inputs)[0]))
-            prediction = labels[np.argmax(logits)]
-            sentiment_score = pd.Series(logits[:, 0] - logits[:, 1])
-            first_result = {
-                "id": id[idk],
-                "data": dat[idk],
-                "sentence": sentence[idk],
-                "logit_positive": logits[0][0],
-                "logit_negative": logits[0][1],
-                "logit_neutral": logits[0][2],
-                "prediction": prediction,
-                "sentiment_score": sentiment_score,
-            }
-            rows.append(first_result)
-            trc.update()
+    # for idk in range(limits):
+    # inputs = tokenizer(sentence[idk], return_tensors="pt", padding=True)
+    # print(idk)
+    # with torch.no_grad():
+    #     logits = softmax(np.array(finbert(**inputs)[0]))
+    #     prediction = labels[np.argmax(logits)]
+    #     sentiment_score = pd.Series(logits[:, 0] - logits[:, 1])
+    #     first_result = {
+    #         "id": id[idk],
+    #         "data": dat[idk],
+    #         "sentence": sentence[idk],
+    #         "logit_positive": logits[0][0],
+    #         "logit_negative": logits[0][1],
+    #         "logit_neutral": logits[0][2],
+    #         "prediction": prediction,
+    #         "sentiment_score": sentiment_score,
+    #     }
+    #     rows.append(first_result)
+    #     trc.update()
 
-    results = results.append(rows, ignore_index=True, sort=False)
-    t2 = time.time()
-    print(t2 - t1)
+    # results = results.append(rows, ignore_index=True, sort=False)
+    # t2 = time.time()
+    # print(t2 - t1)
     return results
 
 
@@ -406,7 +400,8 @@ OutputData = namedtuple(
 
 def process_data(in_data=in_data, model=model):
     # lim = 1000
-    lim = len(in_data.sentence)
+    # lim = len(in_data.sentence)
+    lim = 10
     with trc:
         out = evaluate_model(lim, in_data=in_data, model=model)
         # print(out)
@@ -421,8 +416,7 @@ def process_data(in_data=in_data, model=model):
 
 
 def save_data(out_data=out_data, dd_conf=dd_conf):
-
-    dd_outfile = dd_conf.dd_outfile
+    dd_outfile = "outfil.csv"  # dd_conf.dd_outfile
     ensure_path(dd_outfile)
 
     out = out_data.out
@@ -434,9 +428,10 @@ def save_data(out_data=out_data, dd_conf=dd_conf):
 # In[11]:
 
 
-def distribute_data(dd_conf=dd_conf):
+def distribute_data(dd_conf: Optional[DataConf] = dd_conf):
+    assert dd_conf is not None
 
-    num_chunks = slots_num()
+    num_chunks = dd_conf.dd_slots
 
     dd_infile = dd_conf.dd_infile
     dd_outfile = dd_conf.dd_outfile
@@ -453,10 +448,13 @@ def distribute_data(dd_conf=dd_conf):
             i = i + 1
 
 
+# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 # In[12]:
 
 
-def collect_data(dd_conf=dd_conf):
+def collect_data(dd_conf: Optional[DataConf] = dd_conf):
+    assert dd_conf is not None
 
     dd_temp = dd_conf.dd_temp
     dd_outdir = dd_conf.dd_outdir
@@ -474,7 +472,6 @@ def collect_data(dd_conf=dd_conf):
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 # In[13]:
 
@@ -522,7 +519,7 @@ def run_collector():
     return RC
 
 
-def main(argv=None):
+def main(argv=None, **kwargs):
     global args
 
     print(argv)
@@ -531,7 +528,7 @@ def main(argv=None):
     argv = get_argv(argv)
 
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    args = parse_args(argv)
+    xargs = parse_args(argv, **kwargs)
 
     if is_core_parallel():
         if is_core_distributor():
@@ -552,7 +549,6 @@ def main(argv=None):
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 # In[14]:
 

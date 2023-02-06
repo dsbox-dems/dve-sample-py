@@ -1,12 +1,18 @@
 import sys
-import argparse
+import logging
 
 import dve.cli
+from vce.cli import std_main
+
+logging.basicConfig(level=logging.DEBUG)
+
+log = logging.getLogger(__name__)
 
 
-def main(argv=None):
+@std_main(log=log, debug=True)
+def main(argv=None, **kwargs):
     """Process command line arguments."""
-    return dve.cli.main(argv=argv)
+    return dve.cli.main(argv, **kwargs)
 
 
 if __name__ == "__main__":

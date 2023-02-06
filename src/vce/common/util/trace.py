@@ -3,8 +3,7 @@ from textwrap import dedent
 import re
 from datetime import datetime
 
-from dve.common.util.time import timer
-
+from vce.common.util.time import timer
 
 import logging
 
@@ -216,10 +215,10 @@ class TraceFrame:
 
         ( \
             echo '['; \
-            python tests/dve_tests/common/util/test_trace.py |& \
+            python tests/vce_tests/common/util/test_trace.py |& \
             grep -v '__main__'  | \
             cut -f2- | \
-            grep '^\{' ; \
+            grep '^\''{' ; \
             echo ' {} ]' \
         ) | \
         jq '.'
@@ -232,11 +231,11 @@ class TraceFrame:
 
         ( \
             echo '['; \
-            python tests/dve_tests/common/util/test_trace.py |& \
+            python tests/vce_tests/common/util/test_trace.py |& \
             grep -v '__main__'  | \
             grep '"tag": {"s": "._3_", "w": "+"}' | \
             cut -f2,4,8,9,10 | \
-            grep '^\{' ; \
+            grep '^\''{' ; \
             echo ' {} ]' \
         ) | \
         jq '.'

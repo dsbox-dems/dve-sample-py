@@ -1,105 +1,35 @@
 from dve.config.conf.db import DbConfig
 from dve.config.conf import AppConfig, AppConfigEx
 
-DB_TYPE_GENERIC = "generic"
-DB_TYPE_MYSQL = "mysql"
-DB_TYPE_POSTGRESQL = "postgresql"
-
-DB_REG_CLASSES = {
-    DB_TYPE_MYSQL: lambda name, config: MyDbConfig.create(name, config),
-    DB_TYPE_POSTGRESQL: lambda name, config: PgDbConfig.create(name, config),
-}
+import vce.config.conf as vce_conf
+import vce.config.conf.db as vce_conf_db
 
 
-class AbsDbConfig(DbConfig):
-    def __init__(self, name: str, config: dict):
-        super().__init__(name, config)
+class DbConfigImpl(DbConfig):
+    def __init__(self, name: str, inner: vce_conf_db.DbConfig):
+        super().__init__(name)
+        self.inner = inner
 
     def uri(self) -> str:
-        cfg = self.config
-        if not "uri" in cfg:
-            raise ValueError(f"alias not found for db source: {self.name}")
-        uri = str(cfg["uri"])
-        result = uri.format(**cfg)
-        return result
+        return self.inner.uri()
 
     def dump(self, full: bool = False) -> str:
-        if full:
-            result = AppConfig.dump_object(self.config)
-            return result
-        else:
-            uri = self.uri()
-            result = DbConfig.dump_object_uri(uri)
-            return result
-
-
-class RefDbConfig(AbsDbConfig):
-
-    db_type = DB_TYPE_GENERIC
-
-    def __init__(self, name: str, config: dict, delegate: AbsDbConfig):
-        super().__init__(name, config)
-        self.delegate = delegate
+        return self.inner.dump(full)
 
     @classmethod
-    def create(cls, name: str, config: dict, delegate: AbsDbConfig) -> AbsDbConfig:
-        result = RefDbConfig(name, config, delegate)
-        return result
-
-    def uri(self) -> str:
-        return self.delegate.uri()
-
-
-class MyDbConfig(AbsDbConfig):
-
-    db_type = DB_TYPE_MYSQL
-
-    def __init__(self, name: str, config: dict):
-        super().__init__(name, config)
-
-    @classmethod
-    def create(cls, name: str, config: dict) -> AbsDbConfig:
-        result = MyDbConfig(name, config)
-        return result
-
-
-class PgDbConfig(AbsDbConfig):
-
-    db_type = DB_TYPE_POSTGRESQL
-
-    def __init__(self, name: str, config: dict):
-        super().__init__(name, config)
-
-    @classmethod
-    def create(cls, name: str, config: dict) -> AbsDbConfig:
-        result = PgDbConfig(name, config)
+    def create(cls, name: str, inner: vce_conf_db.DbConfig) -> DbConfig:
+        result = DbConfigImpl(name, inner)
         return result
 
 
 class DbConfigFactory(object):
     @classmethod
-    def get_direct(cls, app_config: AppConfigEx, name: str) -> AbsDbConfig:
-        db_config = app_config.db_config(name)
-        db_type = str(db_config["type"]).lower()
-        db_create = DB_REG_CLASSES[db_type]
-        result = db_create(name, db_config)
-        return result
-
-    @classmethod
-    def get_delegate(cls, app_config: AppConfigEx, name: str) -> AbsDbConfig:
-        config = app_config.db_config(name)
-        if not "alias" in config:
-            raise ValueError(f"alias not found for db source: {name}")
-        db_name = config["alias"]
-        result = cls.get_direct(app_config, db_name)
-        return result
-
-    @classmethod
-    def get_instance(cls, app_config: AppConfigEx, name: str) -> AbsDbConfig:
-        config = app_config.db_config(name)
-        if "alias" in config:
-            delegate = cls.get_delegate(app_config, name)
-            result = RefDbConfig.create(name, config, delegate)
+    def get_instance(cls, app_config: AppConfigEx, name: str) -> DbConfig:
+        db_config_cache = app_config.db_config_cache()
+        if name in db_config_cache:
+            return db_config_cache[name]
         else:
-            result = cls.get_direct(app_config, name)
-        return result
+            inner = app_config.db_inner(name)
+            db_config = DbConfigImpl.create(name, inner)
+            db_config_cache[name] = inner
+            return db_config
