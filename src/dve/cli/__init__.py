@@ -1,58 +1,41 @@
-import sys
-import argparse
+import logging
+
+from vce.cli.ctl import std_main
+from dve.cli.xargs import get_main_argparser
+
+logging.basicConfig(level=logging.DEBUG)
+
+log = logging.getLogger(__name__)
 
 RC = 0
 
 
-def argbaseparser(options=None):
-    """Base Argument Parser."""
-    parser = argparse.ArgumentParser(add_help=False, conflict_handler="resolve")
-    parser.add_argument(
-        "-x", "--exec", type=str, help="command to dispatch", default="_"
-    )
-    parser.add_argument(
-        "--verbose", "-v", action="count", default=0, help="increase output verbosity"
-    )
-    return parser
+def parse_args(argv, **kwargs):
+    parser = get_main_argparser()
+    result = parser.parse_args(argv, **kwargs)
+    return result
 
 
-def argparser(options=None):
-    """create a inherited Argument Parser."""
-    parent = argbaseparser(options=options)
-    parser = argparse.ArgumentParser(parents=[parent], conflict_handler="resolve")
-    return parser
-
-
-def parse_args(argv=None):
-    """Process command line arguments."""
-    if not argv:
-        argv = sys.argv[1:]
-
-    parser = argparser()
-    args, unknown = parser.parse_known_args(argv)
-    return args
-
-
-def exec(args, argv=None):
-    """Dispatch execution to target entry point."""
-
-    entry = args.exec
+def exec(argv, xargs, **kwargs):
+    entry = xargs.exec
     if entry == "_":
         entry = "main"
 
     if entry == "main":
         import dve.scripts.runner as runner
 
-        RC = runner.main(argv)
+        RC = runner.main(argv, **kwargs)
     else:
         raise ValueError(f"invalid command: {entry}!")
     return RC
 
 
-def main(argv=None):
-    """Process command line arguments."""
-    args = parse_args(argv)
-    RC = exec(args, argv=argv)
+@std_main(log=log, debug=True)
+def main(argv=None, **kwargs):
+    log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
+    xargs = parse_args(argv, **kwargs)
+    RC = exec(argv, xargs, **kwargs)
+    log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
     return RC
 
 

@@ -402,6 +402,8 @@
   poetry install
 
   poetry show
+  poetry show --tree
+  
 
 #+END_SRC
 
@@ -435,14 +437,13 @@
   jupyter --version
   jupyter kernelspec list
 
-  [ -d ./notebooks ] && cd ./notebooks; \
-  jupyter notebook
+  jupyter notebook --notebook-dir=./notebooks
 
+  (cd ./notebooks; jupyter nbconvert --to notebook --execute sys-test/py-env-dump.ipynb)
+  
+  jupyter notebook --notebook-dir=./notebooks sys-test/py-env-dump.nbconvert.ipynb
 
-  [ -d ./notebooks ] && cd ./notebooks; \
-  jupyter notebook test/pyenv-verify/pyenv-check.ipynb
-
-
+  # [ -d ./notebooks ] && (cd ./notebooks; jupyter console)
 
   ##
   #

@@ -3,19 +3,16 @@ from abc import ABC, abstractmethod
 
 
 class DbConfigConsts(object):
-
     DB_TYPE_GENERIC = "generic"
     DB_TYPE_MYSQL = "mysql"
     DB_TYPE_POSTGRESQL = "postgresql"
 
 
 class DbConfig(ABC):
-
     db_type = DbConfigConsts.DB_TYPE_GENERIC
 
-    def __init__(self, name: str, config: dict):
+    def __init__(self, name: str):
         self.name = name
-        self.config = config
 
     @abstractmethod
     def uri(self) -> str:

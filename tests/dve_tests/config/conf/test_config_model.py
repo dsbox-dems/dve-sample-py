@@ -3,7 +3,7 @@ import sys
 import unittest
 
 from dve.config import conf
-from dve.common.util import environ
+from vce.common.util import environ
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 

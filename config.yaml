@@ -16,11 +16,11 @@ data:
         name: "dve"
         size: 3
         
-      host: ${X_DB_GCT_HOST:-localhost}
-      port: ${X_DB_GCT_PORT:-3306}
-      user: ${X_DB_GCT_USER:-gct}
-      password: ${X_DB_GCT_PASSWORD:-*hidden*}
-      database: ${X_DB_GCT_DATABASE:-gct}
+      host: ${X_DB_DVE_HOST:-localhost}
+      port: ${X_DB_DVE_PORT:-3306}
+      user: ${X_DB_DVE_USER:-gct}
+      password: ${X_DB_DVE_PASSWORD:-*hidden*}
+      database: ${X_DB_DVE_DATABASE:-gct}
       
       uri: "{type}+{driver}://{user}:{password}@{host}:{port}/{database}"
 

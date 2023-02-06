@@ -5,9 +5,9 @@ import glob
 import sys
 from tempfile import NamedTemporaryFile
 
-import dve.common.util.time as tm
+import vce.common.util.time as tm
 
-from dve.config.data import DATA_TEMP
+from vce.config.data import cfd
 
 
 def ensure_dir(dir_name):
@@ -35,7 +35,7 @@ def program_name():
 def temp_script_dir(dir=None):
     if dir is not None:
         return ensure_dir(dir)
-    dd_temp = DATA_TEMP
+    dd_temp = cfd().DATA_TEMP
     ts = tm.iso_timestamp()
     jn = program_name()
     dd_scripts = f"{dd_temp}/runner/{ts}/{jn}"

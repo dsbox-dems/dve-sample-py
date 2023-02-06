@@ -1,20 +1,28 @@
 import os.path
-from typing import Any
-from piny import YamlLoader
+from typing import Any, cast
 
 from dve.config.conf.db import DbConfig
 from dve.config.conf import AppConfigConsts, AppConfig, AppConfigEx
 
+import vce.config.conf as vce_conf
+import vce.config.conf.db as vce_conf_db
+import vce.config.conf.app_config as vce_conf_impl
 
-class AbsAppConfig(AppConfigEx):
-    def __init__(self, name: str, conf: dict):
+
+class AppConfigImpl(AppConfigEx):
+    def __init__(self, name: str, inner: vce_conf.AppConfigEx):
         super().__init__(name)
-        self.conf = conf
-        self.path_separator = AppConfigConsts.CONFIG_C_PATH_SEP
+        self.inner = inner
+        self._db_config_cache = dict()
+
+    def db_config_cache(self) -> dict:
+        return self._db_config_cache
 
     def db_config(self, db_name: str) -> dict:
-        result = self.conf["data"]["db"][db_name]
-        return result
+        return self.inner.db_config(db_name)
+
+    def db_inner(self, db_name: str) -> vce_conf_db.DbConfig:
+        return self.inner.db(db_name)
 
     def db(self, db_name: str) -> DbConfig:
         from dve.config.conf.db.db_config import DbConfigFactory
@@ -23,83 +31,39 @@ class AbsAppConfig(AppConfigEx):
         return result
 
     def data(self) -> dict:
-        return self.conf
-
-    def key_path(self, key: str) -> list:
-        result = key.split(self.path_separator)
-        return result
+        return self.inner.data()
 
     def get_value(self, key: str) -> Any:
-        keys = self.key_path(key)
-        cfg = self.conf
-        ks = []
-        for k in keys:
-            try:
-                ks.append(k)
-                cfg = cfg[k]
-            except:
-                raise ValueError(f"config key not found: {ks} in key: {key}")
-        return cfg
+        return self.inner.get_value(key)
 
     def has_value(self, key: str) -> bool:
-        try:
-            self.get_value(key)
-            return True
-        except ValueError:
-            return False
+        return self.inner.has_value(key)
 
     def dump_value(self, key: str) -> str:
-        try:
-            obj = self.get_value(key)
-            result = self.dump_object(obj)
-            return result
-        except ValueError:
-            return ""
+        return self.inner.dump_value(key)
 
     def get_int(self, key: str, defValue: int = 0) -> int:
-        obj = None
-        try:
-            obj = self.get_value(key)
-        except ValueError:
-            return defValue
-        result = int(obj)
-        return result
+        return self.inner.get_int(key, defValue)
+
+    def get_bool(self, key: str, defValue: bool = False) -> bool:
+        return self.inner.get_bool(key, defValue)
+
+    def get_float(self, key: str, defValue: float = 0.0) -> float:
+        return self.inner.get_float(key, defValue)
 
     def get_str(self, key: str, defValue: str = "") -> str:
-        obj = None
-        try:
-            obj = self.get_value(key)
-        except ValueError:
-            return defValue
-        result = str(obj)
-        return result
+        return self.inner.get_str(key, defValue)
 
     def dump(self) -> str:
-        result = self.dump_object(self.conf)
-        return result
-
-
-class ErrAbsConfig(AbsAppConfig):
-
-    cfg_type = AppConfigConsts.CFG_TYPE_ERROR
-
-    def __init__(self, name: str, ex: Exception):
-        super().__init__(name, dict(ex=ex))
-        self.ex = ex
-
-
-class YamlAppConfig(AbsAppConfig):
-
-    cfg_type = AppConfigConsts.CFG_TYPE_YAML
-
-    def __init__(self, name: str, conf: Any):
-        super().__init__(name, conf)
+        return self.inner.dump()
 
     @classmethod
-    def create(cls, name: str, config_path: str) -> AbsAppConfig:
+    def create(cls, name: str, config: vce_conf.AppConfig) -> AppConfig:
         try:
-            conf = YamlLoader(path=config_path).load()
-            result = YamlAppConfig(name, conf)
+            from vce.config import conf
+
+            inner = cast(vce_conf.AppConfigEx, config)
+            result = AppConfigImpl(name, inner)
             return result
         except Exception as ex:
             print(type(ex))
@@ -133,7 +97,10 @@ class AppConfigStore(object):
         if not os.path.exists(config_path):
             raise ValueError(f"Config Name {what} file not found: {config_path}")
         try:
-            result = YamlAppConfig.create(what, config_path)
+            from vce.config import conf
+
+            inner = cast(vce_conf.AppConfigEx, conf.get_config())
+            result = AppConfigImpl.create(what, inner)
             return result
         except Exception as ex:
             print(type(ex))
@@ -142,7 +109,6 @@ class AppConfigStore(object):
             raise ex
 
     def get_config(self, what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
-
         if what in self._config:
             handle = self._config[what]
             result = handle["data"]
@@ -162,7 +128,7 @@ class AppConfigStore(object):
         except Exception as ex:
             handle["failed"] = True
             handle["error"] = ex
-            handle["data"] = ErrAbsConfig(what, ex)
+            handle["data"] = None
             print(type(ex))
             print(ex.args)
             print(ex)
@@ -184,6 +150,7 @@ _store = AppConfigStore()
 def unload_all_configs():
     global _store
     _store = AppConfigStore()
+    vce_conf_impl.unload_all_configs()
 
 
 def get_config_store() -> AppConfigStore:

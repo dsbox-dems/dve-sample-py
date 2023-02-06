@@ -3,14 +3,7 @@ import os
 import sys
 import unittest
 
-from dve.config.data import DATA_WORK
-from dve.config.data import DATA_LOGS
-from dve.config.data import DATA_HOME
-from dve.config.data import DATA_HOST
-from dve.config.data import DATA_TEMP
-from dve.config.data import DATA_TEST
-from dve.config.data import DATA_USER
-from dve.config.data import DATA_DESK
+from dve.config.data import cfd
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
@@ -41,63 +34,72 @@ class ConfigDataTest(unittest.TestCase):
         return self.verify_dir(name, path, exists, isdir)
 
     def test_default_data_home_defined(self):
-        log.debug("+++ DATA_HOME:" + DATA_HOME)
-        self.assertIsNotNone(DATA_HOME)
+        log.debug("+++ DATA_HOME:" + cfd().DATA_HOME)
+        self.assertIsNotNone(cfd().DATA_HOME)
 
     def test_default_data_home(self):
-        self.assertTrue(self.log_dir("DATA_HOME", DATA_HOME))
+        self.assertTrue(self.log_dir("DATA_HOME", cfd().DATA_HOME))
 
     def test_default_data_work_defined(self):
-        log.debug("+++ DATA_WORK:" + DATA_WORK)
-        self.assertIsNotNone(DATA_WORK)
+        log.debug("+++ DATA_WORK:" + cfd().DATA_WORK)
+        self.assertIsNotNone(cfd().DATA_WORK)
 
     def test_default_data_work(self):
-        self.assertTrue(self.log_dir("DATA_WORK", DATA_WORK))
+        self.assertTrue(self.log_dir("DATA_WORK", cfd().DATA_WORK))
 
     def test_default_data_logs_defined(self):
-        log.debug("+++ DATA_LOGS:" + DATA_LOGS)
-        self.assertIsNotNone(DATA_LOGS)
+        log.debug("+++ DATA_LOGS:" + cfd().DATA_LOGS)
+        self.assertIsNotNone(cfd().DATA_LOGS)
 
     def test_default_data_logs(self):
-        self.assertTrue(self.log_dir("DATA_LOGS", DATA_LOGS))
+        self.assertTrue(self.log_dir("DATA_LOGS", cfd().DATA_LOGS))
 
     def test_default_data_host_defined(self):
-        log.debug("+++ DATA_HOST:" + DATA_HOST)
-        self.assertIsNotNone(DATA_HOST)
+        log.debug("+++ DATA_HOST:" + cfd().DATA_HOST)
+        self.assertIsNotNone(cfd().DATA_HOST)
 
     def test_default_data_host(self):
-        self.assertTrue(self.log_dir("DATA_HOST", DATA_HOST))
+        self.assertTrue(self.log_dir("DATA_HOST", cfd().DATA_HOST))
 
     def test_default_data_user_defined(self):
-        log.debug("+++ DATA_USER:" + DATA_USER)
-        self.assertIsNotNone(DATA_USER)
+        log.debug("+++ DATA_USER:" + cfd().DATA_USER)
+        self.assertIsNotNone(cfd().DATA_USER)
 
     def test_default_data_user(self):
-        self.assertTrue(self.log_dir("DATA_USER", DATA_USER))
+        self.assertTrue(self.log_dir("DATA_USER", cfd().DATA_USER))
 
     def test_default_data_desk_defined(self):
-        log.debug("+++ DATA_DESK:" + DATA_DESK)
-        self.assertIsNotNone(DATA_DESK)
+        log.debug("+++ DATA_DESK:" + cfd().DATA_DESK)
+        self.assertIsNotNone(cfd().DATA_DESK)
 
     def test_default_data_desk(self):
-        self.assertTrue(self.log_dir("DATA_DESK", DATA_DESK))
+        self.assertTrue(self.log_dir("DATA_DESK", cfd().DATA_DESK))
 
     def test_default_data_test_defined(self):
-        log.debug("+++ DATA_TEST:" + DATA_TEST)
-        self.assertIsNotNone(DATA_TEST)
+        log.debug("+++ DATA_TEST:" + cfd().DATA_TEST)
+        self.assertIsNotNone(cfd().DATA_TEST)
 
     def test_default_data_test(self):
-        self.assertTrue(self.log_dir("DATA_TEST", DATA_TEST))
+        self.assertTrue(self.log_dir("DATA_TEST", cfd().DATA_TEST))
 
     def test_default_data_temp_defined(self):
-        log.debug("+++ DATA_TEMP:" + DATA_TEMP)
-        self.assertIsNotNone(DATA_TEMP)
+        log.debug("+++ DATA_TEMP:" + cfd().DATA_TEMP)
+        self.assertIsNotNone(cfd().DATA_TEMP)
 
     def test_default_data_temp(self):
-        self.assertTrue(self.log_dir("DATA_TEMP", DATA_TEMP))
+        self.assertTrue(self.log_dir("DATA_TEMP", cfd().DATA_TEMP))
+
+    def test_default_data_cust_defined(self):
+        log.debug("+++ DATA_CUST:" + cfd().DATA_CUST)
+        self.assertIsNotNone(cfd().DATA_CUST)
+
+    def test_default_data_cust(self):
+        self.assertTrue(self.log_dir("DATA_CUST", cfd().DATA_CUST))
 
     def test_config_loader(self):
-        self.assertIsNotNone(True)
+        o = cfd()
+        self.assertIsNotNone(o)
+        log.debug("+++ cfd: " + str(o))
 
     def setUp(self):
         # self.conf_dir = os.environ['CONFIG_DIR']

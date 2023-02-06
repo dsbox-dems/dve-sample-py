@@ -15,8 +15,6 @@ class ConfigDbTest(unittest.TestCase):
     def test_config_demo(self):
         actual_db_config = conf.get_config().db("demo")
         self.assertIsNotNone(actual_db_config)
-        actual_config = actual_db_config.config
-        self.assertIsNotNone(actual_config)
         actual_uri = actual_db_config.uri()
         self.assertRegex(actual_uri, "://")
         log.debug("+++ CONFIG MODEL (demo):" + actual_db_config.dump(True))
@@ -25,8 +23,6 @@ class ConfigDbTest(unittest.TestCase):
     def test_config_demo_my(self):
         actual_db_config = conf.get_config().db("demo_my")
         self.assertIsNotNone(actual_db_config)
-        actual_config = actual_db_config.config
-        self.assertIsNotNone(actual_config)
         actual_uri = actual_db_config.uri()
         self.assertRegex(actual_uri, "://")
         self.assertRegex(actual_uri, "^mysql")
@@ -36,8 +32,6 @@ class ConfigDbTest(unittest.TestCase):
     def test_config_demo_pg(self):
         actual_db_config = conf.get_config().db("demo_pg")
         self.assertIsNotNone(actual_db_config)
-        actual_config = actual_db_config.config
-        self.assertIsNotNone(actual_config)
         actual_uri = actual_db_config.uri()
         self.assertRegex(actual_uri, "://")
         self.assertRegex(actual_uri, "^postgresql")
