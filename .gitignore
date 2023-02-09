@@ -13,7 +13,7 @@
 
 
 # Ignore all dotfiles...
-.*
+#.*
 # except for .gitignore
 !.gitignore
 !.gitattributes
@@ -110,10 +110,18 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 
+# Visual Studio Code
+/.vscode
+
+# Emacs
+*.~undo-tree~
+/.dir-locals.el
+
+# SPARK
 # SPARK
 metastore_db/
+
 /doc/_build/
-*.~undo-tree~
 .RData
 .Rproj.user
 .Rhistory
@@ -128,13 +136,12 @@ vignettes/*.R
 /GRTAGS
 /GTAGS
 /TAGS
-/.dir-locals.el
 .obsidian/
 /issues
 /home
 /logs
 /temp
 /.drake
-bench-libs
-doc
-Meta
+#bench-libs
+#doc
+#Meta
