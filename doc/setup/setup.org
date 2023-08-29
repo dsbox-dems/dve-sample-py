@@ -117,6 +117,10 @@
              liblzma-dev \
              python-openssl
 
+        # yum/dnf
+        sudo yum-builddep python3
+        sudo yum install wget yum-utils make gcc openssl-devel bzip2-devel libffi-devel zlib-devel
+
         # arch
         sudo pacman -S \
              bluez-libs mpdecimal gdb bzip2 expat gdbm \
