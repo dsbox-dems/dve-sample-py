@@ -339,7 +339,9 @@
 
     # ===( clean )===========================
 
-    curl -sSL https://install.python-poetry.org | POETRY_UNINSTALL=1 python3 -
+    # curl -sSL https://install.python-poetry.org | POETRY_UNINSTALL=1 python3 -
+
+    pipx uninstall poetry
 
     rm -rf ~/.cache/pypoetry
     rm -rf ~/.config/pypoetry
@@ -347,7 +349,11 @@
 
     # ===( get )===========================
 
-    curl -sSL https://install.python-poetry.org | python3 -
+    # curl -sSL https://install.python-poetry.org | python3 -
+
+    pipx install poetry
+
+    pipx upgrade poetry
 
 
     # ===( reload )===========================
