@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dve_sample_py"
-version = "2.0.0a1"
+version = "2.1.0a1"
 description = "Python Template Project with Podman and Jypyter Support"
 authors = ["Datalab DEMS <datalab@unimib.it>"]
 license = "GNU General Public License v3.0"
@@ -21,7 +21,7 @@ main = "dve.cli:main"
 demo = "vce.cli:main"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 
 # Keras = "*"
 # Keras-applications = "*"
@@ -163,6 +163,7 @@ isort = "*"
 mypy = "*"
 tornado = "*"
 jupyter-core = "*"
+jupyter-lsp = "*"
 notebook = "*"
 ipykernel = "*"
 jupyter = "*"
