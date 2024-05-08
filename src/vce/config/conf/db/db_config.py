@@ -34,7 +34,6 @@ class AbsDbConfig(DbConfig):
 
 
 class RefDbConfig(AbsDbConfig):
-
     db_type = DB_TYPE_GENERIC
 
     def __init__(self, name: str, config: dict, delegate: AbsDbConfig):
@@ -51,7 +50,6 @@ class RefDbConfig(AbsDbConfig):
 
 
 class MyDbConfig(AbsDbConfig):
-
     db_type = DB_TYPE_MYSQL
 
     def __init__(self, name: str, config: dict):
@@ -64,7 +62,6 @@ class MyDbConfig(AbsDbConfig):
 
 
 class PgDbConfig(AbsDbConfig):
-
     db_type = DB_TYPE_POSTGRESQL
 
     def __init__(self, name: str, config: dict):
