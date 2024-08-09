@@ -1,0 +1,42 @@
+# ---
+#+TITLE: "dve-simple-py" Python  project template
+SUBTITLE:  org info project todos
+#+AUTHOR: --
+#+DATE: <2024-07-31>
+# ---
+#+CATEGORY: py-template
+#+STARTUP: content
+## Local Variables:
+## eval: (add-to-list 'org-agenda-files (buffer-file-name) 'append)
+## End:
+:PROPERTIES:
+:END:
+
+* @ACTIVE
+
+
+--------------------------------------------------------------------------------------------------
+
+* @BACKLOG
+
+
+** BACK [#C] Python worker  [0/8]                :@W:template:python:
+   + [ ] build worker fron poetry cache
+   + [ ] build worker fron poetry install
+   + [ ] package and push
+   + [ ] pull and deploy
+   + [ ] data sharing
+   + [ ] direct run
+   + [ ] incremental run
+   + [ ] parallel run
+
+
+
+--------------------------------------------------------------------------------------------------
+
+
+* @WBS
+     
+--------------------------------------------------------------------------------------------------
+* @ATTIC
+     
