@@ -112,6 +112,8 @@
              libncurses5-dev \
              libncursesw5-dev \
              xz-utils \
+             tcllib \
+             tklib \
              tk-dev \
              libffi-dev \
              liblzma-dev \
@@ -256,16 +258,23 @@
 
   pyenv versions
 
+  #export PYTHON_CONFIGURE_OPTS="--enable-shared --with-tcltk-includes='-I/usr/include/tcl' --with-tcltk-libs='-L/usr/lib/x86_64-linux-gnu -ltcl8.6 -ltk8.6'"
+  #export PYTHON_CONFIGURE_OPTS="--enable-shared --with-tcltk-includes='$(pkg-config tk --cflags)' --with-tcltk-libs='$(pkg-config tk --libs)'" 
+  #export PYTHON_CONFIGURE_OPTS="--enable-shared --with-tcltk-includes='-I/usr/include/tcl8.6' --with-tcltk-libs='-ltk8.6 -ltkstub8.6 -ltcl8.6 -ltclstub8.6'" 
+
+  export PYTHON_CONFIGURE_OPTS="--enable-shared"
+  
+
   PYRC_PY_CURRENT=$(curl https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/raw/main/.python-version); echo $PYRC_PY_CURRENT
 
   : ${PYRC_PY_VERSION:=$PYRC_PY_CURRENT}; export PYRC_PY_VERSION
   [ -f ~/.python-version ] || echo "${PYRC_PY_VERSION}" > ~/.python-version
   cat ~/.python-version
 
-  [ -f ~/.python-version ]   && env PYTHON_CONFIGURE_OPTS="--enable-shared"  pyenv install  $(cat ~/.python-version)
+  [ -f ~/.python-version ]   && pyenv install  $(cat ~/.python-version)
 
-  [ -f ./.python-version ]   && env PYTHON_CONFIGURE_OPTS="--enable-shared"  pyenv install  $(cat ./.python-version)
-  [ ! -f ./.python-version ] && env PYTHON_CONFIGURE_OPTS="--enable-shared"  pyenv install  $(cat ~/.python-version)
+  [ -f ./.python-version ]   && pyenv install  $(cat ./.python-version)
+  [ ! -f ./.python-version ] && pyenv install  $(cat ~/.python-version)
   
 
   pyenv versions
@@ -315,7 +324,7 @@
 
   ssh localhost 
 
-  pipx install pycowsay
+  pipx install --force pycowsay 
   pipx list
   pipx run pycowsay 'moooo!'
 
