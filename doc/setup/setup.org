@@ -1,3 +1,4 @@
+
 # ---
 #+TITLE: setup.org: pyenv/poetry user setup
 #+SUBTITLE:  python project enviroment
@@ -120,9 +121,10 @@
              python3-openssl
 
         # yum/dnf
-        sudo yum-builddep python3
-        sudo yum install wget yum-utils make gcc openssl-devel bzip2-devel libffi-devel zlib-devel
-
+        sudo dnf builddep python3
+        sudo dnf install wget yum-utils make gcc openssl-devel bzip2-devel libffi-devel zlib-devel
+        sudo dnf install mysql mysql-devel
+-
         # arch
         sudo pacman -S \
              bluez-libs mpdecimal gdb bzip2 expat gdbm \
