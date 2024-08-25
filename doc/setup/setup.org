@@ -119,6 +119,12 @@
              libffi-dev \
              liblzma-dev \
              python3-openssl
+        sudo apt install -y \
+             mysql-client \
+             libmysqlclient-dev
+        sudo apt install -y \
+             libczmq-dev
+
 
         # yum/dnf
         sudo dnf builddep python3
