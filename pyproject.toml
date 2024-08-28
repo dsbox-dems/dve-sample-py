@@ -140,6 +140,7 @@ autopep8 = "*"
 yapf = '*'
 pyright = '*'
 nodeenv = '*'
+nodejs = '*'
 #codecov = "*"
 black = { extras = ["jupyter"], version = "*" }
 isort = "*"
