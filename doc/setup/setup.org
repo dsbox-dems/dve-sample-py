@@ -124,12 +124,15 @@
              libmysqlclient-dev
         sudo apt install -y \
              libczmq-dev
+        sudo apt install -y \
+             nodejs
 
 
         # yum/dnf
         sudo dnf builddep python3
         sudo dnf install wget yum-utils make gcc openssl-devel bzip2-devel libffi-devel zlib-devel
         sudo dnf install mysql mysql-devel
+        sudo dnf install nodejs
 -
         # arch
         sudo pacman -S \
@@ -459,6 +462,21 @@
 
   python --version
   jupyter --version
+
+  # LSP
+
+  npm add   \
+    bash-language-server \
+    dockerfile-language-server-nodejs \
+    pyright \
+    sql-language-server \
+    typescript-language-server \
+    unified-language-server \
+    vscode-css-languageserver-bin \
+    vscode-html-languageserver-bin \
+    vscode-json-languageserver-bin \
+    yaml-language-server \
+  
 
 #+END_SRC
 
