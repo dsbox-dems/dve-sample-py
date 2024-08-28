@@ -465,7 +465,7 @@
 
   # LSP
 
-  npm add   \
+  npm install --save-dev  \
     bash-language-server \
     dockerfile-language-server-nodejs \
     pyright \
@@ -475,7 +475,7 @@
     vscode-css-languageserver-bin \
     vscode-html-languageserver-bin \
     vscode-json-languageserver-bin \
-    yaml-language-server \
+    yaml-language-server
   
 
 #+END_SRC
