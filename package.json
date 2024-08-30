@@ -1,5 +1,5 @@
 {
-  "dependencies": {
+  "devDependencies": {
     "bash-language-server": "^5.4.0",
     "dockerfile-language-server-nodejs": "^0.13.0",
     "pyright": "^1.1.378",
