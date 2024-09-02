@@ -49,6 +49,17 @@
 - [[https://realpython.com/python-wheels/][What Are Python Wheels and Why Should You Care?]]
 - [[https://lucumr.pocoo.org/2014/1/27/python-on-wheels/][Python on Wheels]]
 - [[https://xkcd.com/1987/][Python Environment]]
+** jupyter references
+- [[https://jupyter-notebook.readthedocs.io/en/latest/][Jupyter Notebook Documentation]]
+- [[https://jupyterlab-lsp.readthedocs.io/en/latest/][Jupyter[Lab] Language Server Protocol]]
+- [[https://github.com/jupyter/notebook][Jupyter Notebook (GitHub)]]
+- [[https://github.com/jupyterlab/jupyterlab][JupyterLab (GitHub)]]
+- [[https://github.com/jupyter/jupyter/wiki/Jupyter-kernels][Jupyter kernels]]
+- [[https://jupyter-docker-stacks.readthedocs.io/en/latest/][Jupyter Docker Stacks]]
+- [[https://github.com/jupyter/docker-stacks/][Jupyter Docker Stacks (GitHub)]]
+- [[https://rocker-project.org/images/versioned/binder.html][Rocker Binder]]
+- [[https://github.com/rocker-org/rocker-versioned2/blob/master/scripts/install_jupyter.sh][Rocker Binder (install_jupyter.sh)]]
+
 
 
 * STATUS
@@ -350,7 +361,6 @@
 
 #+END_SRC
 
-
 * POETRY
 ** Install
 
@@ -445,8 +455,8 @@
 
 #+END_SRC
 
-** ACTIVATE
-
+* JUPYTER
+** Configure
 
 #+BEGIN_SRC bash
 
@@ -463,9 +473,25 @@
   python --version
   jupyter --version
 
+  ##
+  # jupyter configuration: see above for jupyter referencs 
+  #
+  
+  # lab extensions
+
+  jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
+  #jupyter labextension install "@jupyter-widgets/jupyterlab-manager"
+  
+  # config
+  
+  #rm -rf ~/.jupyter
+  jupyter --paths
+  jupyter server --generate-config
+
+  
   # LSP
 
-  npm install --save-dev  \
+  npm install --user --save-dev  \
     bash-language-server \
     dockerfile-language-server-nodejs \
     pyright \
@@ -476,6 +502,10 @@
     vscode-html-languageserver-bin \
     vscode-json-languageserver-bin \
     yaml-language-server
+
+  npm audit report
+  npm audit fix
+  npm audit fix --force
   
   jlpm add --dev  \
     bash-language-server \
@@ -488,12 +518,16 @@
     vscode-html-languageserver-bin \
     vscode-json-languageserver-bin \
     yaml-language-server
-  
 
+  
+  # clean+build
+  jupyter lab clean --all
+  jupyter lab build --debug
+
+  
 #+END_SRC
 
-** JUPYTER
-
+** Test
 
 #+BEGIN_SRC bash
 
