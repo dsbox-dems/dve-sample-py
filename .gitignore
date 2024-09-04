@@ -91,6 +91,7 @@ Thumbs.db
 
 # ---( virtualenv )-----
 venv/
+venv
 
 # ---( setup )-----
 **/*.2delete
@@ -117,6 +118,7 @@ venv/
 
 # ---( jupyter )-----
 .ipynb_checkpoints/
+notebooks/.virtual_documents/
 Untitled*.ipynb
 
 # ===( R )================================================================
