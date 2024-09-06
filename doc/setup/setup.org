@@ -103,13 +103,17 @@
 
 
 * PYENV
+
 ** Build Dependencies
-
-
 #+BEGIN_SRC bash :eval no
 
+        ##
         # python build-deps
+        # 
+        # ubuntu 18.04 - @see: tcl/tk u18.04 fix
+        # 
 
+        # apt/deb
         sudo apt install -y \
              make \
              build-essential \
@@ -141,20 +145,102 @@
 
         # yum/dnf
         sudo dnf builddep python3
-        sudo dnf install wget yum-utils make gcc openssl-devel bzip2-devel libffi-devel zlib-devel
+        sudo dnf install \
+             wget \
+             yum-utils \
+             make \
+             gcc \
+             tcl-devel \
+             tk-devel \
+             openssl-devel \
+             bzip2-devel \
+             libffi-devel zlib-devel
         sudo dnf install mysql mysql-devel
+        sudo dnf install zeromq-devel
         sudo dnf install nodejs
 -
         # arch
         sudo pacman -S \
              bluez-libs mpdecimal gdb bzip2 expat gdbm \
              libffi libnsl libxcrypt openssl zlib \
-             sqlite mpdecimal xz tk
+             sqlite mpdecimal xz tk \
+             mariadb-clients \
+             zeromq \
+             nodejs
+
+#+END_SRC
+
+** TCL/TK Support
+#+BEGIN_SRC bash :eval no
+
+  ##
+  # ubuntu 18.04 - @see: tcl/tk u18.04 fix
+  # 
+
+  pkg-config tk --libs
+
+  # ---(runas: root)--------------------------
+  sudo -i
+
+  cd /usr/lib/x86_64-linux-gnu/pkgconfig
+
+  ls -l tcl* tk*
+
+  cat <<'  EOF' | sed -e 's/^ *//'  > tcl8.6.pc
+  # tcl pkg-config source file
+  prefix=/usr
+  exec_prefix=/usr
+  libdir=/usr/lib/x86_64-linux-gnu
+  includedir=/usr/include/tcl8.6
+  
+  Name: Tool Command Language
+  Description: Tcl is a powerful, easy-to-learn dynamic programming language, suitable for a wide range of uses.
+  URL: https://www.tcl-tk.org/
+  Version: 8.6.12
+  Requires.private: zlib >= 1.2.3
+  Libs: -L${libdir} -ltcl8.6 -ltclstub8.6
+  Libs.private: -ldl -lz  -lpthread -lm
+  Cflags: -I${includedir}
+
+  EOF
+
+  cat <<'  EOF' | sed -e 's/^ *//'  > tk8.6.pc
+  # tk pkg-config source file
+  
+  prefix=/usr
+  exec_prefix=/usr
+  libdir=/usr/lib/x86_64-linux-gnu
+  includedir=/usr/include/tcl8.6
+  
+  Name: The Tk Toolkit
+  Description: Tk is a cross-platform graphical user interface toolkit, the standard GUI not only for Tcl, but for many other dynamic languages as well.
+  URL: https://www.tcl-lang.org/
+  Version: 8.6.12
+  Requires: tcl >= 8.6
+  Libs: -L${libdir} -ltk8.6 -ltkstub8.6
+  Libs.private: -lXft -lfontconfig -lfreetype -lfontconfig -lX11 -lXss -lXext
+  Cflags: -I${includedir}
+
+  EOF
+
+  ln -s tcl8.6.pc tcl.pc
+  ln -s tk8.6.pc  tk.pc
+
+
+  cd /usr/lib/x86_64-linux-gnu/pkgconfig
+
+  ls -l tcl* tk*
+
+  exit
+
+  # -------------------------------
+  
+  pkg-config tk --libs
+
 
 #+END_SRC
 
 ** Install
-
 
 #+BEGIN_SRC bash
 
@@ -293,7 +379,8 @@
   [ -f ~/.python-version ] || echo "${PYRC_PY_VERSION}" > ~/.python-version
   cat ~/.python-version
 
-  [ -f ~/.python-version ]   && pyenv install  $(cat ~/.python-version)
+  [ -f ~/.python-version ]   && pyenv install --verbose $(cat ~/.python-version) 2>&1 \
+          | tee /tmp/pyenv-install-$(date -Isec).log; ls -l /tmp/pyenv-install-*
 
   [ -f ./.python-version ]   && pyenv install  $(cat ./.python-version)
   [ ! -f ./.python-version ] && pyenv install  $(cat ~/.python-version)
