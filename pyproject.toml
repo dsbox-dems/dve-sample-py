@@ -194,6 +194,7 @@ nodejs = '*'
 pyright = '*'
 python-lsp-server = { extras = ["yapf", "rope", "pyflakes"], version = "*" }
 python-lsp-black = "*"
+
 black = { extras = ["jupyter"], version = "*" }
 
 # --- [jupyter dash] --------------------------------------

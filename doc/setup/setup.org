@@ -566,37 +566,64 @@
   ##
   # jupyter configuration: see above for jupyter referencs 
   #
-  
-  # lab extensions
 
-  jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
-  #jupyter labextension install "@jupyter-widgets/jupyterlab-manager"
-  
   # config
-  
   #rm -rf ~/.jupyter
   jupyter --paths
   jupyter server --generate-config
 
   
+  # nb extensions
+
+  #jupyter nbextension install --py luxwidget
+  #jupyter nbextension enable --py luxwidget
+
+  # lab extensions
+
+  jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
+  #jupyter labextension install "@jupyter-widgets/jupyterlab-manager"
+  #jupyter labextension install luxwidget
+  
+
+  
   # LSP
 
-  npm install --user --save-dev  \
-    bash-language-server \
-    dockerfile-language-server-nodejs \
-    pyright \
-    sql-language-server \
-    typescript-language-server \
-    unified-language-server \
-    vscode-css-languageserver-bin \
-    vscode-html-languageserver-bin \
-    vscode-json-languageserver-bin \
-    yaml-language-server
+  which -a node
+  node --version
+  which -a jlpm
+  jlpm --version
 
-  npm audit report
-  npm audit fix
-  npm audit fix --force
-  
+  # R support
+  # R --vanilla -e 'install.packages("languageserver")'
+
+  # npm install --user --save-dev  \
+  #   bash-language-server \
+  #   dockerfile-language-server-nodejs \
+  #   pyright \
+  #   sql-language-server \
+  #   typescript-language-server \
+  #   unified-language-server \
+  #   vscode-css-languageserver-bin \
+  #   vscode-html-languageserver-bin \
+  #   vscode-json-languageserver-bin \
+  #   yaml-language-server
+
+  # npm audit report
+  # npm audit fix
+  # npm audit fix --force
+
+  ls -la .yarnrc.yml
+  [ -f ./.yarnrc.yml ] || cat <<'  EOF' | sed -e 's/^ *//'  >> ./.yarnrc.yml
+  nodeLinker: node-modules
+  EOF
+  ls -la .yarnrc.yml
+  cat    .yarnrc.yml
+
+  ls -lda package.json yarn.lock node_modules/
+  jlpm init
+  ls -lda package.json yarn.lock node_modules/
+  git status
+
   jlpm add --dev  \
     bash-language-server \
     dockerfile-language-server-nodejs \
@@ -608,7 +635,19 @@
     vscode-html-languageserver-bin \
     vscode-json-languageserver-bin \
     yaml-language-server
+  
+  ls -lda package.json yarn.lock node_modules/
+  git status
 
+  jlpm up
+
+  jlpm install
+  
+  ls -lda package.json yarn.lock node_modules/
+  git status
+  ls -lda node_modules/*language*server* node_modules/pyright
+  jlpm info -A
+  
   
   # clean+build
   jupyter lab clean --all
@@ -626,6 +665,13 @@
   jupyter --version
   jupyter kernelspec list
 
+  # lab
+
+  jupyter lab --notebook-dir=notebooks --no-browser
+  #jupyter lab --notebook-dir=notebooks --no-browser --debug
+
+  # nb
+  
   jupyter notebook --notebook-dir=./notebooks
 
   (cd ./notebooks; jupyter nbconvert --to notebook --execute sys-test/py-env-dump.ipynb)
@@ -641,7 +687,8 @@
   cd ~/work/bp/...
 
 
-  (poetry run jupyter notebook --notebook-dir=./notebooks --no-browser)
+  (poetry run jupyter lab --notebook-dir=notebooks --no-browser)
+  # (poetry run jupyter notebook --notebook-dir=./notebooks --no-browser)
 
 #+END_SRC
 
