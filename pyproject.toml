@@ -57,60 +57,109 @@ python = "^3.12"
 
 # tensorflow-hub = '*'
 # tensorflow-datasets = '*'
-scipy = '*'
-requests = '*'
-pyyaml = '*'
-Pillow = '*'
-h5py = '*'
-pandas = '*'
-pydot = '*'
 
 ### }}} // keras
 
+# {{{ DATA: 
 
+# --- [core] -----------------------------------
+numpy = "*"
+pandas = '*'
 
-click = '*'
-matplotlib = "*"
-plotly = '*'
+# --- [raw] -----------------------------------
+pandas-datareader = '*'
+openpyxl = '*'
+h5py = '*'
 
+# --- [sql] --------------------------------------
+SQLAlchemy = "*"
 
 mysql-connector-python = "*"
 # requires: sudo apt install default-libmysqlclient-dev
 mysqlclient = "*"
 
-numpy = "*"
-oauthlib = "*"
-#pandas = "*"
-pandas-datareader = '*'
-openpyxl = '*'
-
-
-piny = "*"
-pip = "*"
-
 # requires: sudo apt install libpq-dev
 #psycopg2 = "*"
 psycopg2-binary = "*"
 
-# pyyaml = "*"
-pyzmq = "*"
-# requests = "*"
-requests-oauthlib = "*"
-seaborn = "*"
+
+### }}} // data
+
+# {{{ STAT: 
+
+# --- [ml] -----------------------------------
 # scikit-learn = "*"
 # scikit-image = "*"
-# scipy = "*"
-# six = ">=1.7.0,<=1.15.0"
 # sklearn = "*"
-SQLAlchemy = "*"
-sympy = "*"
-toml = "*"
-urllib3 = "*"
 
+# --- [math] -----------------------------------
+scipy = '*'
+sympy = "*"
+
+# --- [sim] --------------------------------------
+# simpy = "*"
+
+### }}} // data
+
+# {{{ GRAPHICS: 
+
+# --- [plots] -----------------------------------
+matplotlib = "*"
+plotly = '*'
+seaborn = "*"
+
+# --- [images] -----------------------------------
+Pillow = '*'
+
+# --- [graph] -----------------------------------
 graphframes = '*'
 graphviz = '*'
 igraph = '*'
 pyvis = '*'
+pydot = '*'
+
+### }}} // graphics
+
+# {{{ SYSTEM: 
+
+# --- [network] -----------------------------------
+requests = '*'
+oauthlib = "*"
+requests-oauthlib = "*"
+urllib3 = "*"
+
+# --- [local] -----------------------------------
+pyzmq = "*"
+
+# --- [config] -----------------------------------
+pyyaml = '*'
+piny = "*"
+toml = "*"
+click = '*'
+
+# --- [libs] -----------------------------------
+pip = "*"
+
+
+### }}} // system
+
+# {{{ LANG: 
+
+# --- [commons] -----------------------------------
+# six = ">=1.7.0,<=1.15.0"
+more-itertools = "*"
+
+### }}} // system
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -118,6 +167,57 @@ pyvis = '*'
 
 [tool.poetry.dev-dependencies]
 
+# {{{ JUPYTER: from https://docs.jupyter.org/en/latest/install.html
+
+# --- [jupyter core] -----------------------------------
+jupyter = "*"
+jupyter-core = "*"
+jupyter-console = "*"
+jupyter-lsp = "*"
+notebook = "*"
+
+# --- [jupyter hub] --------------------------------------
+#jupyterhub = "*"
+#tornado = "*"
+
+# --- [jupyter lab] --------------------------------------
+jupyterlab = "*"
+
+# --- [jupyter ext] --------------------------------------
+jupytext = "*"
+
+# --- [jupyter lsp] --------------------------------------
+jupyterlab-lsp = "*"
+nodeenv = '*'
+nodejs = '*'
+
+pyright = '*'
+python-lsp-server = { extras = ["yapf", "rope", "pyflakes"], version = "*" }
+python-lsp-black = "*"
+black = { extras = ["jupyter"], version = "*" }
+
+# --- [jupyter dash] --------------------------------------
+lux-api = "*"
+
+# --- [jupyter kernels] -----------------------------------
+ipykernel = "*"
+#jupyterhub = "*"
+#ansible-kernel = "*"
+#dot_kernel = "*"
+#dot_kernel = "*"
+#jswip = "*"
+#matlab_kernel = "*"
+#octave_kernel = "*"
+#sparqlkernel = "*"
+#toree = "*"
+
+### }}} // jupyter
+
+
+
+# {{{ TOOLS: 
+
+# --- [test] -----------------------------------
 pytest = { version = "*" }
 pytest-flask = "*"
 pytest-cov = "*"
@@ -126,54 +226,54 @@ unittest2 = { version = "*" }
 #   pyspark-test = "*"
 #   chispa = "*"
 coverage= "*"
-bumpversion = "*"
-colorama = "*"
 mock = "*"
-more-itertools = "*"
 nose = "*"
-py = "*"
+#codecov = "*"
+
+# --- [lint] --------------------------------------
 pylint = "*"
 flake8 = "*"
 pyproject-flake8 = "*"
 jedi = "*"
 autopep8 = "*"
 yapf = '*'
-pyright = '*'
-nodeenv = '*'
-###nodejs = '*'
-#codecov = "*"
-black = { extras = ["jupyter"], version = "*" }
 isort = "*"
-mypy = "*"
-tornado = "*"
-###jupyter = "*"
-###jupyter-core = "*"
-###jupyter-console = "*"
-###jupyter-lsp = "*"
-###notebook = "*"
-###ipykernel = "*"
-#jupyterhub = "*"
-####ansible-kernel = "*"
-####dot_kernel = "*"
-####dot_kernel = "*"
-####jswip = "*"
-####matlab_kernel = "*"
-####octave_kernel = "*"
-####sparqlkernel = "*"
-####toree = "*"
-###jupyterlab = "*"
-###jupyterlab-lsp = "*"
-###python-lsp-server = { extras = ["yapf", "rope", "pyflakes"], version = "*" }
-###python-lsp-black = "*"
-###jupytext = "*"
-lux-api = "*"
+#black = { extras = ["jupyter"], version = "*" }
+
+# --- [docs] --------------------------------------
 sphinx = "*"
 nbsphinx = "*"
 sphinx-autoapi = "*"
 sphinx-rtd-theme = "*"
-twine = '*'
+
+### }}} // tools
+
+
+# {{{ MISC: 
+
+# --- [util] -----------------------------------
+colorama = "*"
+py = "*"
+mypy = "*"
+
+### }}} // misc
+
+
+
+# {{{ BUILD: 
+
+# --- [package] -----------------------------------
 setuptools = "*"
 wheel = "*"
+
+# --- [auto] --------------------------------------
+bumpversion = "*"
+twine = '*'
+
+### }}} // build
+
+
+
 
 [tool.poetry.dependencies.rootpath]
 git = "https://github.com/hute37/python-rootpath"
