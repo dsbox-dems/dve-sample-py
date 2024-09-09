@@ -256,6 +256,39 @@
   # ===( rc )===========================
 
   cat <<'  EOF' | sed -e 's/^ *//'  >> ~/.bashrc
+  # {{{ [ CUSTOM ] /////////////////////////////////////////////////////////////
+
+  # ===( python:begin )===========================
+
+  # ---(conda:begin)-----
+
+  ##
+  #  conda environment
+  #
+  if [ -f ~/.py-env.off ]; then
+  if [ -f ~/.conda.on ]; then
+  if [ -x $HOME/anaconda/bin/conda ]; then    
+
+  # >>> conda initialize >>>
+  # !! Contents within this block are managed by 'conda init' !!
+  __conda_setup="$($HOME/anaconda/bin/conda 'shell.bash' 'hook' 2> /dev/null)"
+  if [ $? -eq 0 ]; then
+      eval "$__conda_setup"
+  else
+      if [ -f "$HOME/anaconda/etc/profile.d/conda.sh" ]; then
+          . "$HOME/anaconda/etc/profile.d/conda.sh"
+      else
+          export PATH="$HOME/anaconda/bin:$PATH"
+      fi
+  fi
+  unset __conda_setup
+  # <<< conda initialize <<<
+  fi
+  fi
+  fi
+  # ---(conda:end)-----
+
+
   # ---(pyenv:begin)-----
 
   ##
@@ -285,16 +318,53 @@
   if [ -x $HOME/.local/bin/poetry ]; then    
       export PY_RC_POETRY=1
   py_rc_poetry_sh() {
-     command -v poetry >/dev/null || export PATH="$HOME/.poetry/bin:$PATH"
+     command -v poetry >/dev/null || export PY_POETRY="$(which poetry)"
+     [ -z "$PYTHON_KEYRING_BACKEND" ] && export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
   }
   py_rc_poetry_sh
   fi
   fi
   # ---(pyenv:end)-----
+  
+  # ===( python:end )===========================
+
+
+  # }}} --- custom
   EOF
 
 
   cat <<'  EOF' | sed -e 's/^ *//'  >> ~/.zshrc
+  # {{{ [ CUSTOM ] /////////////////////////////////////////////////////////////
+
+  # ===( python:begin )===========================
+
+  # ---(conda:begin)-----
+
+  ##
+  #  conda environment
+  #
+  if [ -f ~/.py-env.off ]; then
+  if [ -f ~/.conda.on ]; then
+  if [ -x $HOME/anaconda/bin/conda ]; then    
+
+  # >>> conda initialize >>>
+  # !! Contents within this block are managed by 'conda init' !!
+  __conda_setup="$($HOME/anaconda/bin/conda 'shell.bash' 'hook' 2> /dev/null)"
+  if [ $? -eq 0 ]; then
+      eval "$__conda_setup"
+  else
+      if [ -f "$HOME/anaconda/etc/profile.d/conda.sh" ]; then
+          . "$HOME/anaconda/etc/profile.d/conda.sh"
+      else
+          export PATH="$HOME/anaconda/bin:$PATH"
+      fi
+  fi
+  unset __conda_setup
+  # <<< conda initialize <<<
+  fi
+  fi
+  fi
+  # ---(conda:end)-----
 
   # ---(pyenv:begin)-----
 
@@ -335,6 +405,7 @@
   if [ -x $HOME/.local/bin/poetry ]; then    
       export PY_RC_POETRY=1
   py_rc_poetry_sh() {
+     command -v poetry >/dev/null || export PY_POETRY="$(which poetry)"
      [ -z "$PYTHON_KEYRING_BACKEND" ] && export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
   }
   py_rc_poetry_sh
@@ -342,7 +413,11 @@
   fi
 
   # ---(pyenv:end)-----
+  
+  # ===( python:end )===========================
 
+
+  # }}} --- custom
   EOF
 
 
