@@ -114,6 +114,12 @@ package "Main Package" {
 
     [Component A] --u--> [Component B] : "Above"
     [Component C] --d--> [Component D] : "Below"
+
+     [Component B] --r--> [Component C] : "Right"
+
+   "Sub Package 1" --r--> "Sub Package 2" : "right"
+  
+        
 }
 @enduml
 #+end_src
@@ -121,7 +127,155 @@ package "Main Package" {
 #+RESULTS:
 [[file:img/dia-012-gpt-sample.png]]
 
-*** Example 3: Frame Level
+
+
+
+#+begin_src plantuml :file img/dia-015-gpt-sample.png
+@startuml
+package "Main Package A" {
+    package "Sub Package 1" {
+        [Component A] 
+        [Component B]
+    }
+    
+    package "Sub Package 2" {
+        [Component C]
+        [Component D]
+    }
+
+    [Component A] --u--> [Component B] : "Above"
+    [Component C] --d--> [Component D] : "Below"
+
+     [Component B] --r--> [Component C] : "Right"
+
+   "Sub Package 1" --r--> "Sub Package 2" : "right"
+  
+}
+
+
+package "Main Package B" {
+    package "Sub Package 3" {
+        [Component E] 
+        [Component F]
+    }
+    
+    package "Sub Package 4" {
+        [Component G]
+        [Component H]
+    }
+
+    [Component E] --u--> [Component F] : "Above"
+    [Component G] --d--> [Component H] : "Below"
+
+     [Component F] --r--> [Component G] : "Right"
+
+   "Sub Package 3" --r--> "Sub Package 4" : "right"
+  
+@enduml
+#+end_src
+
+#+RESULTS:
+[[file:img/dia-015-gpt-sample.png]]
+
+
+
+
+#+begin_src plantuml :file img/dia-016-gpt-sample.png
+@startuml
+frame "Main Frame A" {
+        [Component M] 
+        [Component N] 
+    frame "Sub Frame 1" {
+        [Component A] 
+        [Component B]
+    }
+    
+    frame "Sub Frame 2" {
+        [Component C]
+        [Component D]
+    }
+
+    [Component A] --r--> [Component B] : "R"
+    [Component C] --r--> [Component D] : "R"
+
+     [Component B] --r--> [Component C] : "R"
+
+    [Component M] --r--> [Component N] : "r"
+        
+   "Sub Frame 1" --r--> "Sub Frame 2" : "right"
+  
+}
+
+
+frame "Main Frame B" {
+        [Component P] 
+        [Component Q] 
+
+    frame "Sub Frame 3" {
+        [Component E] 
+        [Component F]
+    }
+    
+    frame "Sub Frame 4" {
+        [Component G]
+        [Component H]
+    }
+
+    [Component E] --r--> [Component F] : "R"
+    [Component G] --r--> [Component H] : "R"
+
+     [Component F] --r--> [Component G] : "R"
+
+    [Component P] --r--> [Component Q] : "r"
+        
+   "Sub Frame 3" --r--> "Sub Frame 4" : "right"
+
+  "Main Frame A" ..d..> "Main Frame B" : "down"      
+  
+@enduml
+#+end_src
+
+#+RESULTS:
+[[file:img/dia-016-gpt-sample.png]]
+
+
+
+
+#+begin_src plantuml :file img/dia-018-gpt-sample.png
+@startuml
+'frame "Main Frame A" {
+        [Component M] 
+        [Component N] 
+    frame "Sub Frame 1" {
+        [Component A] 
+        [Component B]
+    }
+    
+    frame "Sub Frame 2" {
+        [Component C]
+        [Component D]
+    }
+
+    [Component A] --r--> [Component B] : "R"
+    [Component C] --r--> [Component D] : "R"
+
+     [Component B] --r--> [Component C] : "R"
+
+    [Component M] --r--> [Component N] : "r"
+        
+   "Sub Frame 1" --r--> "Sub Frame 2" : "right"
+  
+'}
+
+ 
+@enduml
+#+end_src
+
+#+RESULTS:
+[[file:img/dia-018-gpt-sample.png]]
+
+
+*** Example 3: Use Case
 
 #+begin_src plantuml :file img/dia-013-gpt-sample.png
 @startuml
@@ -176,7 +330,103 @@ package "Main Package" {
 [[file:img/dia-014-gpt-sample.png]]
 
 
- 
+
+
+#+begin_src plantuml :file img/dia-021-gpt-sample.png
+@startuml
+
+'rectangle R {
+
+actor A
+package P {
+  usecase U
+}
+A -right-> U
+
+'}
+
+@enduml
+#+end_src
+
+#+RESULTS:
+[[file:img/dia-021-gpt-sample.png]]
+
+
+#+begin_src plantuml :file img/dia-022-gpt-sample.png
+@startuml
+
+rectangle R {
+
+actor A
+package P {
+  usecase U
+}
+A -right-> U
+
+}
+
+@enduml
+#+end_src
+
+#+RESULTS:
+[[file:img/dia-022-gpt-sample.png]]
+
+
+
+#+begin_src plantuml :file img/dia-023-gpt-sample.png
+@startuml
+
+'rectangle R {
+
+actor A1
+package P1 {
+  usecase U1
+}
+A1 -right-> U1
+
+actor A2
+package P2 {
+  usecase U2
+}
+A2-right-> U2
+
+'}
+
+@enduml
+#+end_src
+
+#+RESULTS:
+[[file:img/dia-023-gpt-sample.png]]
+
+
+#+begin_src plantuml :file img/dia-024-gpt-sample.png
+@startuml
+
+rectangle R {
+
+actor A1
+package P1 {
+  usecase U1
+}
+A1 -right-> U1
+
+actor A2
+package P2 {
+  usecase U2
+}
+A2-right-> U2
+
+}
+
+@enduml
+#+end_src
+
+#+RESULTS:
+[[file:img/dia-024-gpt-sample.png]]
+
+
+
+
 * Multiprocess Architecture
 ** MP Components
 *** MP Components Overview
