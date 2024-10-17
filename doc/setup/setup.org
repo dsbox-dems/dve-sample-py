@@ -1,3 +1,4 @@
+
 # ---
 #+TITLE: setup.org: pyenv/poetry user setup
 #+SUBTITLE:  python project enviroment
@@ -48,6 +49,17 @@
 - [[https://realpython.com/python-wheels/][What Are Python Wheels and Why Should You Care?]]
 - [[https://lucumr.pocoo.org/2014/1/27/python-on-wheels/][Python on Wheels]]
 - [[https://xkcd.com/1987/][Python Environment]]
+** jupyter references
+- [[https://jupyter-notebook.readthedocs.io/en/latest/][Jupyter Notebook Documentation]]
+- [[https://jupyterlab-lsp.readthedocs.io/en/latest/][Jupyter[Lab] Language Server Protocol]]
+- [[https://github.com/jupyter/notebook][Jupyter Notebook (GitHub)]]
+- [[https://github.com/jupyterlab/jupyterlab][JupyterLab (GitHub)]]
+- [[https://github.com/jupyter/jupyter/wiki/Jupyter-kernels][Jupyter kernels]]
+- [[https://jupyter-docker-stacks.readthedocs.io/en/latest/][Jupyter Docker Stacks]]
+- [[https://github.com/jupyter/docker-stacks/][Jupyter Docker Stacks (GitHub)]]
+- [[https://rocker-project.org/images/versioned/binder.html][Rocker Binder]]
+- [[https://github.com/rocker-org/rocker-versioned2/blob/master/scripts/install_jupyter.sh][Rocker Binder (install_jupyter.sh)]]
+
 
 
 * STATUS
@@ -91,13 +103,17 @@
 
 
 * PYENV
+
 ** Build Dependencies
-
-
 #+BEGIN_SRC bash :eval no
 
+        ##
         # python build-deps
+        # 
+        # ubuntu 18.04 - @see: tcl/tk u18.04 fix
+        # 
 
+        # apt/deb
         sudo apt install -y \
              make \
              build-essential \
@@ -118,21 +134,113 @@
              libffi-dev \
              liblzma-dev \
              python3-openssl
+        sudo apt install -y \
+             mysql-client \
+             libmysqlclient-dev
+        sudo apt install -y \
+             libczmq-dev
+        sudo apt install -y \
+             nodejs
+
 
         # yum/dnf
-        sudo yum-builddep python3
-        sudo yum install wget yum-utils make gcc openssl-devel bzip2-devel libffi-devel zlib-devel
-
+        sudo dnf builddep python3
+        sudo dnf install \
+             wget \
+             yum-utils \
+             make \
+             gcc \
+             tcl-devel \
+             tk-devel \
+             openssl-devel \
+             bzip2-devel \
+             libffi-devel zlib-devel
+        sudo dnf install mysql mysql-devel
+        sudo dnf install zeromq-devel
+        sudo dnf install nodejs
+-
         # arch
         sudo pacman -S \
              bluez-libs mpdecimal gdb bzip2 expat gdbm \
              libffi libnsl libxcrypt openssl zlib \
-             sqlite mpdecimal xz tk
+             sqlite mpdecimal xz tk \
+             mariadb-clients \
+             zeromq \
+             nodejs
+
+#+END_SRC
+
+** TCL/TK Support
+#+BEGIN_SRC bash :eval no
+
+  ##
+  # ubuntu 18.04 - @see: tcl/tk u18.04 fix
+  # 
+
+  pkg-config tk --libs
+
+  # ---(runas: root)--------------------------
+  sudo -i
+
+  cd /usr/lib/x86_64-linux-gnu/pkgconfig
+
+  ls -l tcl* tk*
+
+  cat <<'  EOF' | sed -e 's/^ *//'  > tcl8.6.pc
+  # tcl pkg-config source file
+  prefix=/usr
+  exec_prefix=/usr
+  libdir=/usr/lib/x86_64-linux-gnu
+  includedir=/usr/include/tcl8.6
+  
+  Name: Tool Command Language
+  Description: Tcl is a powerful, easy-to-learn dynamic programming language, suitable for a wide range of uses.
+  URL: https://www.tcl-tk.org/
+  Version: 8.6.12
+  Requires.private: zlib >= 1.2.3
+  Libs: -L${libdir} -ltcl8.6 -ltclstub8.6
+  Libs.private: -ldl -lz  -lpthread -lm
+  Cflags: -I${includedir}
+
+  EOF
+
+  cat <<'  EOF' | sed -e 's/^ *//'  > tk8.6.pc
+  # tk pkg-config source file
+  
+  prefix=/usr
+  exec_prefix=/usr
+  libdir=/usr/lib/x86_64-linux-gnu
+  includedir=/usr/include/tcl8.6
+  
+  Name: The Tk Toolkit
+  Description: Tk is a cross-platform graphical user interface toolkit, the standard GUI not only for Tcl, but for many other dynamic languages as well.
+  URL: https://www.tcl-lang.org/
+  Version: 8.6.12
+  Requires: tcl >= 8.6
+  Libs: -L${libdir} -ltk8.6 -ltkstub8.6
+  Libs.private: -lXft -lfontconfig -lfreetype -lfontconfig -lX11 -lXss -lXext
+  Cflags: -I${includedir}
+
+  EOF
+
+  ln -s tcl8.6.pc tcl.pc
+  ln -s tk8.6.pc  tk.pc
+
+
+  cd /usr/lib/x86_64-linux-gnu/pkgconfig
+
+  ls -l tcl* tk*
+
+  exit
+
+  # -------------------------------
+  
+  pkg-config tk --libs
+
 
 #+END_SRC
 
 ** Install
-
 
 #+BEGIN_SRC bash
 
@@ -148,6 +256,40 @@
   # ===( rc )===========================
 
   cat <<'  EOF' | sed -e 's/^ *//'  >> ~/.bashrc
+  # {{{ [ CUSTOM ] /////////////////////////////////////////////////////////////
+
+  # ===( python:begin )===========================
+
+  # ---(conda:begin)-----
+
+  ##
+  #  conda environment
+  #
+  if [ -f ~/.py-env.off ]; then
+  if [ -f ~/.conda.on ]; then
+  if [ -x $HOME/anaconda/bin/conda ]; then    
+
+  # >>> conda initialize >>>
+  # !! Contents within this block are managed by 'conda init' !!
+  __conda_setup="$($HOME/anaconda/bin/conda 'shell.bash' 'hook' 2> /dev/null)"
+  if [ $? -eq 0 ]; then
+      eval "$__conda_setup"
+  else
+      if [ -f "$HOME/anaconda/etc/profile.d/conda.sh" ]; then
+          . "$HOME/anaconda/etc/profile.d/conda.sh"
+      else
+          export PATH="$HOME/anaconda/bin:$PATH"
+      fi
+  fi
+  unset __conda_setup
+  # <<< conda initialize <<<
+  source ~/.conda.on || true  
+  fi
+  fi
+  fi
+  # ---(conda:end)-----
+
+
   # ---(pyenv:begin)-----
 
   ##
@@ -177,16 +319,54 @@
   if [ -x $HOME/.local/bin/poetry ]; then    
       export PY_RC_POETRY=1
   py_rc_poetry_sh() {
-     command -v poetry >/dev/null || export PATH="$HOME/.poetry/bin:$PATH"
+     command -v poetry >/dev/null || export PY_POETRY="$(which poetry)"
+     [ -z "$PYTHON_KEYRING_BACKEND" ] && export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
   }
   py_rc_poetry_sh
   fi
   fi
   # ---(pyenv:end)-----
+  
+  # ===( python:end )===========================
+
+
+  # }}} --- custom
   EOF
 
 
   cat <<'  EOF' | sed -e 's/^ *//'  >> ~/.zshrc
+  # {{{ [ CUSTOM ] /////////////////////////////////////////////////////////////
+
+  # ===( python:begin )===========================
+
+  # ---(conda:begin)-----
+
+  ##
+  #  conda environment
+  #
+  if [ -f ~/.py-env.off ]; then
+  if [ -f ~/.conda.on ]; then
+  if [ -x $HOME/anaconda/bin/conda ]; then    
+
+  # >>> conda initialize >>>
+  # !! Contents within this block are managed by 'conda init' !!
+  __conda_setup="$($HOME/anaconda/bin/conda 'shell.zsh' 'hook' 2> /dev/null)"
+  if [ $? -eq 0 ]; then
+      eval "$__conda_setup"
+  else
+      if [ -f "$HOME/anaconda/etc/profile.d/conda.sh" ]; then
+          . "$HOME/anaconda/etc/profile.d/conda.sh"
+      else
+          export PATH="$HOME/anaconda/bin:$PATH"
+      fi
+  fi
+  unset __conda_setup
+  # <<< conda initialize <<<
+  source ~/.conda.on || true  
+  fi
+  fi
+  fi
+  # ---(conda:end)-----
 
   # ---(pyenv:begin)-----
 
@@ -227,6 +407,7 @@
   if [ -x $HOME/.local/bin/poetry ]; then    
       export PY_RC_POETRY=1
   py_rc_poetry_sh() {
+     command -v poetry >/dev/null || export PY_POETRY="$(which poetry)"
      [ -z "$PYTHON_KEYRING_BACKEND" ] && export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
   }
   py_rc_poetry_sh
@@ -234,7 +415,11 @@
   fi
 
   # ---(pyenv:end)-----
+  
+  # ===( python:end )===========================
 
+
+  # }}} --- custom
   EOF
 
 
@@ -271,7 +456,8 @@
   [ -f ~/.python-version ] || echo "${PYRC_PY_VERSION}" > ~/.python-version
   cat ~/.python-version
 
-  [ -f ~/.python-version ]   && pyenv install  $(cat ~/.python-version)
+  [ -f ~/.python-version ]   && pyenv install --verbose $(cat ~/.python-version) 2>&1 \
+          | tee /tmp/pyenv-install-$(date -Isec).log; ls -l /tmp/pyenv-install-*
 
   [ -f ./.python-version ]   && pyenv install  $(cat ./.python-version)
   [ ! -f ./.python-version ] && pyenv install  $(cat ~/.python-version)
@@ -338,7 +524,6 @@
 
 
 #+END_SRC
-
 
 * POETRY
 ** Install
@@ -420,6 +605,9 @@
   poetry env info
 
 
+  ln -s "~/$(realpath $(poetry  env info -p) --relative-to=$HOME -s)" ./venv
+
+
   export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
 
   poetry cache clear --all pypi
@@ -434,8 +622,8 @@
 
 #+END_SRC
 
-** ACTIVATE
-
+* JUPYTER
+** Configure
 
 #+BEGIN_SRC bash
 
@@ -452,10 +640,100 @@
   python --version
   jupyter --version
 
+  ##
+  # jupyter configuration: see above for jupyter referencs 
+  #
+
+  # config
+  #rm -rf ~/.jupyter
+  jupyter --paths
+  jupyter server --generate-config
+
+  
+  # nb extensions
+
+  #jupyter nbextension install --py luxwidget
+  #jupyter nbextension enable --py luxwidget
+
+  # lab extensions
+
+  jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
+  #jupyter labextension install "@jupyter-widgets/jupyterlab-manager"
+  #jupyter labextension install luxwidget
+  
+
+  
+  # LSP
+
+  which -a node
+  node --version
+  which -a jlpm
+  jlpm --version
+
+  # R support
+  # R --vanilla -e 'install.packages("languageserver")'
+
+  # npm install --user --save-dev  \
+  #   bash-language-server \
+  #   dockerfile-language-server-nodejs \
+  #   pyright \
+  #   sql-language-server \
+  #   typescript-language-server \
+  #   unified-language-server \
+  #   vscode-css-languageserver-bin \
+  #   vscode-html-languageserver-bin \
+  #   vscode-json-languageserver-bin \
+  #   yaml-language-server
+
+  # npm audit report
+  # npm audit fix
+  # npm audit fix --force
+
+  ls -la .yarnrc.yml
+  [ -f ./.yarnrc.yml ] || cat <<'  EOF' | sed -e 's/^ *//'  >> ./.yarnrc.yml
+  nodeLinker: node-modules
+  EOF
+  ls -la .yarnrc.yml
+  cat    .yarnrc.yml
+
+  ls -lda package.json yarn.lock node_modules/
+  jlpm init
+  ls -lda package.json yarn.lock node_modules/
+  git status
+
+  jlpm add --dev  \
+    bash-language-server \
+    dockerfile-language-server-nodejs \
+    pyright \
+    sql-language-server \
+    typescript-language-server \
+    unified-language-server \
+    vscode-css-languageserver-bin \
+    vscode-html-languageserver-bin \
+    vscode-json-languageserver-bin \
+    yaml-language-server
+  
+  ls -lda package.json yarn.lock node_modules/
+  git status
+
+  jlpm up
+
+  jlpm install
+  
+  ls -lda package.json yarn.lock node_modules/
+  git status
+  ls -lda node_modules/*language*server* node_modules/pyright
+  jlpm info -A
+  
+  
+  # clean+build
+  jupyter lab clean --all
+  jupyter lab build --debug
+
+  
 #+END_SRC
 
-** JUPYTER
-
+** Test
 
 #+BEGIN_SRC bash
 
@@ -464,6 +742,13 @@
   jupyter --version
   jupyter kernelspec list
 
+  # lab
+
+  jupyter lab --notebook-dir=notebooks --no-browser
+  #jupyter lab --notebook-dir=notebooks --no-browser --debug
+
+  # nb
+  
   jupyter notebook --notebook-dir=./notebooks
 
   (cd ./notebooks; jupyter nbconvert --to notebook --execute sys-test/py-env-dump.ipynb)
@@ -479,7 +764,8 @@
   cd ~/work/bp/...
 
 
-  (poetry run jupyter notebook --notebook-dir=./notebooks --no-browser)
+  (poetry run jupyter lab --notebook-dir=notebooks --no-browser)
+  # (poetry run jupyter notebook --notebook-dir=./notebooks --no-browser)
 
 #+END_SRC
 
