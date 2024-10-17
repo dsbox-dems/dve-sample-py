@@ -256,6 +256,40 @@
   # ===( rc )===========================
 
   cat <<'  EOF' | sed -e 's/^ *//'  >> ~/.bashrc
+  # {{{ [ CUSTOM ] /////////////////////////////////////////////////////////////
+
+  # ===( python:begin )===========================
+
+  # ---(conda:begin)-----
+
+  ##
+  #  conda environment
+  #
+  if [ -f ~/.py-env.off ]; then
+  if [ -f ~/.conda.on ]; then
+  if [ -x $HOME/anaconda/bin/conda ]; then    
+
+  # >>> conda initialize >>>
+  # !! Contents within this block are managed by 'conda init' !!
+  __conda_setup="$($HOME/anaconda/bin/conda 'shell.bash' 'hook' 2> /dev/null)"
+  if [ $? -eq 0 ]; then
+      eval "$__conda_setup"
+  else
+      if [ -f "$HOME/anaconda/etc/profile.d/conda.sh" ]; then
+          . "$HOME/anaconda/etc/profile.d/conda.sh"
+      else
+          export PATH="$HOME/anaconda/bin:$PATH"
+      fi
+  fi
+  unset __conda_setup
+  # <<< conda initialize <<<
+  source ~/.conda.on || true  
+  fi
+  fi
+  fi
+  # ---(conda:end)-----
+
+
   # ---(pyenv:begin)-----
 
   ##
@@ -285,16 +319,54 @@
   if [ -x $HOME/.local/bin/poetry ]; then    
       export PY_RC_POETRY=1
   py_rc_poetry_sh() {
-     command -v poetry >/dev/null || export PATH="$HOME/.poetry/bin:$PATH"
+     command -v poetry >/dev/null || export PY_POETRY="$(which poetry)"
+     [ -z "$PYTHON_KEYRING_BACKEND" ] && export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
   }
   py_rc_poetry_sh
   fi
   fi
   # ---(pyenv:end)-----
+  
+  # ===( python:end )===========================
+
+
+  # }}} --- custom
   EOF
 
 
   cat <<'  EOF' | sed -e 's/^ *//'  >> ~/.zshrc
+  # {{{ [ CUSTOM ] /////////////////////////////////////////////////////////////
+
+  # ===( python:begin )===========================
+
+  # ---(conda:begin)-----
+
+  ##
+  #  conda environment
+  #
+  if [ -f ~/.py-env.off ]; then
+  if [ -f ~/.conda.on ]; then
+  if [ -x $HOME/anaconda/bin/conda ]; then    
+
+  # >>> conda initialize >>>
+  # !! Contents within this block are managed by 'conda init' !!
+  __conda_setup="$($HOME/anaconda/bin/conda 'shell.zsh' 'hook' 2> /dev/null)"
+  if [ $? -eq 0 ]; then
+      eval "$__conda_setup"
+  else
+      if [ -f "$HOME/anaconda/etc/profile.d/conda.sh" ]; then
+          . "$HOME/anaconda/etc/profile.d/conda.sh"
+      else
+          export PATH="$HOME/anaconda/bin:$PATH"
+      fi
+  fi
+  unset __conda_setup
+  # <<< conda initialize <<<
+  source ~/.conda.on || true  
+  fi
+  fi
+  fi
+  # ---(conda:end)-----
 
   # ---(pyenv:begin)-----
 
@@ -335,6 +407,7 @@
   if [ -x $HOME/.local/bin/poetry ]; then    
       export PY_RC_POETRY=1
   py_rc_poetry_sh() {
+     command -v poetry >/dev/null || export PY_POETRY="$(which poetry)"
      [ -z "$PYTHON_KEYRING_BACKEND" ] && export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
   }
   py_rc_poetry_sh
@@ -342,7 +415,11 @@
   fi
 
   # ---(pyenv:end)-----
+  
+  # ===( python:end )===========================
 
+
+  # }}} --- custom
   EOF
 
 
@@ -566,37 +643,64 @@
   ##
   # jupyter configuration: see above for jupyter referencs 
   #
-  
-  # lab extensions
 
-  jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
-  #jupyter labextension install "@jupyter-widgets/jupyterlab-manager"
-  
   # config
-  
   #rm -rf ~/.jupyter
   jupyter --paths
   jupyter server --generate-config
 
   
+  # nb extensions
+
+  #jupyter nbextension install --py luxwidget
+  #jupyter nbextension enable --py luxwidget
+
+  # lab extensions
+
+  jupyter labextension disable "@jupyterlab/apputils-extension:announcements"
+  #jupyter labextension install "@jupyter-widgets/jupyterlab-manager"
+  #jupyter labextension install luxwidget
+  
+
+  
   # LSP
 
-  npm install --user --save-dev  \
-    bash-language-server \
-    dockerfile-language-server-nodejs \
-    pyright \
-    sql-language-server \
-    typescript-language-server \
-    unified-language-server \
-    vscode-css-languageserver-bin \
-    vscode-html-languageserver-bin \
-    vscode-json-languageserver-bin \
-    yaml-language-server
+  which -a node
+  node --version
+  which -a jlpm
+  jlpm --version
 
-  npm audit report
-  npm audit fix
-  npm audit fix --force
-  
+  # R support
+  # R --vanilla -e 'install.packages("languageserver")'
+
+  # npm install --user --save-dev  \
+  #   bash-language-server \
+  #   dockerfile-language-server-nodejs \
+  #   pyright \
+  #   sql-language-server \
+  #   typescript-language-server \
+  #   unified-language-server \
+  #   vscode-css-languageserver-bin \
+  #   vscode-html-languageserver-bin \
+  #   vscode-json-languageserver-bin \
+  #   yaml-language-server
+
+  # npm audit report
+  # npm audit fix
+  # npm audit fix --force
+
+  ls -la .yarnrc.yml
+  [ -f ./.yarnrc.yml ] || cat <<'  EOF' | sed -e 's/^ *//'  >> ./.yarnrc.yml
+  nodeLinker: node-modules
+  EOF
+  ls -la .yarnrc.yml
+  cat    .yarnrc.yml
+
+  ls -lda package.json yarn.lock node_modules/
+  jlpm init
+  ls -lda package.json yarn.lock node_modules/
+  git status
+
   jlpm add --dev  \
     bash-language-server \
     dockerfile-language-server-nodejs \
@@ -608,7 +712,19 @@
     vscode-html-languageserver-bin \
     vscode-json-languageserver-bin \
     yaml-language-server
+  
+  ls -lda package.json yarn.lock node_modules/
+  git status
 
+  jlpm up
+
+  jlpm install
+  
+  ls -lda package.json yarn.lock node_modules/
+  git status
+  ls -lda node_modules/*language*server* node_modules/pyright
+  jlpm info -A
+  
   
   # clean+build
   jupyter lab clean --all
@@ -626,6 +742,13 @@
   jupyter --version
   jupyter kernelspec list
 
+  # lab
+
+  jupyter lab --notebook-dir=notebooks --no-browser
+  #jupyter lab --notebook-dir=notebooks --no-browser --debug
+
+  # nb
+  
   jupyter notebook --notebook-dir=./notebooks
 
   (cd ./notebooks; jupyter nbconvert --to notebook --execute sys-test/py-env-dump.ipynb)
@@ -641,7 +764,8 @@
   cd ~/work/bp/...
 
 
-  (poetry run jupyter notebook --notebook-dir=./notebooks --no-browser)
+  (poetry run jupyter lab --notebook-dir=notebooks --no-browser)
+  # (poetry run jupyter notebook --notebook-dir=./notebooks --no-browser)
 
 #+END_SRC
 
