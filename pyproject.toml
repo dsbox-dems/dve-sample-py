@@ -52,6 +52,13 @@ python = "^3.12"
 ### }}} // tensorflow
 
 
+# {{{ TORCH: from https://pytorch.org/get-started/locally/
+
+torch = {version = "=2.1.1+cu124", source = "torch124"}
+torch_geometric = {version = "=2.6.1+cu124", source = "torch124"}
+
+### }}} // torch
+
 
 # {{{ KERAS: from rstudio/keras/R/install.R@default_extra_packages
 
@@ -114,6 +121,7 @@ Pillow = '*'
 # --- [graph] -----------------------------------
 graphframes = '*'
 graphviz = '*'
+networkx = '*'
 igraph = '*'
 pyvis = '*'
 pydot = '*'
@@ -136,6 +144,10 @@ pyyaml = '*'
 piny = "*"
 toml = "*"
 click = '*'
+
+# --- [script] -----------------------------------
+tqdm = '*'
+
 
 # --- [libs] -----------------------------------
 pip = "*"
@@ -275,6 +287,11 @@ twine = '*'
 
 ### }}} // release
 
+
+[[tool.poetry.source]]
+name = "torch124"
+url = "https://download.pytorch.org/whl/cu124"
+priority = "explicit"
 
 
 
