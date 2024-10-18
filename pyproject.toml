@@ -54,8 +54,11 @@ python = "^3.12"
 
 # {{{ TORCH: from https://pytorch.org/get-started/locally/
 
-torch = {version = "=2.1.1+cu124", source = "torch124"}
-torch_geometric = {version = "=2.6.1+cu124", source = "torch124"}
+torch = {version = "*"}
+#torch = {version = "=2.5.*"}
+#torch = {version = "=2.5.*", source = "torch124"}
+#torch = {version = "=2.1.1*", source = "torch121"}
+torch_geometric = {version = "*"}
 
 ### }}} // torch
 
@@ -70,7 +73,7 @@ torch_geometric = {version = "=2.6.1+cu124", source = "torch124"}
 # {{{ DATA: 
 
 # --- [core] -----------------------------------
-numpy = "*"
+numpy = '*'
 pandas = '*'
 
 # --- [raw] -----------------------------------
@@ -287,6 +290,15 @@ twine = '*'
 
 ### }}} // release
 
+#[[tool.poetry.source]]
+#name = 'default'
+#url = 'https://pypi.org/'
+
+
+[[tool.poetry.source]]
+name = "torch121"
+url = "https://download.pytorch.org/whl/cu121"
+priority = "explicit"
 
 [[tool.poetry.source]]
 name = "torch124"
