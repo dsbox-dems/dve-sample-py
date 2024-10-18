@@ -227,6 +227,12 @@ ipykernel = "*"
 #sparqlkernel = "*"
 #toree = "*"
 
+# --- [jupyter console] -----------------------------------
+
+ipython = "*"
+ipython-bg = "*"
+
+
 ### }}} // jupyter
 
 
