@@ -52,6 +52,16 @@ python = "^3.12"
 ### }}} // tensorflow
 
 
+# {{{ TORCH: from https://pytorch.org/get-started/locally/
+
+#torch = {version = "*"}
+##torch = {version = "=2.5.*"}
+##torch = {version = "=2.5.*", source = "torch124"}
+##torch = {version = "=2.1.1*", source = "torch121"}
+#torch_geometric = {version = "*"}
+
+### }}} // torch
+
 
 # {{{ KERAS: from rstudio/keras/R/install.R@default_extra_packages
 
@@ -63,7 +73,7 @@ python = "^3.12"
 # {{{ DATA: 
 
 # --- [core] -----------------------------------
-numpy = "*"
+numpy = '*'
 pandas = '*'
 
 # --- [raw] -----------------------------------
@@ -114,6 +124,7 @@ Pillow = '*'
 # --- [graph] -----------------------------------
 graphframes = '*'
 graphviz = '*'
+networkx = '*'
 igraph = '*'
 pyvis = '*'
 pydot = '*'
@@ -136,6 +147,10 @@ pyyaml = '*'
 piny = "*"
 toml = "*"
 click = '*'
+
+# --- [script] -----------------------------------
+tqdm = '*'
+
 
 # --- [libs] -----------------------------------
 pip = "*"
@@ -212,6 +227,12 @@ ipykernel = "*"
 #sparqlkernel = "*"
 #toree = "*"
 
+# --- [jupyter console] -----------------------------------
+
+ipython = "*"
+ipython-bg = "*"
+
+
 ### }}} // jupyter
 
 
@@ -275,6 +296,20 @@ twine = '*'
 
 ### }}} // release
 
+#[[tool.poetry.source]]
+#name = 'default'
+#url = 'https://pypi.org/'
+
+
+[[tool.poetry.source]]
+name = "torch121"
+url = "https://download.pytorch.org/whl/cu121"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name = "torch124"
+url = "https://download.pytorch.org/whl/cu124"
+priority = "explicit"
 
 
 

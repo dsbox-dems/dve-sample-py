@@ -577,7 +577,7 @@
   fi      
   cd ~/work/vs/dve-sample-py
   git remote update
-  git branch -az
+  git branch -av
   git status
   git pull
 
