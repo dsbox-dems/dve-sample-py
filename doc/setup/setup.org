@@ -439,7 +439,6 @@ unset PY_RC_ENV; exec $SHELL --login
 
 #+END_SRC
 
-
 ** Version
 
 
@@ -615,7 +614,7 @@ poetry env list
 poetry env info
 
 
-ln -s "~/$(realpath $(poetry  env info -p) --relative-to=$HOME -s)" ./venv
+ln -s ~/"$(realpath $(poetry  env info -p) --relative-to=$HOME -s)" ./venv
 
 
 export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
@@ -726,11 +725,13 @@ jlpm add --dev  \
      yaml-language-server
 
 ls -lda package.json yarn.lock node_modules/
+
+jlpm up
+
 git status
 
 # ===( node install )===========================
 
-jlpm up
 jlpm install
 
 ls -lda package.json yarn.lock node_modules/
