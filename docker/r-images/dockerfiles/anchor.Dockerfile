@@ -1,4 +1,15 @@
-FROM rocker/tidyverse:latest
+# @see: https://rocker-project.org/images/
+# @see: https://hub.docker.com/u/rocker
+
+FROM rocker/ml-verse:4.4.1
+# FROM rocker/ml:4.4.1
+# FROM rocker/tidyverse:4.4.1
+# FROM rocker/verse:4.4.1
+# FROM rocker/geospatial:4.4.1
+
+# @see: https://github.com/rocker-org/rocker-versioned2/pkgs/container/verse/versions
+# @see: https://hub.docker.com/r/rocker/verse/tags
+# FROM rocker/verse:latest
 
 LABEL org.opencontainers.image.vendor="ubdems" \
       org.opencontainers.image.base.name="rocker/tidyverse:latest" \

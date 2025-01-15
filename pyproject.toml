@@ -1,13 +1,21 @@
-[tool.poetry]
+[project]
 name = "dve_sample_py"
 version = "2.1.0a1"
 description = "Python Template Project with Podman and Jypyter Support"
-authors = ["Datalab DEMS <datalab@unimib.it>"]
+authors = [
+    {name = "Datalab DEMS", email = "datalab@unimib.it"}
+]
 license = "GNU General Public License v3.0"
 readme = "README.rst"
 documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
 homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
 repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+
+dynamic = [ "dependencies" ]
+requires-python = "^3.12"
+
+[tool.poetry]
+requires-poetry = ">=2.0"
 packages = [{ include = "*", from = "src" }]
 
 [tool.setuptools]
@@ -16,20 +24,23 @@ include-package-data = true
 [tool.setuptools.package-data]
 res = [ "resources/*", "resources/*/*" ]
 
-[tool.poetry.scripts]
+[projct.scripts]
 main = "dve.cli:main"
 demo = "vce.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+# python = ">=3.8,<3.11"
 
 # {{{ TENSORFLOW: from rstudio/tensorflow/R/install.R@default_extra_packages
 
-# tensorflow = {version = "=2.12.*"}
+## tensorflow = {version = "*"}
+tensorflow = {version = "=2.18.*"}
+## tensorflow = {version = "=2.12.*"}
 ## tensorflow-estimator = "*"
-# tensorboard = "*"
-# tensorflow-hub = "*"
-# tensorflow-datasets = "*"
+tensorboard = "*"
+tensorflow-hub = "*"
+tensorflow-datasets = "*"
 
 ### }}} // tensorflow
 
@@ -148,6 +159,9 @@ piny = "*"
 toml = "*"
 click = '*'
 
+# --- [logging] -----------------------------------
+icecream = '*'
+
 # --- [script] -----------------------------------
 tqdm = '*'
 
@@ -180,7 +194,7 @@ more-itertools = "*"
 
 
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 
 # {{{ JUPYTER: from https://docs.jupyter.org/en/latest/install.html
 
@@ -653,7 +667,7 @@ docstring-code-format = true
 
 [build-system]
 requires = [
-    "poetry-core>=1.0.0",
+    "poetry-core>=2.0",
     "setuptools",
     "wheel",
     "incremental",
