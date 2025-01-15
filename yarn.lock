@@ -693,12 +693,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@joe-re/sql-parser@npm:^1.7.0":
-  version: 1.7.0
-  resolution: "@joe-re/sql-parser@npm:1.7.0"
+"@joe-re/sql-parser@npm:^1.7.1":
+  version: 1.7.1
+  resolution: "@joe-re/sql-parser@npm:1.7.1"
   dependencies:
     peggy: ^3.0.2
-  checksum: cfb17c255652df15125882595b2191387ef906a3509a1a689bc44210d213d32c12fa2db95c4fdbdeb9f76b7fd2cc95e1c6ecfe23870239c12f615b3a61e7d706
+  checksum: e7aebabb17fe38cd9fb33e0d96d834004ebda3939ffc4bdc32ce740c94d6d0f75c11756918722eab89fca31672411294324eb479fda5bbe6c729ccfffa224345
   languageName: node
   linkType: hard
 
@@ -2364,8 +2364,8 @@ __metadata:
   dependencies:
     bash-language-server: ^5.4.2
     dockerfile-language-server-nodejs: ^0.13.0
-    pyright: ^1.1.388
-    sql-language-server: ^1.7.0
+    pyright: ^1.1.390
+    sql-language-server: ^1.7.1
     typescript-language-server: ^4.3.3
     unified-language-server: ^4.0.1
     vscode-css-languageserver-bin: ^1.4.0
@@ -5768,9 +5768,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pyright@npm:^1.1.388":
-  version: 1.1.388
-  resolution: "pyright@npm:1.1.388"
+"pyright@npm:^1.1.390":
+  version: 1.1.391
+  resolution: "pyright@npm:1.1.391"
   dependencies:
     fsevents: ~2.3.3
   dependenciesMeta:
@@ -5779,7 +5779,7 @@ __metadata:
   bin:
     pyright: index.js
     pyright-langserver: langserver.index.js
-  checksum: 0932437e40d952d7adf30bb3a72fa0a50e6fd8dda2a3c8bc8719937ea2adb31f42e74445f2f31c10abe0c6c7e173b643d6f76e2d0eaa477d2a45bacd4b1c0956
+  checksum: cfd601432ae1556744b3db84e841c3efb33d3fa288b9ef81f7efe459dc6e38af7d2f6e9a0169cd4f8d31e43d7c4ba3041b0aa814e11632387ed03deb3286e283
   languageName: node
   linkType: hard
 
@@ -6448,12 +6448,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql-language-server@npm:^1.7.0":
-  version: 1.7.0
-  resolution: "sql-language-server@npm:1.7.0"
+"sql-language-server@npm:^1.7.1":
+  version: 1.7.1
+  resolution: "sql-language-server@npm:1.7.1"
   dependencies:
     "@google-cloud/bigquery": ^5.9.0
-    "@joe-re/sql-parser": ^1.7.0
+    "@joe-re/sql-parser": ^1.7.1
     "@types/pg": ^8.6.6
     "@types/yargs": ^17.0.8
     cardinal: ^2.1.1
@@ -6462,7 +6462,7 @@ __metadata:
     mysql2: ^2.3.0
     node-ssh-forward: ^0.6.3
     pg: ^8.9.0
-    sqlint: ^1.7.0
+    sqlint: ^1.7.1
     sqlite3: ^5.0.3
     vscode-languageclient: ^6.1.3
     vscode-languageserver: 8.0.0-next.8
@@ -6471,22 +6471,22 @@ __metadata:
     yargs: ^17.3.1
   bin:
     sql-language-server: npm_bin/cli.js
-  checksum: 91e1ad3c8aaac834c7600bb6f946c27c600b67f0bd493012b7e8e73aa5e36f31e574d6eee80631e35a7093ebd84523ef99ef5d49b4e55295e63d9046e3ec6b6e
+  checksum: 9deff98c44c3b693c988cf144d95a20a94cf1045eda0733cb1200aab532619f6c57440bf190236fedebdbb7a3415fee85996da46e00fd4e9c5dcb6b5586f9c35
   languageName: node
   linkType: hard
 
-"sqlint@npm:^1.7.0":
-  version: 1.7.0
-  resolution: "sqlint@npm:1.7.0"
+"sqlint@npm:^1.7.1":
+  version: 1.7.1
+  resolution: "sqlint@npm:1.7.1"
   dependencies:
-    "@joe-re/sql-parser": ^1.7.0
+    "@joe-re/sql-parser": ^1.7.1
     ajv: ^6.12.2
     chalk: ^4.0.0
     js-yaml: ^3.14.0
     yargs: ^17.3.1
   bin:
     sqlint: bin/cli.js
-  checksum: fde4c82e60b649d1fa19d5c4069f19d5ce1e5eda752354b8fc7441699d4c005397bf632788ba98050e89faf91b9846588c298ca12adbc079ff538054478b142f
+  checksum: cb03de6be7cd7ab0f0865ef55a82b839e33af0fd885e25e3274340fa17aaac905d2a9d77128b49491511ed7e7f745ea3330b78c2fb85a821265c79207859913c
   languageName: node
   linkType: hard
 
