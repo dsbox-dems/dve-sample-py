@@ -479,8 +479,12 @@ pyenv versions
 
 unset PY_RC_ENV; exec $SHELL --login
 
+eval "$(pyenv init --path)"
 eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
 pyenv versions
+pyenv versions --bare
 
 pyenv shell $(cat ~/.python-version)
 
@@ -500,37 +504,87 @@ unset PY_RC_ENV; exec $SHELL --login
 which python
 python --version
 
-python3 -m pip install --upgrade pip
-python3 -m pip install --upgrade pipenv
-python3 -m pip install --upgrade setuptools wheel
 
-python3 -m pip install --upgrade ipython
-python3 -m pip install --upgrade cookiecutter
+python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+        pip
+
+python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+        setuptools \
+        wheel \
+        pipenv \
+        numpy
+
+python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+        ipython \
+        cookiecutter
 
 pyenv    rehash
 pipenv --version
 
 
-python3 -m pip install --upgrade pipx
+
+##
+# pipx
+#
+
+# export PIP_REQUIRE_VIRTUALENV=false
+unset PIP_REQUIRE_VIRTUALENV
+
+python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
+        pipx
+
+pyenv    rehash
+
 python3 -m pipx ensurepath
 
-
-# pipx
-
-ssh localhost 
-
+pipx reinstall-all
 pipx install --force pycowsay 
 pipx list
-pipx run pycowsay 'moooo!'
+pipx run pycowsay "moooo! -- pyenv=$(pyenv --version), python=$(python --version), pipx=$(pipx --version)"
 
-exit
-
-# rehash
 
 unset PY_RC_ENV; exec $SHELL --login
 
 pycowsay 'moooo!'
 
+
+##
+# check
+#
+
+function check_pyenv() {
+    
+    [ "$Y_PY_PYENV_CHECK" = 1 ] || return 0
+
+    set -x
+
+    echo "PATH=${PATH}"
+    echo "SHELL=${SHELL}"
+    echo "PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}"
+    
+    which python      || true
+    which -a python3  || true
+
+    python --version  || false
+
+    which    pip      || true
+    which -a pip3     || true
+    pip    --version  || false
+
+    pyenv --version   || false
+    pyenv   versions  || true
+    pyenv   version   || true
+
+    which   pipx      || true
+    pipx  --version   || false
+    
+    pipx    list      || true
+    
+    set +x
+    
+}
+
+Y_PY_PYENV_CHECK=1 check_pyenv
 
 #+END_SRC
 
@@ -555,8 +609,8 @@ rm -rf ~/.config/pypoetry
 # curl -sSL https://install.python-poetry.org | python3 -
 
 pipx install poetry
-
 pipx upgrade poetry
+pipx inject  poetry poetry-plugin-shell
 
 
 # ===( reload )===========================
@@ -632,6 +686,90 @@ poetry show --tree
 #+END_SRC
 
 * JUPYTER
+
+
+** Node
+
+#+BEGIN_SRC bash
+
+# ------------------------------------------------------
+: "${Y_JS_NODE_VERSION:=22.12}"
+: "${FNM_ROOT:=$HOME/.fnm}"
+: "${NODE_ROOT:=$HOME/.nodejs}"
+: "${FNM_DIR:=$NODE_ROOT/.fnm}"
+: "${NODE_VERSION:=$Y_JS_NODE_VERSION}"
+# ------------------------------------------------------
+
+function install_node() {
+
+    [ "$Y_JS_NODE_INSTALL" = 1 ] || return 0
+
+
+    # installs fnm (Fast Node Manager)
+    curl -fsSL https://fnm.vercel.app/install | \
+        bash -s -- --install-dir "$FNM_ROOT" --skip-shell    
+
+    # fnm
+    FNM_PATH="$FNM_ROOT"
+    ln -sf "$FNM_ROOT/fnm" ~/.local/bin/fnm
+
+    export FNM_DIR=$NODE_ROOT/.fnm
+    #export PATH=$NODE_ROOT/bin:$PATH
+    
+    
+    if [ -d "$FNM_PATH" ]; then
+        #export PATH="$FNM_PATH:$PATH"
+        eval "$(fnm --fnm-dir ${FNM_DIR} env)"
+    fi
+
+    cat <<EOF >> ~/.pam_environment
+NODE_VERSION=${NODE_VERSION}
+FNM_DIR=${FNM_DIR}
+EOF
+    
+    source ~/.pam_environment
+
+
+    # download and install Node.js
+    fnm use --fnm-dir ${FNM_DIR} --install-if-missing ${NODE_VERSION}
+    fnm default ${NODE_VERSION}
+
+    # ln -sf "$NODE_ROOT/.fnm/node-versions/$NODE_VERSION/installation/bin/node" /usr/local/bin/node
+    # ln -sf "$NODE_ROOT/.fnm/node-versions/$NODE_VERSION/installation/bin/npm" /usr/local/bin/npm
+
+
+}
+
+Y_JS_NODE_INSTALL=1  install_node
+
+
+function check_node() {
+    
+    [ "$Y_JS_NODE_CHECK" = 1 ] || return 0
+
+    echo "Verifying node and npm installation..."
+
+    echo "PATH=${PATH}"
+    echo "SHELL=${SHELL}"
+    
+    set -x
+    
+    which -a node     || true
+    node --version    || false
+
+    which -a npm      || true
+    npm --version     || false
+    
+    set +x
+    
+}
+
+Y_JS_NODE_CHECK=1 check_node
+
+
+#+END_SRC
+
+
 ** Configure
 
 #+BEGIN_SRC bash
@@ -754,7 +892,10 @@ jupyter lab build --debug
 alias jupyter='eval "$(pyenv init -)"; pyenv exec poetry run jupyter'
 
 jupyter --version
+jupyter --paths
+jupyter labextension list
 jupyter kernelspec list
+
 
 # lab
 
