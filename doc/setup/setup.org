@@ -663,7 +663,8 @@ poetry --version
 
 poetry env list
 poetry env info
-poetry env use -- $(which python)
+#poetry env use -- $(which python)
+poetry env use -- $(cat ./.python-version)
 poetry env list
 poetry env info
 

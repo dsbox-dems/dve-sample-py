@@ -65,10 +65,11 @@ tensorflow-datasets = "*"
 
 # {{{ TORCH: from https://pytorch.org/get-started/locally/
 
-#torch = {version = "*"}
+torch = {version = "*"}
 ##torch = {version = "=2.5.*"}
 ##torch = {version = "=2.5.*", source = "torch124"}
 ##torch = {version = "=2.1.1*", source = "torch121"}
+torchvision = {version = "*"}
 #torch_geometric = {version = "*"}
 
 ### }}} // torch
@@ -86,6 +87,9 @@ tensorflow-datasets = "*"
 # --- [core] -----------------------------------
 numpy = '*'
 pandas = '*'
+
+# --- [cuda] -----------------------------------
+pynvml = '*'
 
 # --- [raw] -----------------------------------
 pandas-datareader = '*'
