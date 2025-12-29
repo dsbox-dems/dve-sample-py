@@ -139,8 +139,7 @@ sudo apt install -y \
      libmysqlclient-dev
 sudo apt install -y \
      libczmq-dev
-sudo apt install -y \
-     nodejs
+
 
 
 # yum/dnf
@@ -157,7 +156,6 @@ sudo dnf install \
      libffi-devel zlib-devel
 sudo dnf install mysql mysql-devel
 sudo dnf install zeromq-devel
-sudo dnf install nodejs
 
 # arch
 sudo pacman -S \
@@ -165,8 +163,7 @@ sudo pacman -S \
      libffi libnsl libxcrypt openssl zlib \
      sqlite mpdecimal xz tk \
      mariadb-clients \
-     zeromq \
-     nodejs
+     zeromq 
 
 #+END_SRC
 
@@ -690,6 +687,65 @@ poetry show --tree
 
 
 ** Node
+*** Node (NVM)
+
+#+BEGIN_SRC bash
+
+##
+# nvm setup
+# 
+
+# @see: https://nodejs.org/en/download
+
+# ---(nvm)--------------------------
+
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+grep 'NVM_DIR' ~/.bashrc ||  cat << 'EOF' >> ~/.bashrc
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+EOF
+
+exec $SHELL --login
+    
+type nvm    
+
+
+# ---(node)--------------------------
+
+
+nvm install 24
+
+nvm alias default 24
+
+exec $SHELL --login
+
+# Verify the Node.js version:
+node -v # Should print "v24.12.0".
+
+# Verify npm version:
+npm -v # Should print "11.6.2".
+
+which -a node
+which -a npm
+
+# ---(modules)----------------------
+
+# npm install -g npm@11.7.0
+
+npm install -g markdownlint-cli2
+
+exec $SHELL --login
+
+which -a markdownlint-cli2
+markdownlint-cli2 --help
+
+# ------------------------------------
+
+#+END_SRC
+
+*** Node (FSM)
 
 #+BEGIN_SRC bash
 
