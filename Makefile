@@ -44,6 +44,7 @@ CLEAN_DIRS = ${TEMP_DIR}
 # ---(progs)------------------------------------------------
 
 SHELL := /bin/bash
+RSCRIPT := Rscript
 #POETRY := poetry
 POETRY := $(shell command -v poetry 2> /dev/null)
 PY_RUN := ${POETRY} run
@@ -61,9 +62,16 @@ PY_RUN := ${POETRY} run
 all: # @HELP/base make: "init,check,test,docs,build"  targets
 all: init check test docs build
 
+start: # @HELP/base runs: `poetry run ./start.sh`
+start:
+	${POETRY} 'run' './start.sh' 
+
+
+
 test: # @HELP/base runs: `devtools::test()`
 test: init
-	${PY_RUN} pytest
+	${POETRY} run 'pytest' || true
+	${RSCRIPT} -e 'devtools::test()'
 
 
 check: # @HELP/base runs: mypy, pflake8, pylint
@@ -84,7 +92,7 @@ man: init
 
 vignettes: # @HELP/base runs: `devtools::build_vignettes()`
 vignettes: 
-	cd ${DOC_MAKE_DIR} && $(MAKE) $@
+	${RSCRIPT} -e 'devtools::build_vignettes()'
 
 README.rst: 
 
@@ -94,22 +102,6 @@ readme: README.rst
 format: # @HELP/baseformat code with black
 format: 
 	${POETRY} run black $(SRC) $(TESTS)
-
-
-
-#requirements: .requirements.txt
-#env: .venv/bin/activate
-#.requirements.txt: requirements.txt
-#	$(shell . .venv/bin/activate && pip install -r requirements.txt)
-#.PHONY: update
-#update: env
-#	.venv/bin/python3 -m pip install -U pip
-#	poetry update
-#	poetry export -f requirements.txt --output requirements.txt --without-hashes
-#.PHONY: format
-#format: env
-#	$(shell . .venv/bin/activate && isort ./)
-#	$(shell . .venv/bin/activate && black ./)
 
 
 build: # @HELP/base runs: `devtools::build()`
@@ -124,6 +116,11 @@ uninstall: # @HELP/base runs: `devtools::uninstall()`
 uninstall:
 	${RSCRIPT} -e 'devtools::uninstall()'
 
+status: # @HELP/base runs: `poetry show` and `renv::diagnostics()`
+status:
+	${POETRY} 'show'
+	${RSCRIPT} -e 'renv::diagnostics()'
+
 clean: # @HELP/base clean all files in .gitignore
 	@echo "+++ {{{ CLEAN /////////";
 	@echo "+++ Running  py3clean..."; $(POETRY) run py3clean -v $(SRC) $(TESTS) || true
@@ -131,8 +128,6 @@ clean: # @HELP/base clean all files in .gitignore
 	@echo "+++ NOT Cleaning build, dist ..."; echo "rm -rf ./build ./dist"  || true
 	@echo "+++ NOT Running git clean ..."; echo "git clean -Xdf"  || true
 	@echo "+++ }}} CLEAN \\\\\\\\\ ";
-
-
 
 init: # @HELP/base initialize local (temp,logs) directories
 	@mkdir -p ${LOGS_DIR}
@@ -177,6 +172,25 @@ build-help: help/build
 
 #}}} \\\
 
+#{{{ [ AUTO.* ] /////////////////////////////////////////////////////////////////
+
+# ---(full)------------------------------------------------
+
+.PHONY: full full-help
+
+full: # @HELP/build project environment initializaion after checkout 
+full:  init
+full:  build-setup
+full:  runtime-setup
+full:  runtime-environ
+full:  runtime-test
+full:  runtime-check
+full:  runtime-status
+
+full-help: help/full
+
+#}}} \\\
+
 #{{{ [ CONTAINERS.* ] /////////////////////////////////////////////////////////////////
 
 # ---(images)------------------------------------------------
@@ -192,6 +206,12 @@ build-update:
 build-upgrade:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
+build-environ:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+build-profile:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
 
 # ---(inner check)------------------------------------------------
 
@@ -203,14 +223,34 @@ build-validate:
 
 # ---(run)------------------------------------------------
 
-.PHONY: runtime-repl runtime-cli runtime-shell
-.PHONY: runtime-upgrade runtime-setup runtime-status runtime-clear
+.PHONY: runtime-repl runtime-rs
+.PHONY: runtime-pyrun runtime-ipython
+.PHONY: runtime-auto runtime-cli runtime-shell
+.PHONY: runtime-upgrade runtime-setup runtime-clear
+.PHONY: runtime-test runtime-check runtime-status
+.PHONY: runtime-environ runtime-profile
 .PHONY: runtime-build
 .PHONY: runtime-rstudio runtime-lab runtime-notebook runtime-code
-.PHONY: runtime-command runtime-term runtime-help
+.PHONY: runtime-command runtime-term runtime-xterm runtime-help
 
 runtime-repl: # @HELP/runtime ...
 runtime-repl:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-rs: # @HELP/runtime ...
+runtime-rs:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-ipython: # @HELP/runtime ...
+runtime-ipython:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-pyrun: # @HELP/runtime ...
+runtime-pyrun:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-auto: # @HELP/runtime ...
+runtime-auto:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-cli: # @HELP/runtime ...
@@ -237,8 +277,24 @@ runtime-status: # @HELP/runtime ...
 runtime-status:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
+runtime-environ: # @HELP/runtime ...
+runtime-environ:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-profile: # @HELP/runtime ...
+runtime-profile:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
 runtime-build: # @HELP/runtime ...
 runtime-build:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-test: # @HELP/runtime ...
+runtime-test:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-check: # @HELP/runtime ...
+runtime-check:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-command: # @HELP/runtime ...
@@ -247,6 +303,10 @@ runtime-command:
 
 runtime-term: # @HELP/runtime ...
 runtime-term:
+	@cd ${IMG_MAKE_DIR} && $(MAKE) --silent $@
+
+runtime-xterm: # @HELP/runtime ...
+runtime-xterm:
 	@cd ${IMG_MAKE_DIR} && $(MAKE) --silent $@
 
 runtime-rstudio: # @HELP/runtime ...
