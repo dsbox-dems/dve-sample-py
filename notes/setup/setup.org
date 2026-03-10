@@ -101,6 +101,140 @@
 #+RESULTS: date
 
 
+
+* UV
+
+** Init
+
+#+BEGIN_SRC bash
+
+# ===( clean )===========================
+
+# @see: https://docs.astral.sh/uv/guides/
+
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# ===( reload )===========================
+
+unset PY_RC_ENV; exec $SHELL --login
+
+# ===( check )===========================
+
+uv --version
+uvx --version
+
+#+END_SRC
+
+
+** Install
+
+#+BEGIN_SRC bash
+
+# ===( reload )===========================
+
+unset PY_RC_ENV; exec $SHELL --login
+
+# ===( install )===========================
+
+eval "$(pyenv init -)"
+
+uv --version
+
+uv python list
+
+#export PYTHON_CONFIGURE_OPTS="--enable-shared --with-tcltk-includes='-I/usr/include/tcl' --with-tcltk-libs='-L/usr/lib/x86_64-linux-gnu -ltcl8.6 -ltk8.6'"
+#export PYTHON_CONFIGURE_OPTS="--enable-shared --with-tcltk-includes='$(pkg-config tk --cflags)' --with-tcltk-libs='$(pkg-config tk --libs)'" 
+#export PYTHON_CONFIGURE_OPTS="--enable-shared --with-tcltk-includes='-I/usr/include/tcl8.6' --with-tcltk-libs='-ltk8.6 -ltkstub8.6 -ltcl8.6 -ltclstub8.6'" 
+
+export PYTHON_CONFIGURE_OPTS="--enable-shared"
+
+
+PYRC_PY_CURRENT=$(curl https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/raw/main/.python-version); echo $PYRC_PY_CURRENT
+
+: ${PYRC_PY_VERSION:=$PYRC_PY_CURRENT}; export PYRC_PY_VERSION
+[ -f ~/.python-version ] || echo "${PYRC_PY_VERSION}" > ~/.python-version
+cat ~/.python-version
+
+[ -f ~/.python-version ]   && uv python install --verbose $(cat ~/.python-version) 2>&1 \
+        | tee /tmp/uv-python-install-$(date -Isec).log; ls -l /tmp/pyenv-install-*
+
+[ -f ./.python-version ]   && uv python  install --verbose $(cat ./.python-version) 2>&1 \
+        | tee /tmp/uv-python-install-$(date -Isec).log; ls -l /tmp/pyenv-install-*
+
+uv python list
+
+
+# ===( activate )===========================
+
+unset PY_RC_ENV; exec $SHELL --login
+
+uv python list
+
+which python
+python --version
+
+
+#+END_SRC
+
+
+
+
+** Build
+
+
+#+BEGIN_SRC bash
+
+#   
+
+if [ ! -d ~/work/vs/dve-sample-py ]; then
+    mkdir -p ~/work/vs
+    cd       ~/work/vs
+    git clone https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git
+fi      
+cd ~/work/vs/dve-sample-py
+git remote update
+git branch -av
+git status
+git pull
+
+#
+
+cat ./pyproject.toml
+
+
+#eval "$(pyenv init -)"
+
+which python
+pyenv versions
+python --version
+uv --version
+uvx --version
+
+un  env
+
+# uv lock
+
+uv sync
+
+uv  version
+
+# ===( activate )===========================
+
+# source ./venv/bin/activate
+
+uv run $SHELL
+
+python --version
+jupyter --version
+
+
+
+
+#+END_SRC
+
+
+
+
 * PYENV
 
 ** Build Dependencies
@@ -438,7 +572,6 @@ unset PY_RC_ENV; exec $SHELL --login
 
 ** Version
 
-
 #+BEGIN_SRC bash
 
 # ===( install )===========================
@@ -504,6 +637,8 @@ python --version
 
 python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
         pip
+
+pip install --upgrade pip
 
 python3 -m pip --no-cache-dir install --upgrade --ignore-installed \
         setuptools \
@@ -584,6 +719,10 @@ function check_pyenv() {
 Y_PY_PYENV_CHECK=1 check_pyenv
 
 #+END_SRC
+
+
+
+
 
 * POETRY
 ** Install
@@ -682,6 +821,7 @@ poetry show --tree
 
 
 #+END_SRC
+
 
 * JUPYTER
 

@@ -1,5 +1,3 @@
 library(testthat)
 
-library(stringr)
-
-test_check("dvesimpler")
+test_check("dvesimplepy")
