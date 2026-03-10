@@ -5,14 +5,14 @@ description = "Python Template Project with Podman and Jypyter Support"
 authors = [
     {name = "Datalab DEMS", email = "datalab@unimib.it"}
 ]
-license = "GNU General Public License v3.0"
-readme = "README.rst"
+license = "Academic Free License (AFL) v. 3.0"
+readme = "README.md"
 documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
 homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
 repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
 
-dynamic = [ "dependencies" ]
-requires-python = "^3.12"
+dynamic = ["dependencies"]
+requires-python = ">=3.10,<3.15"
 
 [tool.poetry]
 requires-poetry = ">=2.0"
@@ -24,18 +24,49 @@ include-package-data = true
 [tool.setuptools.package-data]
 res = [ "resources/*", "resources/*/*" ]
 
-[projct.scripts]
+[project.scripts]
 main = "dve.cli:main"
 demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_script:main"
 
 [tool.poetry.dependencies]
-python = "^3.12"
-# python = ">=3.8,<3.11"
+python = ">=3.10,<3.15"
+
+
+# {{{ CUDA: Cuda-13 from NVIDIA package index
+
+# NVIDIA Tensorflow cuda binaries: from https://github.com/nvidia/tensorflow/
+
+# Tensorflow 2.19 cuda dependencies
+# @see: https://github.com/tensorflow/tensorflow/blob/v2.19.0/ci/official/requirements_updater/requirements.in#L31
+
+# nvidia-cuda-runtime-cu12 = {version = "*", source = "nvidia"}
+
+
+#@[nv]# nvidia-cublas-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-cupti-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-nvcc-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-nvrtc-cu13 = {version = "*"}
+#@[nv]# nvidia-cuda-runtime-cu13 = {version = "*"}
+#@[nv]# nvidia-cudnn-cu13 = {version = "*"}
+#@[nv]# nvidia-cufft-cu13 = {version = "*"}
+#@[nv]# nvidia-curand-cu13 = {version = "*"}
+#@[nv]# nvidia-cusolver-cu13 = {version = "*"}
+#@[nv]# nvidia-cusparse-cu13 = {version = "*"}
+#@[nv]# nvidia-nccl-cu13 = {version = "*"}
+#@[nv]# nvidia-nvjitlink-cu13 = {version = "*"}
+
+### }}} // cuda
+
 
 # {{{ TENSORFLOW: from rstudio/tensorflow/R/install.R@default_extra_packages
 
+#@[nv]# tensorflow = {extras = ["and-cuda"], version = "^2.19.0"}
+#@[nv]# tensorflow = {extras = ["and-cuda"], version = "^2.20.0"}
+## tensorflow = {version = "=2.25.*"}
+## tensorflow = {version = "=2.18.*"}
+## tensorflow = {version = "=2.18.*"}
 ## tensorflow = {version = "*"}
-tensorflow = {version = "=2.18.*"}
 ## tensorflow = {version = "=2.12.*"}
 ## tensorflow-estimator = "*"
 tensorboard = "*"
@@ -45,9 +76,12 @@ tensorflow-datasets = "*"
 ### }}} // tensorflow
 
 
-# {{{ CUDA-11 TensorRT
+# {{{ TENSORFLOW: TensorRT
 
 # TensorRT install: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+# TensorRT compatibility: from https://docs.nvidia.com/deeplearning/tensorrt/support-matrix/index.html
+
+#@[nv]# tensorrt = "*"
 
 #tensorrt = "*"
 #tensorrt_lean = "*"
@@ -65,12 +99,8 @@ tensorflow-datasets = "*"
 
 # {{{ TORCH: from https://pytorch.org/get-started/locally/
 
-torch = {version = "*"}
-##torch = {version = "=2.5.*"}
-##torch = {version = "=2.5.*", source = "torch124"}
-##torch = {version = "=2.1.1*", source = "torch121"}
-torchvision = {version = "*"}
-#torch_geometric = {version = "*"}
+torch = {version = "=2.10.*", source = "torch130"}
+torchvision = {version = "=0.25.*", source = "torch130"}
 
 ### }}} // torch
 
@@ -96,6 +126,10 @@ nvidia-ml-py = '*'
 pandas-datareader = '*'
 openpyxl = '*'
 h5py = '*'
+
+# --- [data] -----------------------------------
+pyarrow = '*'
+polars = '*'
 
 # --- [sql] --------------------------------------
 SQLAlchemy = "*"
@@ -167,6 +201,9 @@ click = '*'
 # --- [logging] -----------------------------------
 icecream = '*'
 
+# --- [console] -----------------------------------
+radian = '*'
+
 # --- [script] -----------------------------------
 tqdm = '*'
 
@@ -184,19 +221,6 @@ pip = "*"
 more-itertools = "*"
 
 ### }}} // system
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 [tool.poetry.group.dev.dependencies]
@@ -255,7 +279,6 @@ ipython-bg = "*"
 ### }}} // jupyter
 
 
-
 # {{{ TOOLS: 
 
 # --- [test] -----------------------------------
@@ -302,7 +325,6 @@ mypy = "*"
 ### }}} // misc
 
 
-
 # {{{ release:
 
 # --- [package] -----------------------------------
@@ -330,37 +352,57 @@ name = "torch124"
 url = "https://download.pytorch.org/whl/cu124"
 priority = "explicit"
 
+[[tool.poetry.source]]
+name = "torch130"
+url = "https://download.pytorch.org/whl/cu130"
+priority = "explicit"
+
 
 
 [tool.poetry.dependencies.rootpath]
 git = "https://github.com/hute37/python-rootpath"
 branch = "stable"
 
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q"
-testpaths = [
-    "tests",
-]
+# {{{ LSP:
+
+# --- [pyright] --------------------------------------
 
 # @see: https://github.com/microsoft/pyright/blob/main/docs/configuration.md
 [tool.pyright]
-include = ["src", "tests", "notebooks"]
-exclude = ["**/node_modules",
-    "**/__pycache__",
-    "docker",
-    "notes",
-    "data",
-    "logs",
-    "temp"
+include = ["src", "tests/pytest", "notebooks"]
+exclude = [
+  "**/node_modules",
+  "**/__pycache__",
+  "docker",
+  "notes",
+  "data",
+  "logs",
+  "temp",
 ]
 ignore = ["build"]
 defineConstant = { DEBUG = true }
 #stubPath = "src/stubs"
 #venv = "env367"
-
+#verboseOutput = true
 typeCheckingMode = "basic"
 reportMissingImports = true
+
+### }}} // lsp
+
+# {{{ TEST:
+
+# --- [pytest] --------------------------------------
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests/pytest"]
+testpaths = ["tests/pytest"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+### }}} // test
+
 
 # {{{ FORMAT: 
 
@@ -431,7 +473,8 @@ select = [
   # pyflakes
   "F",
   # pycodestyle
-  "E", "W",
+  "E",
+  "W",
   # flake8-2020
   "YTT",
   # flake8-bugbear
@@ -479,7 +522,7 @@ select = [
   # flake8-slots
   "SLOT",
   # flake8-raise
-  "RSE"
+  "RSE",
 ]
 
 ignore = [
@@ -630,7 +673,6 @@ convention = "google"
 [tool.ruff.lint.isort]
 combine-as-imports = true
 split-on-trailing-commas = false
-
 
 
 # [tool.ruff.lint.flake8-tidy-imports.banned-api]
