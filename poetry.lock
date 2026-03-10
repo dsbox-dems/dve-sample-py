@@ -550,7 +550,6 @@ files = [
     {file = "cffi-1.17.1-cp39-cp39-win_amd64.whl", hash = "sha256:d016c76bdd850f3c626af19b0542c9677ba156e4ee4fccfdd7848803533ef662"},
     {file = "cffi-1.17.1.tar.gz", hash = "sha256:1c39c6016c32bc48dd54561950ebd6836e1670f2ae46128f67cf49e789c52824"},
 ]
-markers = {main = "implementation_name == \"pypy\""}
 
 [package.dependencies]
 pycparser = "*"
@@ -4625,6 +4624,69 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
+name = "polars"
+version = "1.38.1"
+description = "Blazingly fast DataFrame library"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "polars-1.38.1-py3-none-any.whl", hash = "sha256:a29479c48fed4984d88b656486d221f638cba45d3e961631a50ee5fdde38cb2c"},
+    {file = "polars-1.38.1.tar.gz", hash = "sha256:803a2be5344ef880ad625addfb8f641995cfd777413b08a10de0897345778239"},
+]
+
+[package.dependencies]
+polars-runtime-32 = "1.38.1"
+
+[package.extras]
+adbc = ["adbc-driver-manager[dbapi]", "adbc-driver-sqlite[dbapi]"]
+all = ["polars[async,cloudpickle,database,deltalake,excel,fsspec,graph,iceberg,numpy,pandas,plot,pyarrow,pydantic,style,timezone]"]
+async = ["gevent"]
+calamine = ["fastexcel (>=0.9)"]
+cloudpickle = ["cloudpickle"]
+connectorx = ["connectorx (>=0.3.2)"]
+database = ["polars[adbc,connectorx,sqlalchemy]"]
+deltalake = ["deltalake (>=1.0.0)"]
+excel = ["polars[calamine,openpyxl,xlsx2csv,xlsxwriter]"]
+fsspec = ["fsspec"]
+gpu = ["cudf-polars-cu12"]
+graph = ["matplotlib"]
+iceberg = ["pyiceberg (>=0.7.1)"]
+numpy = ["numpy (>=1.16.0)"]
+openpyxl = ["openpyxl (>=3.0.0)"]
+pandas = ["pandas", "polars[pyarrow]"]
+plot = ["altair (>=5.4.0)"]
+polars-cloud = ["polars_cloud (>=0.4.0)"]
+pyarrow = ["pyarrow (>=7.0.0)"]
+pydantic = ["pydantic"]
+rt64 = ["polars-runtime-64 (==1.38.1)"]
+rtcompat = ["polars-runtime-compat (==1.38.1)"]
+sqlalchemy = ["polars[pandas]", "sqlalchemy"]
+style = ["great-tables (>=0.8.0)"]
+timezone = ["tzdata ; platform_system == \"Windows\""]
+xlsx2csv = ["xlsx2csv (>=0.8.0)"]
+xlsxwriter = ["xlsxwriter"]
+
+[[package]]
+name = "polars-runtime-32"
+version = "1.38.1"
+description = "Blazingly fast DataFrame library"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "polars_runtime_32-1.38.1-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:18154e96044724a0ac38ce155cf63aa03c02dd70500efbbf1a61b08cadd269ef"},
+    {file = "polars_runtime_32-1.38.1-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:c49acac34cc4049ed188f1eb67d6ff3971a39b4af7f7b734b367119970f313ac"},
+    {file = "polars_runtime_32-1.38.1-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:fef2ef2626a954e010e006cc8e4de467ecf32d08008f130cea1c78911f545323"},
+    {file = "polars_runtime_32-1.38.1-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e8a5f7a8125e2d50e2e060296551c929aec09be23a9edcb2b12ca923f555a5ba"},
+    {file = "polars_runtime_32-1.38.1-cp310-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:10d19cd9863e129273b18b7fcaab625b5c8143c2d22b3e549067b78efa32e4fa"},
+    {file = "polars_runtime_32-1.38.1-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:61e8d73c614b46a00d2f853625a7569a2e4a0999333e876354ac81d1bf1bb5e2"},
+    {file = "polars_runtime_32-1.38.1-cp310-abi3-win_amd64.whl", hash = "sha256:08c2b3b93509c1141ac97891294ff5c5b0c548a373f583eaaea873a4bf506437"},
+    {file = "polars_runtime_32-1.38.1-cp310-abi3-win_arm64.whl", hash = "sha256:6d07d0cc832bfe4fb54b6e04218c2c27afcfa6b9498f9f6bbf262a00d58cc7c4"},
+    {file = "polars_runtime_32-1.38.1.tar.gz", hash = "sha256:04f20ed1f5c58771f34296a27029dc755a9e4b1390caeaef8f317e06fdfce2ec"},
+]
+
+[[package]]
 name = "prometheus-client"
 version = "0.21.1"
 description = "Python client for the Prometheus monitoring system."
@@ -4953,7 +5015,6 @@ files = [
     {file = "pycparser-2.22-py3-none-any.whl", hash = "sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc"},
     {file = "pycparser-2.22.tar.gz", hash = "sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6"},
 ]
-markers = {main = "implementation_name == \"pypy\""}
 
 [[package]]
 name = "pydot"
@@ -5564,6 +5625,114 @@ files = [
 
 [package.dependencies]
 cffi = {version = "*", markers = "implementation_name == \"pypy\""}
+
+[[package]]
+name = "radian"
+version = "0.6.15"
+description = "A 21 century R console"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "radian-0.6.15.tar.gz", hash = "sha256:abbd92907012deee0b46429d69e52193e4ae2b0183efaeb96b425d89f9e9db7f"},
+]
+
+[package.dependencies]
+prompt_toolkit = ">=3.0.41,<3.1"
+pygments = ">=2.5.0"
+rchitect = ">=0.4.8,<0.5.0"
+
+[package.extras]
+dev = ["coverage", "pexpect", "ptyprocess ; sys_platform != \"win32\"", "pyte (>=0.8.0)", "pytest", "pywinpty ; sys_platform == \"win32\""]
+
+[[package]]
+name = "rchitect"
+version = "0.4.9"
+description = "Mapping R API to Python"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "rchitect-0.4.9-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:8cfd1c96ae5e6384973ec66bd222c4912cb6554fda33c8fb1894cc9e19f89e1c"},
+    {file = "rchitect-0.4.9-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:cd77e9ff54dbf81190c6b864ac54726323916e1cbf6a14466998e9ac3530dace"},
+    {file = "rchitect-0.4.9-cp310-cp310-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:90e43062848bf816da3c810e5ede185fb8d91acc5abc09b00311322f9f137c6f"},
+    {file = "rchitect-0.4.9-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:a1aef36cb50357f461dc1750727a2ed4089d2ceceee999ae7a428cda483cd8e1"},
+    {file = "rchitect-0.4.9-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:276a44724cb10195fa8691a952866696d55464361421653431a5d078955a5de2"},
+    {file = "rchitect-0.4.9-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:2021f6239d9ccbb1088845d2906b5688e460b8a107f158a6498aba5ef709333a"},
+    {file = "rchitect-0.4.9-cp310-cp310-win32.whl", hash = "sha256:3501f77c5dd63d81f2312dbd590e461dde183df7959734336e7c74014439702f"},
+    {file = "rchitect-0.4.9-cp310-cp310-win_amd64.whl", hash = "sha256:fbe7f18e5774e6518d3e5afcb2f23877d0781d7377372dad1b30257be5b61475"},
+    {file = "rchitect-0.4.9-cp310-cp310-win_arm64.whl", hash = "sha256:44a03851bae1978c98b8b805e74f8bed0ecd017ea06cc59f0ca654e99dc7f577"},
+    {file = "rchitect-0.4.9-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:4317f93ffd19fd948366019d07508c738d84cdb5ad24007a87164fc10924292e"},
+    {file = "rchitect-0.4.9-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:c957229b5c273ec43c81787424d9f71114c65cba78195bde6284076d9e9ea2e3"},
+    {file = "rchitect-0.4.9-cp311-cp311-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:b8fedd25d900eb13a99d6d6068910baf96f1c050a50c05867fd267adba39b4d8"},
+    {file = "rchitect-0.4.9-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:160a056f4e27fa61288785822558eb49c5441a445f0ae144e0e95e6eda0cb751"},
+    {file = "rchitect-0.4.9-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:aee0d9e58f42a3d72c9082038573c0eae964a7e166eb5cf59c5497bf5893d625"},
+    {file = "rchitect-0.4.9-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:2b7b21ef09f5f6b29c502a3e753598a91c2cfeb4a50130149787bdbdeb39a0e2"},
+    {file = "rchitect-0.4.9-cp311-cp311-win32.whl", hash = "sha256:a780dabb140ab1aa680f8b42926e29de55c7c0679420f1838d6688a57f23932f"},
+    {file = "rchitect-0.4.9-cp311-cp311-win_amd64.whl", hash = "sha256:e6819673949a8a2e3e136c57cee5f0ad76e20f9613870002c176c89ec7926f33"},
+    {file = "rchitect-0.4.9-cp311-cp311-win_arm64.whl", hash = "sha256:9557dcd560f9b92914757dd3b456e1b9c2ea89ed3d8da492afb977829df1465e"},
+    {file = "rchitect-0.4.9-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:05f9e9ecd92a83b97c7cf692568d57700af063a6dcdf0cd874759259f7bc7cd8"},
+    {file = "rchitect-0.4.9-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:7eaa24a0da96f25cf5e6befc222f176235809314c441d900f807f6b4a14ca3eb"},
+    {file = "rchitect-0.4.9-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:c3ba0636e1d353ad46e5acad07604f8d051f3614f889b2b4d1d20a553cf9fd37"},
+    {file = "rchitect-0.4.9-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:e9db066f26d8eb4835636292559293effad14d9650a24422da2b6cfd18f0faeb"},
+    {file = "rchitect-0.4.9-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:67c36c4fca39196b1eff816e9321b63da45a805fc8c8a76d1e1944688aafdb25"},
+    {file = "rchitect-0.4.9-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:c106b5519dc6a88e9cc0f1388014ddcf6d3ff261f427f1a01dd3c1fededb5e25"},
+    {file = "rchitect-0.4.9-cp312-cp312-win32.whl", hash = "sha256:add14412f0e5c4abe6df8c9d08140d5f8917a66d1972957e5adbb541ed869dc6"},
+    {file = "rchitect-0.4.9-cp312-cp312-win_amd64.whl", hash = "sha256:a93d01e94edc2f0e23595d7f88250b5401981a5b1d12326b45bf95a0f6ec012b"},
+    {file = "rchitect-0.4.9-cp312-cp312-win_arm64.whl", hash = "sha256:9fd114bfcdff2f0d7fb7d00b1731c2db18c19c148b82bf30a3c847a60279f48f"},
+    {file = "rchitect-0.4.9-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:687017a0c1715ac1135fd1901b9af8baa88cab28fdffc02bf54f4495c0bfebc8"},
+    {file = "rchitect-0.4.9-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:80e417f069e5218d64838002871038dafa24a0ff85aaa8e8a5e0e0e8eb77b5c3"},
+    {file = "rchitect-0.4.9-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:5cc7b12bb0d04bc0272ddd687dc02c6708c0f79d24551ef9bd6e0696479f58cd"},
+    {file = "rchitect-0.4.9-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:a14cb4599e498547fe59f3e760ed1b731e7f58f4abcea74584ead8a83c09b17d"},
+    {file = "rchitect-0.4.9-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:1cbc8001723da1336c74e7e754706294921907dfcb5aae4525584f9d03411702"},
+    {file = "rchitect-0.4.9-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:3db883c9f620e85bde66973221b8c02eaeef73c353c212b7886b0558ec5f080f"},
+    {file = "rchitect-0.4.9-cp313-cp313-win32.whl", hash = "sha256:b73f6f3dc1b9d47b68248a37ca8ab11ba4a85bd13d28dd425136474c2aed1206"},
+    {file = "rchitect-0.4.9-cp313-cp313-win_amd64.whl", hash = "sha256:2ba1cccf67829de7cab79113bba8fe4ef5fdd5f3437b660be1ce456a8b25a8ef"},
+    {file = "rchitect-0.4.9-cp313-cp313-win_arm64.whl", hash = "sha256:d383664b78f3993d1689da713d593e3398eb3b05317faefd2f9120c0a2b120e2"},
+    {file = "rchitect-0.4.9-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:1be122b300cabc3ac53c9ed65ac321041a00b0558068b7846074e1bd9912ac8c"},
+    {file = "rchitect-0.4.9-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:41fb7b3f03a119df31e3a67180f0f9c1ea5962d9b4f7a782d6340fe358a807e7"},
+    {file = "rchitect-0.4.9-cp314-cp314-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:c8180b0d6a65edb562caa971f029320bc70444df98590b9e05291a4afea05736"},
+    {file = "rchitect-0.4.9-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:627093110583ad07a4d9ea1e2097758bffb909e14445bbb6a162cd794f6ee20a"},
+    {file = "rchitect-0.4.9-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:2567ae0ce9981ad4c874d498fb000e6798b08e184cf56bbafa2f4fb7c37c0a8a"},
+    {file = "rchitect-0.4.9-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:a49930167e902b2a9c2aff59689bfc452f7723076ed76cc8db522a29aecad601"},
+    {file = "rchitect-0.4.9-cp314-cp314-win32.whl", hash = "sha256:a451892babce5daf11c954feac356abc88a22c486bbbebdd3b0b4ade8dea8518"},
+    {file = "rchitect-0.4.9-cp314-cp314-win_amd64.whl", hash = "sha256:38a5d6571fca059533c91b99a7a6ed3ad7b0f759f8144188a2d8df9a28eb0cf4"},
+    {file = "rchitect-0.4.9-cp314-cp314-win_arm64.whl", hash = "sha256:587724d7ee78085abcddf83a13a347193a1f97f0111814c30a2879d703b28d63"},
+    {file = "rchitect-0.4.9-cp314-cp314t-macosx_10_15_x86_64.whl", hash = "sha256:b7c11e67d72879968a107b603d2e4b5c1c6b6b50954385d496213b776d2552db"},
+    {file = "rchitect-0.4.9-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:13abf0628ff81c2f34fd7549552967b3e49466eb9caee898ec14e403bef16161"},
+    {file = "rchitect-0.4.9-cp314-cp314t-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:62ae65bb990c63bf6b9ced4dfa25625f7160973ee9dfb809271fb7beea8f9e29"},
+    {file = "rchitect-0.4.9-cp314-cp314t-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:24b335fabfe3ddc781bf4358edbc54339380394b43db15d1b23d88251124fab6"},
+    {file = "rchitect-0.4.9-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:88172e9254ea3f8fba9fda29efb0bbfa9e95c77c3976fa35b9e9d40746fd8daa"},
+    {file = "rchitect-0.4.9-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:eb37fa0d2ab893e6f606f3e13db3fff13fe6c7854b704767f1f044ce94993d1b"},
+    {file = "rchitect-0.4.9-cp314-cp314t-win32.whl", hash = "sha256:cd95155fd974a82a642b3eb35716416a051af1ca17f80a49ad677276f8742c6b"},
+    {file = "rchitect-0.4.9-cp314-cp314t-win_amd64.whl", hash = "sha256:4d67e04eb2134de2424fd436cc8eb378bba8dbf422d99d97611d56ec49eac3e1"},
+    {file = "rchitect-0.4.9-cp314-cp314t-win_arm64.whl", hash = "sha256:b38dbe112427eae4f26ecc30065427b2f653910ff552f1d4294a351edd7bc08e"},
+    {file = "rchitect-0.4.9-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:7fd200e7356c5e932ac4915434802c2c823ee6554f368dce88f498cd6ffd2ce2"},
+    {file = "rchitect-0.4.9-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:8305a7980606d750fb73ff60c885059ab0fb57f8372e0d6d4f04f228ccace3f6"},
+    {file = "rchitect-0.4.9-cp38-cp38-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:e146334b47bfaa65d05f0dd1972aff8bc5a5343e3a1e974fba2bd14af8f8c0f2"},
+    {file = "rchitect-0.4.9-cp38-cp38-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:ef8d6de6197e298b78028992ca17ebdee5abf96d0def23df1cc4d374229bc87c"},
+    {file = "rchitect-0.4.9-cp38-cp38-musllinux_1_2_aarch64.whl", hash = "sha256:33e750357fcaa2ed40afcd6900ef5aaeba98e53422a03e1523a7a18ec77ab0aa"},
+    {file = "rchitect-0.4.9-cp38-cp38-musllinux_1_2_x86_64.whl", hash = "sha256:720420b870d1e9804571706f2e419c7522a479a21e1a0067594288aaf33b13a9"},
+    {file = "rchitect-0.4.9-cp38-cp38-win32.whl", hash = "sha256:9ab20ab683698d4ff687cb5760ba8e890c75ed0e20657a2b7736ad828d01e8ec"},
+    {file = "rchitect-0.4.9-cp38-cp38-win_amd64.whl", hash = "sha256:1f09f3f607410479e7010a90607c8a8ff9dbdb75645b36d84b3e99ac571e50be"},
+    {file = "rchitect-0.4.9-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:7a23cb2b0aba6339ef8024b30edfbd9fe02ae64aaf2f349128cacde85c1fa8e0"},
+    {file = "rchitect-0.4.9-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:58ac1e6c1e50f6dafd8ec7ce232be5260eb037e54d9d4f35bf4eeadece8986ca"},
+    {file = "rchitect-0.4.9-cp39-cp39-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:a2c9d7b781f2075b8f4d026df3d2367942621e9699aff4eaff0210c397c54619"},
+    {file = "rchitect-0.4.9-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:b6114555912a351fd1bfcd700074ced6dd3ab0db9df4f69b319c1411d7a03317"},
+    {file = "rchitect-0.4.9-cp39-cp39-musllinux_1_2_aarch64.whl", hash = "sha256:badf103c576584d558ede58a3df7153935eca39347207d37e6f58c8b3a43b7bb"},
+    {file = "rchitect-0.4.9-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:92810bfffb6e702001de88bf701099774b46bc1fc2fdb65fd9e624e71cf3f8ac"},
+    {file = "rchitect-0.4.9-cp39-cp39-win32.whl", hash = "sha256:97e35c4c018b3eb6744fceccf8059d0028a33516a57079a9bc80464747239ec3"},
+    {file = "rchitect-0.4.9-cp39-cp39-win_amd64.whl", hash = "sha256:200dd73f5a99951b66eccccca3a3e7f6ecb0fe6574723bcddcbef43745a365ff"},
+    {file = "rchitect-0.4.9-cp39-cp39-win_arm64.whl", hash = "sha256:b8f81fe3550f353dc5c0a87157151ede4c4023deccf028400d13d0c044e788d0"},
+    {file = "rchitect-0.4.9.tar.gz", hash = "sha256:a22a255c15a54c8633d6ca04417e4f30b214c819bf81b7644a0c6e056fdf19bb"},
+]
+
+[package.dependencies]
+cffi = ">=1.10.0"
+packaging = ">=23.0"
+
+[package.extras]
+dev = ["pytest", "pytest-cov", "pytest-mock"]
 
 [[package]]
 name = "readme-renderer"
@@ -7603,4 +7772,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "69b042f817f2bfb8f2679e4dea05b5f461022ab60b3461ecf0a858a1618d9d6f"
+content-hash = "2db53485d169bc4eaa562f8c69c62d7d2f31a50f97fcb84f538b5a4fbe7fe7e9"
