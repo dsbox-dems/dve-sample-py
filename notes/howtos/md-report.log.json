@@ -1,0 +1,255 @@
+[
+    {
+        "type": "LoadedResource",
+        "verbosity": "INFO",
+        "for": "/home/gp21012/work/vs/dve-sample-py/notes/style/md-report.tex",
+        "from": "/home/gp21012/work/vs/dve-sample-py/notes/style/md-report.tex"
+    },
+    {
+        "type": "RunningFilter",
+        "verbosity": "INFO",
+        "path": "/home/gp21012/work/vs/dve-sample-py/notes/style/md-report.lua"
+    },
+    {
+        "type": "FilterCompleted",
+        "verbosity": "INFO",
+        "path": "/home/gp21012/work/vs/dve-sample-py/notes/style/md-report.lua",
+        "milliseconds": "82"
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- {{{ #TAG: TODO:(toc) // -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- markdownlint-disable MD012 -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- markdownlint-disable MD025 -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- markdownlint-disable MD033 -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- markdownlint-disable MD051 -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<details>\n<summary></summary>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "</details>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<details>\n<summary>[index]</summary>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "</details>\n<details>\n<summary></summary>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "</details>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- ::}}} \\\\ %0. -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- ::{{{ #TAG: TODO:(q1-section) // -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- }}} \\\\ %1. -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- ::{{{ #TAG: TODO:(q2-section) // -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- }}} \\\\ %2. -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- ::{{{ #TAG: TODO:(aa-section) // -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<details>\n<summary></summary>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "</details>\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<details><summary> HTML blocks\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- }}} \\\\ %a. -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "BlockNotRendered",
+        "verbosity": "INFO",
+        "contents": {
+            "c": [
+                "html",
+                "<!-- {{{ // %*\nLocalWords:  GitLab CommonMark GFM GLFM YAML\nvim: set foldmethod=marker :\n}}} // %* -->\n"
+            ],
+            "t": "RawBlock"
+        }
+    },
+    {
+        "type": "MissingCharacter",
+        "verbosity": "WARNING",
+        "message": "There is no → (U+2192) (U+2192) in font [XCharter-BoldItalic.otf]:mo"
+    }
+]
