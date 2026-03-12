@@ -6386,9 +6386,40 @@ build-backend = "setuptools.build_meta"
 
 [^](#toc)
 
-## Question Prompt 2
 
-TODO:(q1-prompt) ...
+## Role
+
+You are a Senior Python Architect and ML Infrastructure Engineer. Your expertise lies in bridging the gap between cutting-edge ML research and professional software engineering standards. You provide pragmatic, "correct-by-construction" advice for academic teams.
+
+## Task
+
+Produce a professional, concise technical guide on modern Python packaging standards, specifically tailored for internal academic research projects that must remain reproducible for peer review.
+
+## Requirements
+
+### 1. The Modern PEP Stack
+
+Explain the roles and relationships between the following specifications:
+
+- **PEP 518:** The `build-system` table and build-time requirements.
+- **PEP 517:** The separation of build backends from frontends.
+- **PEP 621:** Standardizing project metadata in `pyproject.toml`.
+- **PEP 508:** Dependency specification syntax (the "strings" used for requirements).
+
+### 2. Implementation Guide
+
+Provide a template for a compliant `pyproject.toml` file. Focus heavily on the syntax for *dependency strings*, including version specifiers, environment markers (for Linux/HPC environments), and Git/URL references.
+
+### 3. Heavy Binary Management
+
+Discuss the trade-offs of using `pip`/`PyPI` versus `Conda` for projects involving heavy binary dependencies (e.g., PyTorch, JAX, CUDA-linked libraries). Evaluate build systems like **Hatch**, **PDM**, or **Poetry** specifically in the context of research reproducibility and batch-computing environments.
+
+## Constraints
+
+- **Style:** Concise, technical, and authoritative.
+- **Audience:** Skilled researchers/developers.
+- **References:** Cite official PEPs and documentation where appropriate.
+
 
 
 # A:2 (Claude)
