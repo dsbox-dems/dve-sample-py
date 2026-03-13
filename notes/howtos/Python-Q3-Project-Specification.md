@@ -44,25 +44,18 @@ doctype: md-report
 
 # TOC
 
-1. [Q:1 - TODO:(q1-ref)](#q1)
-   - see: [TODO:(a1-ref-claude) (Claude)](#a1-claude)
-   - see: [TODO:(a1-ref-gemini) (Gemini)](#a1-gemini)
-   - see: [TODO:(a1-ref-chatgpt) (ChatGPT)](#a1-chatgpt)
-   - see: [TODO:(a1-ref-perplexity) (Perplexity)](#a1-perplexity)
-   - see: [TODO:(a1-ref-deepseek) (DeepSeek)](#a1-deepseek)
-2. [Q:2 - TODO:(q2-ref)](#q2)
-   - see: [TODO:(a2-ref-claude) (Claude)](#a2-claude)
-   - see: [TODO:(a2-ref-gemini) (Gemini)](#a2-gemini)
-   - see: [TODO:(a2-ref-chatgpt) (ChatGPT)](#a2-chatgpt)
-   - see: [TODO:(a2-ref-perplexity) (Perplexity)](#a2-perplexity)
-   - see: [TODO:(a2-ref-deepseek) (DeepSeek)](#a2-deepseek)
-3. [A:a - TODO:(appendix-a)](#aa)
-4. [A:b - Q1: Prompt distiller](#ab)
-   - see: [Q1: Prompt distiller (Claude)](#ab-claude)
-   - see: [Q1: Prompt distiller (Gemini)](#ab-gemini)
-   - see: [Q1: Prompt distiller (ChatGPT)](#ab-chatgpt)
-   - see: [Q1: Prompt distiller (Perplexity)](#ab-perplexity)
-   - see: [Q1: Prompt distiller (DeepSeek)](#ab-deepseek)
+1. [Q:1 - Poetry to UV Migration Guide](#q1)
+   - see: [Poetry to uv migration guide (Claude)](#a1-claude)
+   - see: [Poetry to UV Migration Guide (Gemini)](#a1-gemini)
+   - see: [Migration of `pyproject.toml`: Poetry → `uv` (ChatGPT)](#a1-chatgpt)
+   - see: [Python Project Migration Poetry to uv (Perplexity)](#a1-perplexity)
+   - see: [Python Project Migration Poetry to uv (DeepSeek)](#a1-deepseek)
+2. [Q:2 - Modern Python Packaging for ML](#q2)
+   - see: [Modern Python Packaging for Reproducible ML Research (Claude)](#a2-claude)
+   - see: [Modern Python Packaging for ML (Gemini)](#a2-gemini)
+   - see: [Modern Python Packaging Guide (ChatGPT)](#a2-chatgpt)
+   - see: [Python Packaging Guide (Perplexity)](#a2-perplexity)
+   - see: [Modern Python Packaging for Reproducible Research (DeepSeek)](#a2-deepseek)
 
 <details>
 <summary></summary>
@@ -101,7 +94,7 @@ doctype: md-report
 
 # Q:1
 
-## Q:1 - **TODO:(q1-title)**
+## Q:1 - **Poetry to uv migration guide**
 
 [^](#toc)
 
@@ -1383,7 +1376,7 @@ docstring-code-format = true
 
 # A:1 (Gemini)
 
-[^](#toc) **_Poetry to UV Migration Guid_**
+[^](#toc) **_Poetry to UV Migration Guide_**
 
 Transitioning an ML research codebase from `poetry` to `uv`
 significantly improves environment resolution speeds and simplifies
@@ -2629,2318 +2622,6 @@ For research projects this often causes:
 
 The **clean template above typically reduces the file by ~85% while keeping all functionality**.
 
----
-
-If you'd like, I can also show you **three advanced improvements used in large ML labs**:
-
-1. **GPU / CPU dependency separation**
-2. **Experiment reproducibility with `uv` + YAML configs**
-3. **Fully reproducible batch jobs (CLI + log + config snapshot)**
-
-These patterns are extremely useful for **cluster ML workloads**.
-
->> YES
-
-Below are **three production-grade patterns used in many ML research labs** to make experiments **reproducible, debuggable, and cluster-friendly**.
-
-They fit very well with your requirements:
-
-* CLI job execution
-* YAML experiment configs
-* per-run logging
-* batch execution on Linux nodes
-* heavy ML dependencies (PyTorch / TensorFlow / CUDA)
-
----
-
-## 1 — GPU / CPU Dependency Separation
-
-In research clusters it is common to run:
-
-* **CPU nodes** for preprocessing
-* **GPU nodes** for training
-
-Mixing everything in one dependency set often leads to:
-
-* slow installs
-* CUDA wheel conflicts
-* large lockfiles
-
-The recommended pattern is **dependency groups**.
-
-### `pyproject.toml`
-
-```toml
-[project.optional-dependencies]
-
-cpu = [
-  "torch==2.10.*",
-  "torchvision==0.25.*"
-]
-
-gpu = [
-  "torch==2.10.*",
-  "torchvision==0.25.*",
-  "pynvml"
-]
-
-tensorflow = [
-  "tensorflow~=2.19",
-  "tensorboard",
-  "tensorflow-hub"
-]
-
-notebook = [
-  "jupyterlab",
-  "ipykernel"
-]
-
-dev = [
-  "pytest",
-  "ruff",
-  "pyright",
-  "black"
-]
-```
-
-### Install patterns
-
-CPU node
-
-```bash
-uv sync --extra cpu
-```
-
-GPU node
-
-```bash
-uv sync --extra gpu
-```
-
-Notebook environment
-
-```bash
-uv sync --extra notebook
-```
-
-This **keeps lockfiles small and installs fast**.
-
----
-
-## 2 — Reproducible Experiment Runs
-
-A common research problem:
-
-> “Which parameters produced this model?”
-
-The robust solution is:
-
-**store the YAML configuration together with logs and model outputs.**
-
-Typical directory structure:
-
-```
-experiments/
-   run_2026-03-11_10-02-31/
-        config.yaml
-        train.log
-        metrics.json
-        model.pt
-```
-
-### Example YAML experiment
-
-```yaml
-dataset: cifar10
-
-training:
-  epochs: 50
-  batch_size: 128
-  lr: 0.001
-
-model:
-  type: resnet18
-```
-
----
-
-### CLI entrypoint
-
-`src/dve/cli.py`
-
-```python
-import argparse
-import yaml
-from pathlib import Path
-from datetime import datetime
-
-
-def load_config(path):
-    with open(path) as f:
-        return yaml.safe_load(f)
-
-
-def create_run_dir(base="experiments"):
-    ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    run_dir = Path(base) / f"run_{ts}"
-    run_dir.mkdir(parents=True)
-    return run_dir
-
-
-def main():
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", required=True)
-
-    args = parser.parse_args()
-
-    config = load_config(args.config)
-
-    run_dir = create_run_dir()
-
-    # snapshot config
-    with open(run_dir / "config.yaml", "w") as f:
-        yaml.safe_dump(config, f)
-
-    print("Run directory:", run_dir)
-
-    # training call
-    # train(config, run_dir)
-```
-
-Run:
-
-```bash
-uv run main --config configs/train.yaml
-```
-
-Each run becomes **fully reproducible**.
-
----
-
-## 3 — Per-Run Structured Logging
-
-Using `print()` becomes unusable in large training jobs.
-
-Use **structured logging with run directories**.
-
-### Recommended logging setup
-
-```python
-import logging
-from pathlib import Path
-
-
-def setup_logging(run_dir):
-
-    log_file = Path(run_dir) / "train.log"
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s | %(levelname)s | %(message)s",
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler()
-        ]
-    )
-```
-
-Usage:
-
-```python
-logger = logging.getLogger(__name__)
-logger.info("Training started")
-```
-
-Example log:
-
-```
-2026-03-11 10:03:01 | INFO | Training started
-2026-03-11 10:03:02 | INFO | Dataset loaded
-2026-03-11 10:03:05 | INFO | Epoch 1 loss=0.432
-```
-
----
-
-## 4 — Automatic Run Metadata (Very Useful)
-
-A powerful trick used in ML labs is storing **environment metadata**.
-
-Example:
-
-```
-run_dir/
-   config.yaml
-   metadata.json
-   train.log
-```
-
-Metadata example:
-
-```json
-{
-  "python": "3.12.2",
-  "torch": "2.10.0",
-  "cuda": "12.3",
-  "git_commit": "a92fe11"
-}
-```
-
-Example generator:
-
-```python
-import platform
-import subprocess
-import torch
-
-
-def collect_metadata():
-
-    return {
-        "python": platform.python_version(),
-        "torch": torch.__version__,
-        "cuda": torch.version.cuda,
-        "git_commit": subprocess.getoutput("git rev-parse HEAD")
-    }
-```
-
-This makes experiments **scientifically reproducible**.
-
----
-
-## 5 — Batch Job Execution (HPC Friendly)
-
-Typical job execution script:
-
-```bash
-##!/usr/bin/env bash
-
-CONFIG=$1
-
-uv run main --config "$CONFIG"
-```
-
-Example cluster run:
-
-```bash
-./train.sh configs/resnet50.yaml
-```
-
-Works well with:
-
-* **SLURM**
-* **Kubernetes jobs**
-* **Podman containers**
-* **systemd batch workers**
-
----
-
-## 6 — Lockfile Reproducibility with `uv`
-
-Commit the lockfile:
-
-```
-uv.lock
-```
-
-Workflow:
-
-```
-git clone
-uv sync
-```
-
-You always get **identical environments**.
-
----
-
-## Footnotes
-
-* rf-uv-docs
-  [https://docs.astral.sh/uv/](https://docs.astral.sh/uv/)
-
-* rf-pep621
-  [https://peps.python.org/pep-0621/](https://peps.python.org/pep-0621/)
-
-* rf-pytorch-install
-  [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
-
----
-
-## Additional Notes
-
-Your current project already has **excellent foundations**:
-
-* CLI entrypoints
-* YAML configs
-* logging packages
-* Jupyter support
-* CUDA frameworks
-
-What it mainly needs is **structural simplification**.
-
-Most ML labs eventually converge to something close to:
-
-```
-~120 line pyproject
-~50 line CLI
-simple YAML configs
-uv lockfile
-```
-
-because it maximizes **reproducibility, install speed, and maintainability**.
-
----
-
-If you'd like, I can also show you one **very powerful pattern used by DeepMind / FAIR style projects**:
-
-**Hydra-style experiment configuration with automatic run directories**, which makes large hyperparameter sweeps dramatically easier.
-
->> YES
-
-Hydra-style configuration is widely used in large ML research codebases (e.g., Meta FAIR, NVIDIA, many academic labs) because it solves three recurring problems:
-
-* **configuration explosion** (many experiment variants)
-* **automatic run directory management**
-* **reproducible experiment tracking**
-
-The **Hydra framework** (by Facebook Research) extends YAML configs with composable configuration trees and automatic experiment management. Hydra
-
-Below is a **practical pattern suitable for research clusters and batch jobs**.
-
----
-
-## 1 — Add Hydra Dependency
-
-Minimal dependency:
-
-```toml
-[project.dependencies]
-hydra-core = "*"
-```
-
-Optional but recommended:
-
-```toml
-omegaconf = "*"
-```
-
-Hydra internally uses **OmegaConf**. OmegaConf
-
----
-
-## 2 — Recommended Project Structure
-
-Hydra encourages **modular configuration trees**.
-
-```
-project/
-│
-├─ pyproject.toml
-│
-├─ src/dve/
-│   ├─ cli.py
-│   └─ training.py
-│
-├─ configs/
-│   ├─ config.yaml
-│   │
-│   ├─ dataset/
-│   │   ├─ cifar10.yaml
-│   │   └─ imagenet.yaml
-│   │
-│   ├─ model/
-│   │   ├─ resnet18.yaml
-│   │   └─ resnet50.yaml
-│   │
-│   └─ optimizer/
-│       ├─ adam.yaml
-│       └─ sgd.yaml
-│
-├─ experiments/
-│
-└─ notebooks/
-```
-
-This layout allows **configuration composition**.
-
----
-
-## 3 — Base Hydra Configuration
-
-`configs/config.yaml`
-
-```yaml
-defaults:
-  - dataset: cifar10
-  - model: resnet18
-  - optimizer: adam
-
-training:
-  epochs: 50
-  batch_size: 128
-
-hydra:
-  run:
-    dir: experiments/${now:%Y-%m-%d}/${now:%H-%M-%S}
-```
-
-Key feature:
-
-```
-hydra.run.dir
-```
-
-automatically creates **timestamped experiment directories**.
-
-Example:
-
-```
-experiments/
-   2026-03-11/
-       10-42-31/
-```
-
----
-
-## 4 — Modular Configuration Example
-
-Dataset configuration:
-
-`configs/dataset/cifar10.yaml`
-
-```yaml
-name: cifar10
-num_classes: 10
-image_size: 32
-```
-
-Model configuration:
-
-`configs/model/resnet18.yaml`
-
-```yaml
-name: resnet18
-depth: 18
-```
-
-Optimizer configuration:
-
-`configs/optimizer/adam.yaml`
-
-```yaml
-name: adam
-lr: 0.001
-weight_decay: 0.0001
-```
-
----
-
-## 5 — Hydra CLI Entry Point
-
-`src/dve/cli.py`
-
-```python
-import hydra
-from omegaconf import DictConfig
-import logging
-
-logger = logging.getLogger(__name__)
-
-
-@hydra.main(version_base=None, config_path="../../configs", config_name="config")
-def main(cfg: DictConfig):
-
-    logger.info("Configuration:")
-    logger.info(cfg)
-
-    print("Dataset:", cfg.dataset.name)
-    print("Model:", cfg.model.name)
-    print("Epochs:", cfg.training.epochs)
-
-    # training(cfg)
-
-
-if __name__ == "__main__":
-    main()
-```
-
-Run:
-
-```bash
-uv run main
-```
-
-Hydra automatically creates the run directory and copies configs.
-
----
-
-## 6 — Hydra Run Directory Output
-
-Example run directory:
-
-```
-experiments/2026-03-11/10-42-31/
-
-   .hydra/
-       config.yaml
-       hydra.yaml
-       overrides.yaml
-
-   main.log
-```
-
-The `.hydra` directory contains the **exact configuration used**.
-
-This is extremely valuable for **reproducibility**.
-
----
-
-## 7 — Overriding Parameters from CLI
-
-Hydra supports **command-line overrides**.
-
-Example:
-
-```bash
-uv run main training.epochs=100
-```
-
-Override optimizer:
-
-```bash
-uv run main optimizer=sgd
-```
-
-Switch dataset:
-
-```bash
-uv run main dataset=imagenet
-```
-
-Combine overrides:
-
-```bash
-uv run main dataset=imagenet model=resnet50 training.batch_size=256
-```
-
-No YAML editing required.
-
----
-
-## 8 — Hyperparameter Sweeps
-
-Hydra supports parameter sweeps:
-
-```bash
-uv run main -m training.lr=0.1,0.01,0.001
-```
-
-Hydra launches **multiple runs automatically**.
-
-Output:
-
-```
-experiments/
-   multirun/
-       2026-03-11/
-           10-45-00/
-               0/
-               1/
-               2/
-```
-
-Each directory is a full experiment.
-
----
-
-## 9 — Logging Integration
-
-Hydra automatically integrates Python logging.
-
-Add in config:
-
-```yaml
-hydra:
-  job_logging:
-    root:
-      level: INFO
-```
-
-Logs appear in:
-
-```
-main.log
-```
-
-inside the run directory.
-
----
-
-## 10 — Hydra + Cluster Jobs
-
-Hydra integrates well with:
-
-* **SLURM**
-* **Kubernetes**
-* **Ray**
-* **Submitit**
-
-Submitit plugin:
-
-```
-hydra-submitit-launcher
-```
-
-Example cluster run:
-
-```bash
-uv run main hydra/launcher=submitit_slurm
-```
-
-Hydra handles job submission automatically.
-
----
-
-## Why Hydra Is Powerful for Research
-
-Without Hydra:
-
-```
-train_resnet18_cifar10.yaml
-train_resnet18_imagenet.yaml
-train_resnet50_cifar10.yaml
-train_resnet50_imagenet.yaml
-```
-
-With Hydra:
-
-```
-dataset=cifar10
-model=resnet18
-```
-
-Configurations become **composable building blocks**.
-
----
-
-## Footnotes
-
-* rf-hydra
-  [https://hydra.cc](https://hydra.cc)
-
-* rf-hydra-paper
-  [https://arxiv.org/abs/2202.02723](https://arxiv.org/abs/2202.02723)
-
-* rf-omegaconf
-  [https://omegaconf.readthedocs.io](https://omegaconf.readthedocs.io)
-
----
-
-## Additional Notes
-
-Hydra is extremely useful once a project grows beyond **~5 experiment variants**.
-
-Typical large ML labs rely on Hydra because it provides:
-
-* **automatic experiment directories**
-* **configuration versioning**
-* **parameter sweeps**
-* **cluster integration**
-* **clean YAML hierarchy**
-
-All without building custom infrastructure.
-
----
-
-If you want, I can also show you a **very powerful advanced pattern** used in modern ML research repositories:
-
-**Hydra + structured configs (Python dataclasses)**
-
-which gives you:
-
-* **full IDE autocompletion**
-* **static type checking**
-* **safer experiment configuration**
-
-while still using YAML.
-
->> YES
-
-Hydra becomes significantly more powerful when combined with **structured configurations**, where YAML files map onto **typed Python dataclasses**. This pattern is common in modern ML repositories because it provides:
-
-* **IDE autocompletion**
-* **static type checking** (e.g., with Pyright)
-* **safer configuration validation**
-* fewer runtime configuration errors
-
-The configuration data is defined in Python but still loaded and overridden via YAML.
-
-The configuration framework behind Hydra remains OmegaConf.
-
----
-
-## 1 — Define Typed Configuration Classes
-
-Create a module:
-
-```
-src/dve/config.py
-```
-
-Example:
-
-```python
-from dataclasses import dataclass
-
-
-@dataclass
-class DatasetConfig:
-    name: str = "cifar10"
-    num_classes: int = 10
-    image_size: int = 32
-
-
-@dataclass
-class ModelConfig:
-    name: str = "resnet18"
-    depth: int = 18
-
-
-@dataclass
-class OptimizerConfig:
-    name: str = "adam"
-    lr: float = 0.001
-    weight_decay: float = 0.0001
-
-
-@dataclass
-class TrainingConfig:
-    epochs: int = 50
-    batch_size: int = 128
-
-
-@dataclass
-class ExperimentConfig:
-    dataset: DatasetConfig = DatasetConfig()
-    model: ModelConfig = ModelConfig()
-    optimizer: OptimizerConfig = OptimizerConfig()
-    training: TrainingConfig = TrainingConfig()
-```
-
-Benefits:
-
-* IDE autocompletion
-* type safety
-* consistent config schema
-
----
-
-## 2 — Register Config with Hydra
-
-Modify your CLI entrypoint.
-
-`src/dve/cli.py`
-
-```python
-import hydra
-from omegaconf import OmegaConf
-from hydra.core.config_store import ConfigStore
-
-from dve.config import ExperimentConfig
-
-cs = ConfigStore.instance()
-cs.store(name="config", node=ExperimentConfig)
-
-
-@hydra.main(version_base=None, config_name="config")
-def main(cfg: ExperimentConfig):
-
-    print(OmegaConf.to_yaml(cfg))
-
-    print("Dataset:", cfg.dataset.name)
-    print("Epochs:", cfg.training.epochs)
-
-
-if __name__ == "__main__":
-    main()
-```
-
-Hydra now loads the dataclass configuration.
-
----
-
-## 3 — YAML Overrides Still Work
-
-You can still use YAML config files.
-
-Example:
-
-```
-configs/config.yaml
-```
-
-```yaml
-dataset:
-  name: imagenet
-  num_classes: 1000
-
-training:
-  epochs: 90
-```
-
-Run:
-
-```bash
-uv run main --config-path configs --config-name config
-```
-
-Hydra merges YAML into the **typed configuration**.
-
----
-
-## 4 — CLI Parameter Overrides
-
-Hydra keeps its powerful CLI override system.
-
-Example:
-
-```bash
-uv run main training.epochs=200
-```
-
-Override dataset:
-
-```bash
-uv run main dataset.name=imagenet
-```
-
-Override optimizer learning rate:
-
-```bash
-uv run main optimizer.lr=0.0003
-```
-
----
-
-## 5 — Type Checking Advantages
-
-Because `cfg` is a dataclass, static checkers such as
-Pyright or Mypy can verify code correctness.
-
-Example:
-
-```python
-cfg.training.epochs
-```
-
-If you accidentally write:
-
-```python
-cfg.training.epocs
-```
-
-the type checker will immediately detect the error.
-
----
-
-## 6 — Automatic Experiment Directories
-
-Hydra still manages experiment runs.
-
-Add to YAML:
-
-```yaml
-hydra:
-  run:
-    dir: experiments/${now:%Y-%m-%d}/${now:%H-%M-%S}
-```
-
-Output:
-
-```
-experiments/
-   2026-03-11/
-       15-20-14/
-           main.log
-           .hydra/
-               config.yaml
-```
-
-This captures the **exact configuration used for the run**.
-
----
-
-## 7 — Advanced Pattern: Structured Config + YAML Composition
-
-Large research projects often combine:
-
-* **dataclass schema (type safety)**
-* **YAML modular configs**
-
-Example hierarchy:
-
-```
-configs/
-   dataset/
-       cifar10.yaml
-       imagenet.yaml
-
-   model/
-       resnet18.yaml
-       resnet50.yaml
-
-   optimizer/
-       adam.yaml
-       sgd.yaml
-```
-
-Base config:
-
-```yaml
-defaults:
-  - dataset: cifar10
-  - model: resnet18
-  - optimizer: adam
-```
-
-Run variant:
-
-```bash
-uv run main model=resnet50 dataset=imagenet
-```
-
-Hydra composes the configuration dynamically.
-
----
-
-## 8 — Why ML Labs Prefer Structured Configs
-
-Without structure:
-
-```
-cfg["training"]["epochs"]
-```
-
-With structured configs:
-
-```
-cfg.training.epochs
-```
-
-Advantages:
-
-* IDE navigation
-* refactoring support
-* safer experiment code
-
----
-
-## 9 — Recommended Minimal Dependencies
-
-For a Hydra-based research stack:
-
-```toml
-dependencies = [
-  "hydra-core",
-  "omegaconf",
-  "pyyaml",
-  "click",
-  "tqdm"
-]
-```
-
-Dev tools:
-
-```
-pytest
-ruff
-pyright
-```
-
-This keeps environments **lightweight and reproducible**.
-
----
-
-## Footnotes
-
-* rf-hydra-docs
-  [https://hydra.cc/docs/intro/](https://hydra.cc/docs/intro/)
-
-* rf-omegaconf-docs
-  [https://omegaconf.readthedocs.io/](https://omegaconf.readthedocs.io/)
-
-* rf-pyright
-  [https://github.com/microsoft/pyright](https://github.com/microsoft/pyright)
-
-* rf-mypy
-  [https://mypy.readthedocs.io/](https://mypy.readthedocs.io/)
-
----
-
-## Additional Notes
-
-A modern ML research repository using:
-
-* **Hydra structured configs**
-* **`uv` dependency management**
-* **CLI experiment entrypoints**
-* **automatic run directories**
-
-achieves:
-
-* **high reproducibility**
-* **clean experiment tracking**
-* **safe configuration evolution**
-
-while keeping infrastructure simple enough for academic teams.
-
----
-
-If you want, I can also show you one **very practical final piece used in many advanced ML repos**:
-
-**automatic experiment registry (runs + metrics + config index)**
-
-which turns a simple project into a **lightweight experiment tracking system without needing MLFlow or Weights & Biases**.
-
->> YES
-
-Hydra becomes significantly more powerful when combined with **structured configurations**, where YAML files map onto **typed Python dataclasses**. This pattern is common in modern ML repositories because it provides:
-
-* **IDE autocompletion**
-* **static type checking** (e.g., with Pyright)
-* **safer configuration validation**
-* fewer runtime configuration errors
-
-The configuration data is defined in Python but still loaded and overridden via YAML.
-
-The configuration framework behind Hydra remains OmegaConf.
-
----
-
-## 1 — Define Typed Configuration Classes
-
-Create a module:
-
-```
-src/dve/config.py
-```
-
-Example:
-
-```python
-from dataclasses import dataclass
-
-
-@dataclass
-class DatasetConfig:
-    name: str = "cifar10"
-    num_classes: int = 10
-    image_size: int = 32
-
-
-@dataclass
-class ModelConfig:
-    name: str = "resnet18"
-    depth: int = 18
-
-
-@dataclass
-class OptimizerConfig:
-    name: str = "adam"
-    lr: float = 0.001
-    weight_decay: float = 0.0001
-
-
-@dataclass
-class TrainingConfig:
-    epochs: int = 50
-    batch_size: int = 128
-
-
-@dataclass
-class ExperimentConfig:
-    dataset: DatasetConfig = DatasetConfig()
-    model: ModelConfig = ModelConfig()
-    optimizer: OptimizerConfig = OptimizerConfig()
-    training: TrainingConfig = TrainingConfig()
-```
-
-Benefits:
-
-* IDE autocompletion
-* type safety
-* consistent config schema
-
----
-
-## 2 — Register Config with Hydra
-
-Modify your CLI entrypoint.
-
-`src/dve/cli.py`
-
-```python
-import hydra
-from omegaconf import OmegaConf
-from hydra.core.config_store import ConfigStore
-
-from dve.config import ExperimentConfig
-
-cs = ConfigStore.instance()
-cs.store(name="config", node=ExperimentConfig)
-
-
-@hydra.main(version_base=None, config_name="config")
-def main(cfg: ExperimentConfig):
-
-    print(OmegaConf.to_yaml(cfg))
-
-    print("Dataset:", cfg.dataset.name)
-    print("Epochs:", cfg.training.epochs)
-
-
-if __name__ == "__main__":
-    main()
-```
-
-Hydra now loads the dataclass configuration.
-
----
-
-## 3 — YAML Overrides Still Work
-
-You can still use YAML config files.
-
-Example:
-
-```
-configs/config.yaml
-```
-
-```yaml
-dataset:
-  name: imagenet
-  num_classes: 1000
-
-training:
-  epochs: 90
-```
-
-Run:
-
-```bash
-uv run main --config-path configs --config-name config
-```
-
-Hydra merges YAML into the **typed configuration**.
-
----
-
-## 4 — CLI Parameter Overrides
-
-Hydra keeps its powerful CLI override system.
-
-Example:
-
-```bash
-uv run main training.epochs=200
-```
-
-Override dataset:
-
-```bash
-uv run main dataset.name=imagenet
-```
-
-Override optimizer learning rate:
-
-```bash
-uv run main optimizer.lr=0.0003
-```
-
----
-
-## 5 — Type Checking Advantages
-
-Because `cfg` is a dataclass, static checkers such as
-Pyright or Mypy can verify code correctness.
-
-Example:
-
-```python
-cfg.training.epochs
-```
-
-If you accidentally write:
-
-```python
-cfg.training.epocs
-```
-
-the type checker will immediately detect the error.
-
----
-
-## 6 — Automatic Experiment Directories
-
-Hydra still manages experiment runs.
-
-Add to YAML:
-
-```yaml
-hydra:
-  run:
-    dir: experiments/${now:%Y-%m-%d}/${now:%H-%M-%S}
-```
-
-Output:
-
-```
-experiments/
-   2026-03-11/
-       15-20-14/
-           main.log
-           .hydra/
-               config.yaml
-```
-
-This captures the **exact configuration used for the run**.
-
----
-
-## 7 — Advanced Pattern: Structured Config + YAML Composition
-
-Large research projects often combine:
-
-* **dataclass schema (type safety)**
-* **YAML modular configs**
-
-Example hierarchy:
-
-```
-configs/
-   dataset/
-       cifar10.yaml
-       imagenet.yaml
-
-   model/
-       resnet18.yaml
-       resnet50.yaml
-
-   optimizer/
-       adam.yaml
-       sgd.yaml
-```
-
-Base config:
-
-```yaml
-defaults:
-  - dataset: cifar10
-  - model: resnet18
-  - optimizer: adam
-```
-
-Run variant:
-
-```bash
-uv run main model=resnet50 dataset=imagenet
-```
-
-Hydra composes the configuration dynamically.
-
----
-
-## 8 — Why ML Labs Prefer Structured Configs
-
-Without structure:
-
-```
-cfg["training"]["epochs"]
-```
-
-With structured configs:
-
-```
-cfg.training.epochs
-```
-
-Advantages:
-
-* IDE navigation
-* refactoring support
-* safer experiment code
-
----
-
-## 9 — Recommended Minimal Dependencies
-
-For a Hydra-based research stack:
-
-```toml
-dependencies = [
-  "hydra-core",
-  "omegaconf",
-  "pyyaml",
-  "click",
-  "tqdm"
-]
-```
-
-Dev tools:
-
-```
-pytest
-ruff
-pyright
-```
-
-This keeps environments **lightweight and reproducible**.
-
----
-
-## Footnotes
-
-* rf-hydra-docs
-  [https://hydra.cc/docs/intro/](https://hydra.cc/docs/intro/)
-
-* rf-omegaconf-docs
-  [https://omegaconf.readthedocs.io/](https://omegaconf.readthedocs.io/)
-
-* rf-pyright
-  [https://github.com/microsoft/pyright](https://github.com/microsoft/pyright)
-
-* rf-mypy
-  [https://mypy.readthedocs.io/](https://mypy.readthedocs.io/)
-
----
-
-## Additional Notes
-
-A modern ML research repository using:
-
-* **Hydra structured configs**
-* **`uv` dependency management**
-* **CLI experiment entrypoints**
-* **automatic run directories**
-
-achieves:
-
-* **high reproducibility**
-* **clean experiment tracking**
-* **safe configuration evolution**
-
-while keeping infrastructure simple enough for academic teams.
-
----
-
-If you want, I can also show you one **very practical final piece used in many advanced ML repos**:
-
->> YES
-
-**automatic experiment registry (runs + metrics + config index)**
-
-which turns a simple project into a **lightweight experiment tracking system without needing MLFlow or Weights & Biases**.
-
-Below is a **practical hyperparameter sweep pattern** widely used in research ML codebases. It combines:
-
-* Hydra for configuration and experiment orchestration
-* parallel execution on local machines or clusters
-* automatic experiment directory management
-
-The goal is to run **dozens or hundreds of experiments with one command**, while preserving reproducibility.
-
----
-
-## 1 — Hydra Multirun Basics
-
-Hydra provides a **multirun mode**.
-
-Instead of running a single experiment:
-
-```bash
-uv run main
-```
-
-you can launch **multiple parameter combinations**:
-
-```bash
-uv run main -m training.lr=0.1,0.01,0.001
-```
-
-Hydra will create **separate experiment directories** automatically.
-
-Example layout:
-
-```
-experiments/
-
-   multirun/
-       2026-03-11/
-           10-40-12/
-
-               0/
-               1/
-               2/
-```
-
-Each directory corresponds to one configuration.
-
----
-
-## 2 — Example Sweep Configuration
-
-Base config:
-
-```
-configs/config.yaml
-```
-
-```yaml
-defaults:
-  - dataset: cifar10
-  - model: resnet18
-  - optimizer: adam
-
-training:
-  epochs: 50
-  lr: 0.001
-
-hydra:
-  run:
-    dir: experiments/${now:%Y-%m-%d}/${now:%H-%M-%S}
-
-  sweep:
-    dir: experiments/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
-```
-
-This ensures **single runs and sweeps go to different directories**.
-
----
-
-## 3 — Parameter Grid Sweeps
-
-Example grid search.
-
-```bash
-uv run main -m \
-  model=resnet18,resnet50 \
-  training.lr=0.001,0.0003,0.0001
-```
-
-Hydra generates **all combinations**:
-
-```
-2 models × 3 learning rates = 6 experiments
-```
-
-Example output structure:
-
-```
-multirun/
-
-   2026-03-11/10-50-31/
-
-       0/
-       1/
-       2/
-       3/
-       4/
-       5/
-```
-
-Each folder contains:
-
-```
-.hydra/config.yaml
-train.log
-metrics.json
-```
-
----
-
-## 4 — Random Search
-
-Grid search scales poorly.
-
-Hydra supports random sweeps via plugins.
-
-Install:
-
-```bash
-uv add hydra-optuna-sweeper
-```
-
-Plugin:
-
-Optuna
-
-Config example:
-
-```yaml
-hydra:
-  sweeper:
-    _target_: hydra_plugins.hydra_optuna_sweeper.optuna_sweeper.OptunaSweeper
-    direction: maximize
-    study_name: training
-    n_trials: 50
-```
-
-Define parameter ranges:
-
-```yaml
-training:
-  lr:
-    _target_: optuna.distributions.LogUniformDistribution
-    low: 1e-5
-    high: 1e-2
-```
-
-Run:
-
-```bash
-uv run main -m
-```
-
-Hydra launches **50 optimized trials automatically**.
-
----
-
-## 5 — Parallel Execution (Local Machine)
-
-Hydra can run multiple experiments concurrently.
-
-Add to config:
-
-```yaml
-hydra:
-  launcher:
-    max_parallel_jobs: 4
-```
-
-Now sweeps run **four jobs at once**.
-
-This is ideal for:
-
-* multi-GPU workstations
-* research servers
-
----
-
-## 6 — Cluster Execution (SLURM)
-
-For HPC environments install:
-
-```bash
-uv add hydra-submitit-launcher
-```
-
-Plugin:
-
-Submitit
-
-Config:
-
-```yaml
-hydra:
-  launcher:
-    _target_: hydra_plugins.hydra_submitit_launcher.submitit_launcher.SlurmLauncher
-
-    partition: gpu
-    gpus_per_node: 1
-    cpus_per_task: 4
-    timeout_min: 120
-```
-
-Run:
-
-```bash
-uv run main -m
-```
-
-Hydra submits **one SLURM job per experiment** automatically.
-
----
-
-## 7 — Sweep Result Aggregation
-
-After a sweep finishes, aggregate results.
-
-Example script:
-
-```python
-import polars as pl
-from pathlib import Path
-
-runs = list(Path("experiments/multirun").rglob("metrics.json"))
-
-rows = []
-
-for r in runs:
-    df = pl.read_json(r)
-    rows.append(df)
-
-table = pl.concat(rows)
-
-print(table.sort("accuracy", descending=True))
-```
-
-Output:
-
-```
-accuracy   lr      model
-----------------------------
-0.94       0.0003  resnet50
-0.92       0.001   resnet18
-0.90       0.0001  resnet18
-```
-
-This gives **automatic experiment ranking**.
-
----
-
-## 8 — Typical Workflow in Research Labs
-
-Researchers usually run sweeps like:
-
-```
-grid search → identify promising region
-random search → refine
-train best configuration
-```
-
-Hydra enables all three workflows using the **same CLI interface**.
-
----
-
-## 9 — Example Complete Command
-
-Full example:
-
-```bash
-uv run main -m \
-  dataset=cifar10 \
-  model=resnet18,resnet50 \
-  training.lr=0.001,0.0003 \
-  training.batch_size=128,256
-```
-
-Hydra runs:
-
-```
-2 models × 2 lr × 2 batch sizes = 8 experiments
-```
-
-All runs are automatically logged.
-
----
-
-## Footnotes
-
-* rf-hydra-docs
-  [https://hydra.cc/docs/intro/](https://hydra.cc/docs/intro/)
-
-* rf-hydra-optuna
-  [https://hydra.cc/docs/plugins/optuna_sweeper/](https://hydra.cc/docs/plugins/optuna_sweeper/)
-
-* rf-submitit
-  [https://github.com/facebookincubator/submitit](https://github.com/facebookincubator/submitit)
-
-* rf-optuna
-  [https://optuna.org](https://optuna.org)
-
----
-
-## Additional Notes
-
-Once Hydra sweeps are integrated with:
-
-* **experiment registry**
-* **structured configs**
-* **`uv` dependency management**
-
-you effectively obtain a **full ML experimentation platform** while keeping the codebase small and easy to maintain.
-
-A typical research repository using this architecture stays around:
-
-```
-~150 lines pyproject
-~200 lines experiment utilities
-~100 lines CLI
-```
-
-yet can support **large hyperparameter studies across clusters**.
-
----
-
-If you'd like, I can also show a **final advanced pattern used in very mature ML repositories**:
-
-**experiment reproducibility snapshots** (automatic capture of environment, code diff, and dataset version) which guarantees that any experiment can be recreated years later.
-
->> YES
-
-Below is a **reproducibility snapshot pattern** used in mature ML research repositories.
-It guarantees that **any experiment can be recreated later**, even years afterward.
-
-This pattern captures:
-
-* **exact code version**
-* **environment dependencies**
-* **experiment configuration**
-* **dataset version**
-* **hardware / CUDA environment**
-
-Many labs implement similar mechanisms even when using platforms like MLflow or Weights & Biases, but the pattern below works **without external services**.
-
----
-
-## 1 — Snapshot Goals
-
-Each experiment directory should contain a **complete reproduction record**.
-
-Example run:
-
-```
-experiments/
-
-   2026-03-11_14-32-10/
-
-       config.yaml
-       metadata.json
-       metrics.json
-       train.log
-       model.pt
-
-       snapshot/
-           git_commit.txt
-           git_diff.patch
-           environment.txt
-           uv.lock
-           system.json
-```
-
-This snapshot ensures we know:
-
-* **exact code version**
-* **uncommitted modifications**
-* **exact dependency lockfile**
-* **runtime environment**
-
----
-
-## 2 — Capture Git Commit
-
-Create a utility:
-
-```
-src/dve/experiment/snapshot.py
-```
-
-```python
-import subprocess
-from pathlib import Path
-
-
-def save_git_commit(snapshot_dir: Path):
-
-    commit = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"],
-        text=True
-    ).strip()
-
-    (snapshot_dir / "git_commit.txt").write_text(commit)
-```
-
-Example:
-
-```
-git_commit.txt
-```
-
-```
-b7f2931b6d2e0a2b8b48c0f1b1e6d8d0f8f7e2f2
-```
-
----
-
-## 3 — Capture Uncommitted Code Changes
-
-Many experiments run with **local modifications**.
-
-Capture the diff:
-
-```python
-def save_git_diff(snapshot_dir: Path):
-
-    diff = subprocess.check_output(
-        ["git", "diff"],
-        text=True
-    )
-
-    (snapshot_dir / "git_diff.patch").write_text(diff)
-```
-
-This file allows you to **reapply the exact modifications later**.
-
-Example reproduction:
-
-```
-git apply git_diff.patch
-```
-
----
-
-## 4 — Capture Python Environment
-
-Since you're using **`uv`**, snapshot the lockfile.
-
-```python
-import shutil
-
-def save_environment(snapshot_dir: Path):
-
-    if Path("uv.lock").exists():
-        shutil.copy("uv.lock", snapshot_dir / "uv.lock")
-```
-
-Optional additional info:
-
-```python
-def save_pip_freeze(snapshot_dir: Path):
-
-    freeze = subprocess.check_output(
-        ["pip", "freeze"],
-        text=True
-    )
-
-    (snapshot_dir / "environment.txt").write_text(freeze)
-```
-
----
-
-## 5 — Capture System Information
-
-Hardware and OS information can affect experiments.
-
-Example:
-
-```python
-import platform
-import json
-import torch
-
-
-def save_system_info(snapshot_dir: Path):
-
-    info = {
-        "python": platform.python_version(),
-        "platform": platform.platform(),
-        "processor": platform.processor(),
-    }
-
-    try:
-        info["cuda"] = torch.version.cuda
-        info["gpu_available"] = torch.cuda.is_available()
-    except Exception:
-        pass
-
-    with open(snapshot_dir / "system.json", "w") as f:
-        json.dump(info, f, indent=2)
-```
-
-Example output:
-
-```json
-{
-  "python": "3.12.2",
-  "platform": "Linux-6.7-x86_64",
-  "processor": "Intel Xeon",
-  "cuda": "12.3",
-  "gpu_available": true
-}
-```
-
----
-
-## 6 — Snapshot Orchestrator
-
-Combine everything into a single function.
-
-```python
-from pathlib import Path
-
-
-def create_snapshot(run_dir: Path):
-
-    snapshot_dir = run_dir / "snapshot"
-    snapshot_dir.mkdir()
-
-    save_git_commit(snapshot_dir)
-    save_git_diff(snapshot_dir)
-    save_environment(snapshot_dir)
-    save_system_info(snapshot_dir)
-```
-
-Call this **at the start of every experiment**.
-
----
-
-## 7 — Reproducing an Experiment
-
-To reproduce a run:
-
-#### 1 — checkout commit
-
-```
-git checkout <commit>
-```
-
-#### 2 — apply modifications
-
-```
-git apply snapshot/git_diff.patch
-```
-
-#### 3 — restore environment
-
-```
-uv sync
-```
-
-#### 4 — run experiment
-
-```
-uv run main --config snapshot/config.yaml
-```
-
-You now have **bit-for-bit reproducibility**.
-
----
-
-## 8 — Optional: Dataset Version Capture
-
-Datasets should also be versioned.
-
-Common patterns:
-
-* dataset checksum
-* dataset version tag
-* DVC reference
-
-Example metadata entry:
-
-```json
-{
-  "dataset": "cifar10",
-  "dataset_version": "v1.2",
-  "dataset_sha256": "a1b3c7..."
-}
-```
-
-Dataset versioning tools include
-DVC.
-
----
-
-## 9 — Optional: Automatic Model Metadata
-
-Many labs also embed metadata directly in the trained model.
-
-Example:
-
-```python
-torch.save(
-    {
-        "model_state": model.state_dict(),
-        "config": cfg,
-        "metrics": metrics
-    },
-    run_dir / "model.pt"
-)
-```
-
-This ensures the model file is **self-describing**.
-
----
-
-## 10 — Final Experiment Directory Example
-
-```
-experiments/
-
-   registry.parquet
-
-   2026-03-11_14-32-10/
-
-       config.yaml
-       metrics.json
-       metadata.json
-       train.log
-       model.pt
-
-       snapshot/
-
-           git_commit.txt
-           git_diff.patch
-           uv.lock
-           system.json
-           environment.txt
-```
-
-This structure guarantees **long-term experiment reproducibility**.
-
----
-
-## Footnotes
-
-* rf-mlflow
-  [https://mlflow.org](https://mlflow.org)
-
-* rf-wandb
-  [https://wandb.ai](https://wandb.ai)
-
-* rf-dvc
-  [https://dvc.org](https://dvc.org)
-
----
-
-## Additional Notes
-
-Large ML research groups (DeepMind, FAIR, NVIDIA research teams) often combine:
-
-```
-Hydra configs
-uv environments
-structured configs
-experiment registry
-snapshot reproducibility
-```
-
-This stack provides **nearly the same capabilities as full ML platforms** while keeping the codebase lightweight and portable across:
-
-* HPC clusters
-* research servers
-* cloud environments
-* container systems (Podman / Docker)
-
----
-
-If you'd like, I can also show one **final extremely useful component used in advanced ML research infrastructure**:
-
-**a small “experiment dashboard” (local web UI) that visualizes all runs and metrics directly from the `registry.parquet` file.**
-
->> YES
-
-A **local experiment dashboard** is a very practical final component for ML research infrastructure.
-It lets you **browse experiments, compare metrics, and inspect configurations** without deploying heavy platforms like MLflow or Weights & Biases.
-
-A lightweight solution can be built in **~80–120 lines** using Streamlit and a **Parquet registry**.
-
----
-
-## 1 — Dashboard Architecture
-
-Your experiment infrastructure already produces:
-
-```
-experiments/
-
-   registry.parquet
-
-   2026-03-11_14-32-10/
-       metrics.json
-       config.yaml
-       metadata.json
-```
-
-The dashboard simply:
-
-1. loads `registry.parquet`
-2. displays a table of experiments
-3. allows filtering/sorting
-4. opens experiment directories
-
-No server database required.
-
----
-
-## 2 — Add Dashboard Dependency
-
-In `pyproject.toml`:
-
-```toml
-[project.optional-dependencies]
-
-dashboard = [
-  "streamlit",
-  "polars"
-]
-```
-
-Install:
-
-```bash
-uv sync --extra dashboard
-```
-
----
-
-## 3 — Dashboard Script
-
-Create:
-
-```
-scripts/dashboard.py
-```
-
-Example implementation:
-
-```python
-import streamlit as st
-import polars as pl
-from pathlib import Path
-
-
-REGISTRY = Path("experiments/registry.parquet")
-
-
-@st.cache_data
-def load_registry():
-    return pl.read_parquet(REGISTRY)
-
-
-st.title("ML Experiment Dashboard")
-
-if not REGISTRY.exists():
-    st.warning("No experiment registry found.")
-    st.stop()
-
-df = load_registry()
-
-st.subheader("Experiments")
-
-st.dataframe(df.to_pandas())
-
-st.subheader("Top Experiments")
-
-top = df.sort("accuracy", descending=True).head(10)
-
-st.table(top.to_pandas())
-
-st.subheader("Accuracy Distribution")
-
-st.bar_chart(df.select("accuracy").to_pandas())
-```
-
----
-
-## 4 — Launch Dashboard
-
-Run:
-
-```bash
-uv run streamlit run scripts/dashboard.py
-```
-
-Browser opens automatically:
-
-```
-http://localhost:8501
-```
-
----
-
-## 5 — Typical Dashboard View
-
-The dashboard typically shows:
-
-```
-ML Experiment Dashboard
-
-Experiments
----------------------------------------------
-run                     accuracy   loss
----------------------------------------------
-run_2026-03-11_14-32    0.92       0.34
-run_2026-03-11_13-02    0.90       0.36
-run_2026-03-10_19-11    0.88       0.40
-```
-
-Plus charts such as:
-
-* accuracy distribution
-* experiment ranking
-* metric comparisons
-
----
-
-## 6 — Add Experiment Filtering
-
-Example filter UI:
-
-```python
-model = st.selectbox("Model", df["model"].unique())
-
-filtered = df.filter(pl.col("model") == model)
-
-st.dataframe(filtered.to_pandas())
-```
-
-Now users can inspect only experiments for a specific model.
-
----
-
-## 7 — Compare Experiments
-
-Example comparison chart:
-
-```python
-chart = df.select(["lr", "accuracy"]).to_pandas()
-
-st.line_chart(chart.set_index("lr"))
-```
-
-This allows quick visualization of **hyperparameter effects**.
-
----
-
-## 8 — Link to Experiment Directory
-
-Useful for inspecting logs.
-
-```python
-run = st.selectbox("Select Run", df["run"])
-
-run_path = Path(run)
-
-st.write("Run directory:", run_path)
-```
-
-You can open:
-
-```
-train.log
-config.yaml
-metrics.json
-```
-
-directly.
-
----
-
-## 9 — Optional Improvement: Auto Registry Refresh
-
-Add a reload button:
-
-```python
-if st.button("Reload registry"):
-    st.cache_data.clear()
-```
-
-Useful when experiments are still running.
-
----
 
 # A:1 (Perplexity)
 
@@ -6382,7 +4063,7 @@ build-backend = "setuptools.build_meta"
 
 # Q:2
 
-## Q:2 - **TODO:(q2-title)**
+## Q:2 - **Modern Python Packaging for ML**
 
 [^](#toc)
 
@@ -7081,6 +4762,467 @@ This concludes the setup for your research infrastructure. Is there a specific M
 
 
 - see: [Modern Python Packaging Guide](https://chatgpt.com/share/69b2efa6-8bd0-8012-be2b-e93cd99c5473)
+
+This guide summarizes the **modern Python packaging standards** relevant for **internal academic ML projects** that must remain reproducible for peer review, artifact evaluation, and long-term archival. The modern ecosystem centers on **`pyproject.toml`** and a set of interoperable specifications (PEPs) that decouple **build configuration, metadata, and dependency specification**.
+
+Primary specifications:
+
+- PEP 518 – build system declaration
+- PEP 517 – build backend/frontend interface
+- PEP 621 – standardized project metadata
+- PEP 508 – dependency specification syntax
+
+These specifications form the **modern packaging stack** used by tools
+such as pip, Hatch, PDM, and Poetry.
+
+---
+
+## 1. The Modern PEP Stack
+
+### 1.1 Build Configuration — PEP 518
+
+PEP 518 introduced the **`pyproject.toml` file** and the
+**`[build-system]` table**, which defines **build-time requirements**.
+
+Before this PEP, builds depended implicitly on `setup.py` execution
+and required tools to guess dependencies.
+
+Example:
+
+```toml
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+```
+
+Key properties:
+
+| Concept         | Purpose                                        |
+| --------------- | ---------------------------------------------- |
+| `requires`      | Packages required to build the project         |
+| `build-backend` | Python module implementing the build interface |
+
+For research environments, this guarantees that **build dependencies
+are explicit**, enabling reproducible builds.
+
+---
+
+### 1.2 Backend Interface — PEP 517
+
+PEP 517 defines a **standard API between build frontends and build backends**.
+
+**Frontend tools**
+
+- pip
+- build
+- uv
+
+**Backend implementations**
+
+- Setuptools
+- Hatchling
+- PDM Backend
+- Poetry Core
+
+Architecture:
+
+```
+Frontend (pip / build / uv)
+        │
+        │ PEP 517 API
+        ▼
+Backend (hatchling / setuptools / pdm-backend)
+        │
+        ▼
+Build artifacts (wheel / sdist)
+```
+
+Benefits:
+
+- Replaces implicit `setup.py` execution.
+- Enables multiple build backends.
+- Allows minimal, deterministic build environments.
+
+For academic reproducibility, this prevents **hidden execution logic during builds**.
+
+---
+
+### 1.3 Standard Metadata — PEP 621
+
+PEP 621 standardizes **project metadata** inside `pyproject.toml`.
+
+Historically this lived in `setup.py` or `setup.cfg`. PEP 621 moves it
+to a **static declarative format**.
+
+Example:
+
+```toml
+[project]
+name = "ml-research-project"
+version = "0.1.0"
+description = "Experimental ML research codebase"
+readme = "README.md"
+requires-python = ">=3.10"
+
+authors = [
+  { name = "Research Group", email = "ml@university.edu" }
+]
+
+dependencies = [
+  "numpy>=1.26",
+  "torch>=2.2",
+]
+```
+
+Advantages:
+
+- Machine-readable metadata
+- Compatible with all modern build tools
+- Supports dependency specification using **PEP 508 strings**
+
+---
+
+### 1.4 Dependency Syntax — PEP 508
+
+PEP 508 defines the **grammar for dependency specification strings**
+used across the Python ecosystem.
+
+Example syntax:
+
+```
+package_name[extra] version_specifier ; environment_marker
+```
+
+Examples:
+
+```text
+numpy>=1.26
+pandas>=2.0,<3
+torch==2.2.*
+jax[cuda12]>=0.4.20
+```
+
+#### Environment markers
+
+Environment markers allow **platform-specific dependencies**, useful in HPC clusters.
+
+Example:
+
+```text
+uvloop>=0.19 ; sys_platform == "linux"
+pywin32 ; sys_platform == "win32"
+```
+
+Common markers:
+
+| Marker             | Example                    |
+| ------------------ | -------------------------- |
+| `python_version`   | `python_version >= "3.10"` |
+| `sys_platform`     | `"linux"` / `"darwin"`     |
+| `platform_machine` | `"x86_64"`                 |
+| `platform_system`  | `"Linux"`                  |
+
+Example HPC constraint:
+
+```text
+jax[cuda12]>=0.4.20 ; platform_system == "Linux"
+```
+
+---
+
+## 2. Implementation Guide
+
+### Minimal Reproducible `pyproject.toml`
+
+```toml
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ml-research-project"
+version = "0.1.0"
+description = "Reproducible ML research experiments"
+readme = "README.md"
+requires-python = ">=3.10"
+
+authors = [
+  { name = "Research Team", email = "research@example.edu" }
+]
+
+dependencies = [
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "pandas>=2.1",
+
+  # ML frameworks
+  "torch>=2.2",
+  "jax>=0.4.20",
+
+  # Linux-specific HPC dependency
+  "uvloop>=0.19 ; sys_platform == 'linux'",
+
+  # Optional GPU packages
+  "nvidia-cublas-cu12 ; platform_system == 'Linux'"
+]
+
+[project.optional-dependencies]
+
+dev = [
+  "pytest>=7",
+  "ruff>=0.4",
+  "mypy>=1.8"
+]
+
+docs = [
+  "mkdocs>=1.5",
+  "mkdocs-material"
+]
+
+[project.urls]
+Repository = "https://github.com/research-group/ml-project"
+```
+
+---
+
+### Git Dependencies
+
+Useful for **unreleased research libraries**.
+
+Example:
+
+```toml
+dependencies = [
+  "transformer-engine @ git+https://github.com/NVIDIA/TransformerEngine.git"
+]
+```
+
+Pinned revision:
+
+```toml
+"mylib @ git+https://github.com/user/mylib.git@8b6c2c1"
+```
+
+---
+
+### Direct URL Dependencies
+
+Example:
+
+```toml
+dependencies = [
+  "customlib @ https://example.com/packages/customlib-0.2.0-py3-none-any.whl"
+]
+```
+
+Recommended only for **artifact reproduction or archival datasets**.
+
+---
+
+## 3. Heavy Binary Dependency Strategy
+
+ML systems depend heavily on **compiled libraries**.
+
+Examples:
+
+- PyTorch
+- JAX
+- CUDA
+- TensorFlow
+
+These create tension between **PyPI packaging** and **Conda environments**.
+
+---
+
+### pip / PyPI Approach
+
+Advantages:
+
+- Standard Python packaging workflow
+- Compatible with `pyproject.toml`
+- Works with modern resolvers
+
+Modern wheels include many compiled dependencies (e.g. PyTorch).
+
+Limitations:
+
+- CUDA compatibility issues
+- HPC environments may lack system libraries
+- Binary compatibility depends on manylinux constraints
+
+Typical command:
+
+```
+pip install torch --index-url https://download.pytorch.org/whl/cu121
+```
+
+---
+
+### Conda / Mamba Approach
+
+Conda environments manage **system-level dependencies**.
+
+Advantages:
+
+- Reliable GPU stacks
+- Binary compatibility across Linux clusters
+- Handles C/C++ dependencies
+
+Limitations:
+
+- Separate packaging ecosystem
+- Harder integration with `pyproject.toml`
+- Reproducibility requires `environment.yml`
+
+Example:
+
+```yaml
+name: ml-project
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pytorch
+  - cudatoolkit
+  - pip
+  - pip:
+      - -e .
+```
+
+---
+
+### Recommended Hybrid Strategy
+
+For academic ML projects:
+
+```
+Conda → system / binary dependencies
+pip → Python package installation
+```
+
+Workflow:
+
+```
+conda create -n mlproj python=3.11 pytorch cudatoolkit
+pip install -e .
+```
+
+Benefits:
+
+- Stable CUDA stack
+- Standard Python packaging
+- Compatible with CI and reproducibility archives
+
+---
+
+## 4. Build System Evaluation
+
+### Hatch
+
+Hatch is currently one of the **cleanest PEP-compliant build tools**.
+
+Strengths:
+
+- Pure `pyproject.toml`
+- Reproducible environments
+- Lightweight backend (`hatchling`)
+- Good CI compatibility
+
+Recommended for **research projects**.
+
+---
+
+### PDM
+
+PDM emphasizes **PEP-native workflows**.
+
+Strengths:
+
+- Uses PEP 582 or virtualenv
+- Lockfile support
+- Good dependency resolution
+
+Useful when reproducibility via **lockfiles** is required.
+
+---
+
+### Poetry
+
+Poetry historically dominated research projects.
+
+Advantages:
+
+- Integrated dependency resolver
+- Good UX
+
+Limitations:
+
+- Custom dependency specification layer
+- Lockfile ecosystem diverges slightly from PEP-native tooling
+- Less ideal for HPC workflows
+
+---
+
+### Recommendation for Academic Research
+
+A pragmatic stack:
+
+```
+pyproject.toml (PEP 518/621)
+        │
+Hatchling build backend
+        │
+pip / uv for installation
+        │
+Conda or Mamba for system binaries
+```
+
+This provides:
+
+- **Reproducible builds**
+- **Minimal tooling complexity**
+- **Compatibility with artifact review pipelines**
+
+---
+
+## 5. Reproducibility Best Practices for ML Papers
+
+1. **Commit `pyproject.toml`**
+2. **Export dependency lockfile**
+
+Example:
+
+```
+pip freeze > requirements-lock.txt
+```
+
+3. Provide **Conda environment**
+
+```
+conda env export > environment.yml
+```
+
+4. Archive artifacts:
+
+- Git tag
+- Docker image
+- dataset checksum
+
+5. Provide a **one-command install script** for reviewers.
+
+---
+
+## Key References
+
+- PEP 518 – Build system requirements
+- PEP 517 – Build backend interface
+- PEP 621 – Project metadata
+- PEP 508 – Dependency specification
+
+Official documentation:
+
+- Python Packaging User Guide
+- pip dependency resolution documentation
 
 
 

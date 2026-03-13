@@ -14,7 +14,7 @@
         "type": "FilterCompleted",
         "verbosity": "INFO",
         "path": "/home/gp21012/work/vs/dve-sample-py/notes/style/md-report.lua",
-        "milliseconds": "82"
+        "milliseconds": "64"
     },
     {
         "type": "BlockNotRendered",
@@ -177,61 +177,6 @@
             "c": [
                 "html",
                 "<!-- }}} \\\\ %2. -->\n"
-            ],
-            "t": "RawBlock"
-        }
-    },
-    {
-        "type": "BlockNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "<!-- ::{{{ #TAG: TODO:(aa-section) // -->\n"
-            ],
-            "t": "RawBlock"
-        }
-    },
-    {
-        "type": "BlockNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "<details>\n<summary></summary>\n"
-            ],
-            "t": "RawBlock"
-        }
-    },
-    {
-        "type": "BlockNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "</details>\n"
-            ],
-            "t": "RawBlock"
-        }
-    },
-    {
-        "type": "BlockNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "<details><summary> HTML blocks\n"
-            ],
-            "t": "RawBlock"
-        }
-    },
-    {
-        "type": "BlockNotRendered",
-        "verbosity": "INFO",
-        "contents": {
-            "c": [
-                "html",
-                "<!-- }}} \\\\ %a. -->\n"
             ],
             "t": "RawBlock"
         }
