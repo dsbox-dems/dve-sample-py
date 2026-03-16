@@ -4,15 +4,17 @@
 # Build system (PEP 518 / PEP 517)
 # ============================================================
 [build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
 ##@(uv): requires = ["hatchling>=1.21"]
 ##@(uv): build-backend = "hatchling.build"
-requires = [
-    "poetry-core>=2.0",
-    "setuptools",
-    "wheel",
-    "incremental",
-]
-build-backend = "poetry.core.masonry.api"
+##@(poetry): requires = [
+##@(poetry):    "poetry-core>=2.0",
+##@(poetry):    "setuptools",
+##@(poetry):    "wheel",
+##@(poetry):    "incremental",
+##@(poetry):]
+##@(poetry):build-backend = "poetry.core.masonry.api"
 
 # ============================================================
 # Project metadata (PEP 621)
@@ -22,10 +24,10 @@ name = "dve_sample_py"
 version = "0.1.0"
 description = "Reproducible experiments for [Paper Title]"
 readme = "README.md"
-license-files = [
-    "LICENSE",
-    "LICENSE.md",
-]
+# license-files = [
+#     {file = "LICENSE"},
+#     {file = "LICENSE.md"},
+# ]
 requires-python = ">=3.10,<3.15"
 
 authors = [
@@ -42,9 +44,10 @@ authors = [
 dependencies = [
 
   # --- ML frameworks ---
-  "tensorboard",
-  "tensorflow-hub",
-  "tensorflow-datasets",
+  # "tensorflow==2.20.*",
+  ### "tensorflow==2.21.*",
+  ### "tensorflow-datasets==4.9.*",
+  # "tensorboard",
 
   "torch==2.10.*",
   "torchvision==0.25.*",
@@ -54,14 +57,14 @@ dependencies = [
   "pandas",
   "pandas-datareader",
   "openpyxl",
-  "h5py",
+  # "h5py",
   "pyarrow",
   "polars",
 
   # --- sql ---
   "SQLAlchemy",
   "mysql-connector-python",
-  "mysqlclient",
+  # "mysqlclient",
   "psycopg2-binary",
 
   # --- stats ---
@@ -230,9 +233,11 @@ name = "torch130"
 url = "https://download.pytorch.org/whl/cu130"
 
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.hatch.build.targets.wheel]
-#packages = ["src/dve"]
-packages = [{ include = "*", from = "src" }]
+packages = ["src/*"]
 
 # --- [poetry] ---------------------------------------------------
 
