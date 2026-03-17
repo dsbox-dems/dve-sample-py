@@ -118,7 +118,7 @@ dependencies = [
 [project.optional-dependencies]
 
 gpumon = [
-  "pynvml; sys_platform == 'linux'",
+  ## "pynvml; sys_platform == 'linux'",
   "nvidia-ml-py; sys_platform == 'linux'",
 ]
 
@@ -355,16 +355,17 @@ docstring-code-format = true
 # Project Custom Configuration
 # ============================================================
 
-[tool.dve]
+[tool.local]
 has_config = true
+config = "config.yaml"
 
-[tool.dve.paths]
+[tool.local.paths]
 log_dir = "logs"
 
-[tool.dve.log]
+[tool.local.log]
 level = "INFO"
 
-[tool.dve.hello]
+[tool.local.hello]
 salutation = "Hi"
 
 
