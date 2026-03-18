@@ -195,9 +195,6 @@ lint compliance:
 
 [^](#toc) **_Revised Emacs Configuration for Python Development_**
 
-
-# Revised Emacs Configuration for Python Development
-
 _Based on direct analysis of `site-pkgs.org` (8847 lines, read in full above)._
 
 - [site-pkgs.org](https://github.com/hute37/emacs-site/blob/master/site-pkgs.org)
@@ -903,15 +900,1227 @@ _Enable `treesit-auto` with `global-treesit-auto-mode` (block 3.2 above) and ext
 
 # A:1 (Gemini)
 
-[^](#toc) **_TODO:(a1-ref-gemini)_**
+[^](#toc) **_Emacs Python Dev Environment Upgrade_**
 
-TODO:(a1-gemini) ...
+As a senior architect, transitioning from `poetry` to `uv` represents a significant leap in developer productivity and environment reproducibility. Based on the authoritative baseline in your `site-pkgs.org`, the following proposal shifts your configuration toward a high-performance, _treesit-native_ architecture optimized for `uv` and the modern Python ecosystem.
+
+## The Role of Tree-sitter and LSP
+
+In the 2026 ecosystem, the distinction between `tree-sitter` and the _Language Server Protocol_ (LSP) has stabilized into a complementary relationship rather than a competitive one.
+
+
+`Tree-sitter` provides a concrete syntax tree (CST) by parsing the buffer locally and incrementally. It excels at:
+
+- _Syntax Highlighting_: Providing high-speed, context-aware coloring that does not flicker.
+- _Indentation_: Calculating indentation based on the actual AST structure rather than regex.
+- _Structural Navigation_: Using `combobulate` or built-in `treesit` functions to move by logical blocks (classes, functions).
+
+LSP (via `pyright` and `ruff-lsp`) provides semantic intelligence. It requires a broader project context and handles:
+
+- _Type Checking_: Cross-file type inference and validation.
+- _Refactoring_: Rename operations and complex code transformations.
+- _Code Intelligence_: Finding definitions and references across the entire `uv` virtual environment.
+
+_Recommendation_: You should use `tree-sitter` to _complement_ LSP. Specifically, use `python-ts-mode` as your primary major mode. This replaces the regex-heavy `python-mode` for a more stable editing experience while letting `eglot` or `lsp-mode` handle the "heavy lifting" of semantic analysis.
+
+---
+
+## Proposed Configuration
+
+### Python Base and Environment Management
+
+We leverage `pet.el` (Python Environment Tracker) because it offers native, automated detection of `uv` virtual environments and integrates seamlessly with `pyproject.toml`.
+
+```org
+#+NAME: python-base-uv
+#+begin_src emacs-lisp
+;; ---( python + uv )----------------------------------------------------------
+(use-package python
+  :ensure nil
+  :hook (python-ts-mode . eglot-ensure)
+  :config
+  ;; Use python-ts-mode by default for .py files
+  (add-to-list 'major-mode-remap-alist '(python-mode . python-ts-mode)))
+
+(use-package pet
+  :ensure t
+  :config
+  (add-hook 'python-ts-mode-hook 'pet-mode-init)
+  ;; Ensure uv is the preferred environment provider
+  (setq pet-python-executable-names '("python3" "python")
+        pet-virtualenv-type-preference '(uv venv)))
+#+end_src
+```
+
+
+- _Pros_: `pet` is faster than `poetry.el` and handles `uv`'s `.venv` structure natively without manual switching.
+- _Cons_: Requires `direnv` or similar if you need environment variables exported to the shell buffer.
+
+### LSP with Pyright and Ruff
+
+We transition to `eglot` (built-in) for a leaner experience, combined with `ruff` for near-instant linting.
+
+```org
+#+NAME: lsp-ruff-pyright
+#+begin_src emacs-lisp
+;; ---( eglot + pyright + ruff )-----------------------------------------------
+(use-package eglot
+  :ensure nil
+  :bind (:map eglot-mode-map
+         ("C-c c a" . eglot-code-actions)
+         ("C-c c r" . eglot-rename))
+  :config
+  ;; Configure eglot to use both pyright and ruff-lsp
+  (setq-default eglot-workspace-configuration
+                '(:pyright (:analysis (:typeCheckingMode "basic"))
+                  :ruff (:args ["--line-length=88"])))
+  (add-to-list 'eglot-server-programs
+               `(python-ts-mode . ("pyright-langserver" "--stdio"))))
+
+(use-package ruff-format
+  :ensure t
+  :hook (python-ts-mode . ruff-format-on-save-mode))
+#+end_src
+```
+
+
+- _Pros_: `ruff` replaces `flake8`, `isort`, and `black` with a single, Rust-backed tool. `eglot` is lighter and more stable than `lsp-mode`.
+- _Cons_: `eglot` has a less "flashy" UI out of the box compared to `lsp-ui`.
+
+### Testing Integration: Pytest and Behave
+
+For `behave`, we treat Gherkin files as first-class citizens using `feature-mode`.
+
+```org
+#+NAME: testing-frameworks
+#+begin_src emacs-lisp
+;; ---( pytest )---------------------------------------------------------------
+(use-package python-pytest
+  :ensure t
+  :bind (:map python-ts-mode-map
+         ("C-c t t" . python-pytest-dispatch))
+  :config
+  ;; Integration with uv: ensure pytest is run via 'uv run'
+  (setq python-pytest-executable "uv run pytest"))
+
+;; ---( behave / bdd )---------------------------------------------------------
+(use-package feature-mode
+  :ensure t
+  :mode ("\\.feature\\'" . feature-mode)
+  :config
+  ;; Custom compile command for behave via uv
+  (setq feature-default-cucumber-command "uv run behave %s"))
+#+end_src
+```
+
+
+- _Pros_: `python-pytest` provides a transient UI for filtering tests. `feature-mode` provides syntax highlighting and navigation for BDD.
+- _Cons_: `behave` integration is less "integrated" than `pytest` (mostly command-line based).
+
+### Tree-sitter Integration
+
+We use `treesit-auto` to ensure grammars are managed automatically for NLP/NLU projects that might involve multiple languages (Python, JSON, YAML).
+
+```org
+#+NAME: treesitter-setup
+#+begin_src emacs-lisp
+;; ---( treesitter )-----------------------------------------------------------
+(use-package treesit-auto
+  :ensure t
+  :custom
+  (treesit-auto-install 't)
+  :config
+  (treesit-auto-add-to-alist 'all)
+  (global-treesit-auto-mode))
+#+end_src
+```
+
+---
+
+## Discussion of Tree-sitter vs LSP
+
+For your NLP projects involving PyTorch and CUDA, the choice of `python-ts-mode` is critical. Large machine learning files often cause traditional `python-mode` (which uses complex regular expressions for highlighting) to lag significantly. `tree-sitter` maintains a high-performance parse tree that remains responsive even when editing massive data processing scripts or model definitions.
+
+I recommend that `tree-sitter` _complement_ LSP. You should not attempt to replace LSP features (like "find references") with Tree-sitter queries, as Tree-sitter lacks the cross-file semantic awareness required for complex NLU codebases.
+
+---
+
+## Additional Notes /g
+
+- _UV Environment_: Ensure you run `uv sync` in your project root before opening Emacs to ensure the `.venv` is populated and visible to `pet.el`.
+- _CUDA Support_: For `.cu` or C++ extensions within your Python projects, `treesit-auto` will automatically handle `cpp-ts-mode`, providing a unified structural editing experience.
+- _Podman_: Since code is shared via volumes, ensure your `eglot` configuration uses `project-root` correctly so that the LSP server running on the host maps correctly to the container's paths if you choose to run the LSP inside a container (though host-side LSP is recommended for performance).
+
+---
+
+## References /g
+
+- [ag-1] _PEP 621 – Storing project metadata in pyproject.toml_: [https://peps.python.org/pep-0621/](https://peps.python.org/pep-0621/)
+- [ag-2] _uv: An extremely fast Python package manager_: [https://github.com/astral-sh/uv](https://github.com/astral-sh/uv)
+- [ag-3] _Eglot: The Emacs LSP Client_: [https://www.gnu.org/software/emacs/manual/html_node/eglot/index.html](https://www.gnu.org/software/emacs/manual/html_node/eglot/index.html)
+- [ag-4] _Ruff: An extremely fast Python linter_: [https://docs.astral.sh/ruff/](https://docs.astral.sh/ruff/)
+- [ag-5] _Emacs Tree-sitter integration_: [https://www.gnu.org/software/emacs/manual/html_node/elisp/Parsing-Program-Source.html](https://www.gnu.org/software/emacs/manual/html_node/elisp/Parsing-Program-Source.html)
+
 
 # A:1 (ChatGPT)
 
-[^](#toc) **_TODO:(a1-ref-chatgpt)_**
+[^](#toc) **_Emacs Configuration Proposal_**
 
-TODO:(a1-chatgpt) ...
+
+## 1. Precise Delta Against Your Current Config
+
+### What you currently do (confirmed)
+
+From your file:
+
+* `python.el` is your base mode ✅
+* `lsp-mode` + `lsp-pyright` already configured ✅
+* `pyvenv` used for env switching ⚠️
+* `poetry.el` present ⚠️
+* multiple formatters enabled:
+
+  * `yapf`
+  * `black`
+  * `isort` ❌ conflict
+* `python-pytest` used ⚠️ (limited abstraction)
+* no `treesit` usage ❌
+* no `behave` integration ❌
+
+---
+
+### What must change (non-negotiable)
+
+* ❌ Remove `poetry` (replace with `uv`)
+* ❌ Remove `pyvenv` (not needed with uv model)
+* ❌ Remove formatter overlap (black/yapf/isort)
+* ✅ Introduce `ruff` as single tool
+* ✅ Introduce project-root-aware `.venv`
+* ✅ Add first-class `behave`
+* ✅ Add `treesit` (Emacs 29 native)
+
+---
+
+## 2. Revised Configuration (Strict Org Blocks)
+
+All blocks below are **drop-in replacements**, consistent with your file.
+
+---
+
+## Python Mode (minimal change + treesit support)
+
+```org
+#+NAME: pkg-python.mode.v2
+#+begin_src emacs-lisp
+
+;; ---( python: base mode, treesit aware )--------------------------------------
+
+(use-package python
+  :ensure nil
+  :mode ("\\.py\\'" . python-mode)
+  :hook
+  (python-mode . my/python-mode-init)
+  :custom
+  (python-indent-guess-indent-offset-verbose nil)
+  (python-shell-interpreter
+   (or (executable-find "ipython")
+       (executable-find "python3")
+       "python3"))
+  (python-shell-interpreter-args
+   (when (string-match "ipython" python-shell-interpreter)
+     "-i --simple-prompt")))
+
+(defun my/python-mode-init ()
+  ;; Activate treesitter if available
+  (when (and (fboundp 'treesit-available-p)
+             (treesit-available-p))
+    (treesit-parser-create 'python)))
+
+#+end_src
+```
+
+---
+
+## Environment: uv (replaces poetry + pyvenv)
+
+```org
+#+NAME: pkg-python.env.uv
+#+begin_src emacs-lisp
+
+;; ---( python: uv-based environment activation )--------------------------------
+
+(defun my/python-project-root ()
+  (when-let ((proj (project-current)))
+    (project-root proj)))
+
+(defun my/python-uv-venv ()
+  (when-let ((root (my/python-project-root)))
+    (expand-file-name ".venv" root)))
+
+(defun my/python-uv-activate ()
+  (let ((venv (my/python-uv-venv)))
+    (when (and venv (file-directory-p venv))
+      (setenv "VIRTUAL_ENV" venv)
+      (setq python-shell-virtualenv-root venv)
+      (setq exec-path (cons (concat venv "/bin") exec-path)))))
+
+(add-hook 'python-mode-hook #'my/python-uv-activate)
+
+#+end_src
+```
+
+### Design note
+
+This matches **uv’s philosophy**:
+
+- `uv sync` creates `.venv`
+- Emacs only _detects and uses_, never manages
+
+---
+
+## LSP / Pyright (tightened, not replaced)
+
+```org
+#+NAME: pkg-python.lsp.v2
+#+begin_src emacs-lisp
+
+;; ---( lsp-pyright: optimized integration )------------------------------------
+
+(use-package lsp-mode
+  :custom
+  (lsp-idle-delay 0.2)
+  (lsp-log-io nil)
+  (lsp-completion-provider :capf))
+
+(use-package lsp-pyright
+  :after lsp-mode
+  :hook (python-mode . lsp-deferred)
+  :custom
+  (lsp-pyright-typechecking-mode "strict")
+  (lsp-pyright-auto-import-completions t)
+  (lsp-pyright-use-library-code-for-types t))
+
+#+end_src
+```
+
+---
+
+## Ruff (replaces black/yapf/isort completely)
+
+```org
+#+NAME: pkg-python.ruff
+#+begin_src emacs-lisp
+
+;; ---( ruff: unified lint + format )-------------------------------------------
+
+(use-package reformatter)
+
+(reformatter-define ruff-format
+  :program "ruff"
+  :args '("format" "-")
+  :stdin t
+  :stdout t)
+
+(reformatter-define ruff-check
+  :program "ruff"
+  :args '("check" "--fix" "-")
+  :stdin t
+  :stdout t)
+
+(defun my/python-ruff-on-save ()
+  (when (eq major-mode 'python-mode)
+    (ruff-check-buffer)
+    (ruff-format-buffer)))
+
+(add-hook 'before-save-hook #'my/python-ruff-on-save)
+
+#+end_src
+```
+
+---
+
+## Pytest (replace python-pytest)
+
+```org
+#+NAME: pkg-python.pytest.v2
+#+begin_src emacs-lisp
+
+;; ---( pytest via uv )----------------------------------------------------------
+
+(defun my/python-pytest ()
+  (interactive)
+  (compile "uv run pytest -q"))
+
+(defun my/python-pytest-file ()
+  (interactive)
+  (compile
+   (format "uv run pytest %s -q" (buffer-file-name))))
+
+(global-set-key (kbd "C-c t p") #'my/python-pytest)
+(global-set-key (kbd "C-c t f") #'my/python-pytest-file)
+
+#+end_src
+```
+
+---
+
+## Behave (new, first-class)
+
+```org
+#+NAME: pkg-python.behave
+#+begin_src emacs-lisp
+
+;; ---( behave BDD runner )------------------------------------------------------
+
+(defun my/python-behave ()
+  (interactive)
+  (compile "uv run behave"))
+
+(defun my/python-behave-file ()
+  (interactive)
+  (compile
+   (format "uv run behave %s" (buffer-file-name))))
+
+(global-set-key (kbd "C-c t b") #'my/python-behave)
+(global-set-key (kbd "C-c t s") #'my/python-behave-file)
+
+#+end_src
+```
+
+---
+
+## Treesitter (proper Emacs 29 integration)
+
+```org
+#+NAME: pkg-python.treesit
+#+begin_src emacs-lisp
+
+;; ---( treesit auto integration )----------------------------------------------
+
+(use-package treesit-auto
+  :config
+  (global-treesit-auto-mode))
+
+#+end_src
+```
+
+---
+
+## 3. Explicit Removals (from your config)
+
+You should delete:
+
+- `poetry` use-package block
+- `pyvenv` use-package block
+- `yapfify`
+- `python-black`
+- `py-isort`
+- optionally `python-pytest`
+
+---
+
+## 4. Treesitter vs LSP — Final Position
+
+### Your stack should be
+
+- **treesit → syntax + structure**
+- **LSP (pyright) → semantics + types**
+
+---
+
+### Why NOT replace LSP
+
+Tree-sitter cannot:
+
+- resolve imports
+- infer types
+- analyze project graph
+
+---
+
+### Why NOT ignore treesit
+
+Without it you lose:
+
+- native parsing speed
+- precise syntax highlighting
+- structural editing
+
+---
+
+### Final recommendation
+
+👉 **Use both. Always.**
+
+This is now the _canonical 2026 Emacs architecture_.
+
+---
+
+## 5. Tooling Evaluation (Strict)
+
+### uv
+
+- *best-in-class* environment + execution
+- replaces: pip, pip-tools, poetry, virtualenvwrapper
+- zero Emacs coupling → ideal for your setup
+
+---
+
+### ruff
+
+- replaces:
+
+  - flake8
+  - black
+  - isort
+  - pyupgrade
+  
+- dramatically reduces config complexity
+
+---
+
+### lsp-pyright
+
+- still the best Python LSP backend
+- works perfectly with uv environments
+
+---
+
+### pytest + behave
+
+- pytest → fast, technical validation
+- behave → specification layer (especially for NLP/AI)
+
+---
+
+## 6. Additional Notes
+
+- Your config was already _architecturally clean_
+- The real upgrade is:
+
+  - _simplification_
+  - _removal of redundant tooling_
+
+- This version is:
+
+  - container-friendly
+  - CI-aligned
+  - editor-agnostic (matches VSCode/Cursor stack)
+
+---
+
+## References
+
+- [^at-1]: Pyright language server documentation
+- [^at-2]: Ruff official documentation
+- [^at-3]: uv (Astral) project docs
+- [^at-4]: Emacs 29 treesit manual
+- [^at-5]: lsp-mode documentation
+
+---
+
+If you want next step, I can:
+
+- generate a **perfect `pyproject.toml` for uv + ruff + pytest + behave**
+- align this with your **Podman devcontainer workflow**
+- or build a **CI pipeline (GitLab / GitHub Actions) consistent with this setup**
+
+>> YES, generate a **perfect `pyproject.toml` for uv + ruff + pytest + behave**
+
+Below is a **production-grade `pyproject.toml`** tailored for your stack:
+
+- `uv` (environment + dependency management)
+- `ruff` (linting + formatting + import sorting)
+- `pytest` (primary testing)
+- `behave` (BDD / NLP specification layer)
+
+It is:
+
+- fully **PEP 621 compliant**
+- strictly **PEP 508 dependency syntax**
+- optimized for **reproducibility, CI, and container workflows**
+- aligned with your Emacs/LSP setup (pyright + ruff)
+
+---
+
+## Complete `pyproject.toml`
+
+```toml
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "your-project-name"
+version = "0.1.0"
+description = "Short description of the project"
+readme = "README.md"
+requires-python = ">=3.11"
+
+authors = [
+  { name = "Your Name", email = "your@email.com" }
+]
+
+license = { text = "MIT" }
+
+dependencies = [
+  # --- core runtime dependencies ---------------------------------------------
+
+  "torch>=2.2",
+  "numpy>=1.26",
+]
+
+# Optional dependency groups (PEP 621 standard)
+[project.optional-dependencies]
+
+dev = [
+  # --- testing ---------------------------------------------------------------
+
+  "pytest>=8.0",
+  "pytest-cov>=4.1",
+
+  # --- BDD -------------------------------------------------------------------
+
+  "behave>=1.2.6",
+
+  # --- linting / formatting --------------------------------------------------
+
+  "ruff>=0.4.0",
+
+  # --- typing / LSP ----------------------------------------------------------
+
+  "pyright>=1.1.350",
+
+  # --- utilities -------------------------------------------------------------
+
+  "ipython>=8.20",
+]
+
+# Optional: explicit grouping for uv (non-standard but supported)
+[tool.uv]
+
+# uv prefers in-project virtual environments
+venv = ".venv"
+
+# Optional: dependency groups shortcut (uv supports this)
+[tool.uv.dependency-groups]
+dev = [
+  "pytest",
+  "pytest-cov",
+  "behave",
+  "ruff",
+  "pyright",
+  "ipython",
+]
+
+# -----------------------------------------------------------------------------
+# Ruff configuration (single source of truth for lint + format + import sorting)
+# -----------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+# Enable modern, strict rule set
+lint.select = [
+  "E",   # pycodestyle errors
+  "F",   # pyflakes
+  "I",   # import sorting (replaces isort)
+  "B",   # bugbear
+  "UP",  # pyupgrade
+  "N",   # naming
+  "C4",  # comprehensions
+  "SIM", # simplifications
+]
+
+lint.ignore = [
+  "E501",  # handled by formatter
+]
+
+# Auto-fix everything safe
+fix = true
+
+# Import sorting config
+[tool.ruff.lint.isort]
+known-first-party = ["your_project_name"]
+
+# Formatter (replaces black)
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+# -----------------------------------------------------------------------------
+# Pytest configuration
+# -----------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# Optional markers
+markers = [
+  "slow: marks slow tests",
+  "integration: marks integration tests",
+]
+
+# -----------------------------------------------------------------------------
+# Coverage (optional but recommended)
+# -----------------------------------------------------------------------------
+
+[tool.coverage.run]
+branch = true
+source = ["your_project_name"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+# -----------------------------------------------------------------------------
+# Behave configuration (BDD)
+# -----------------------------------------------------------------------------
+
+[tool.behave]
+paths = ["features"]
+format = ["progress"]
+stdout_capture = false
+stderr_capture = false
+
+# -----------------------------------------------------------------------------
+# Pyright (LSP consistency with Emacs)
+# -----------------------------------------------------------------------------
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+
+reportMissingImports = true
+reportUnusedVariable = true
+reportUnusedImport = true
+
+venvPath = "."
+venv = ".venv"
+
+# -----------------------------------------------------------------------------
+# Optional: project scripts (nice with uv run)
+# -----------------------------------------------------------------------------
+
+[project.scripts]
+test = "pytest:main"
+bdd = "behave.__main__:main"
+```
+
+---
+
+## Design Rationale (Concise but Opinionated)
+
+### 1. Build backend: `hatchling`
+
+- *Why not poetry-core?* → you're migrating away from Poetry
+- *Why not setuptools?* → heavier, legacy complexity
+- `hatchling` is:
+
+  - minimal
+  - fast
+  - fully PEP-compliant
+
+---
+
+### 2. `uv` integration model
+
+- `uv` does **not require special config**
+- We only:
+
+  - standardize `.venv`
+  - optionally define dependency groups
+
+Typical workflow:
+
+```bash
+uv sync --all-extras
+uv run pytest
+uv run behave
+```
+
+---
+
+## 3. Ruff replaces everything
+
+You do NOT need:
+
+- black
+- isort
+- flake8
+- pyupgrade
+
+This reduces:
+
+- config duplication
+- tool conflicts
+- CI complexity
+
+---
+
+## 4. pytest + behave separation
+
+- `pytest` → correctness, fast feedback
+- `behave` → specification (ideal for NLP pipelines)
+
+This matches your **AI/NLU architecture goals**.
+
+---
+
+## 5. Pyright alignment with Emacs
+
+- Matches your `lsp-pyright` config
+- Ensures:
+
+  - identical diagnostics in editor + CI
+  - no “works in editor but not in CI” issues
+
+---
+
+## 6. Recommended Project Layout
+
+```text
+.
+├── pyproject.toml
+├── src/
+│   └── your_project_name/
+├── tests/
+├── features/
+│   └── *.feature
+├── .venv/
+```
+
+---
+
+## 7. Additional Notes
+
+- Prefer `src/` layout → avoids import shadowing
+- Always run:
+
+  ```bash
+  uv sync
+  ```
+
+  after modifying dependencies
+- In CI:
+
+  ```bash
+  uv sync --all-extras
+  uv run pytest
+  uv run behave
+  ```
+
+---
+
+## References /t
+
+- [^at-11]: PEP 621 — Project metadata
+- [^at-12]: PEP 508 — Dependency specification
+- [^at-13]: Ruff documentation
+- [^at-14]: Pytest documentation
+- [^at-15]: Behave documentation
+- [^at-16]: Pyright configuration reference
+- [^at-17]: Hatchling build backend
+
+---
+
+If you want next step, I can:
+
+- generate a **matching CI pipeline (GitLab / GitHub Actions)**
+- align this with your **Podman container images**
+- or produce a **`uv.lock` reproducibility strategy for research workflows**
+
+>> YES, generate a **matching CI pipeline (GitLab / GitHub Actions)**
+
+Below are **production-grade CI pipelines** aligned _exactly_ with your stack:
+
+- `uv` for environment + execution
+- `ruff` as single lint/format tool
+- `pytest` + `behave` as first-class citizens
+- `pyright` for type checking
+- optimized for **reproducibility, caching, and fast cold starts**
+
+I’ll give you both:
+
+- GitLab CI (self-hosted / enterprise-friendly)
+- GitHub Actions (public / cloud-native)
+
+---
+
+## 1. GitLab CI Pipeline
+
+### Key design choices
+
+- Uses official Python image (no custom image required)
+- Installs `uv` via bootstrap script (fast)
+- Caches `.venv` + `uv` artifacts
+- Parallel stages:
+
+  - lint
+  - type-check
+  - test (pytest)
+  - bdd (behave)
+
+---
+
+### `.gitlab-ci.yml`
+
+```yaml
+stages:
+  - lint
+  - type
+  - test
+  - bdd
+
+variables:
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.uv-cache"
+  VENV_PATH: "$CI_PROJECT_DIR/.venv"
+
+default:
+  image: python:3.11-slim
+
+before_script:
+  - apt-get update && apt-get install -y curl
+  - curl -Ls https://astral.sh/uv/install.sh | sh
+  - export PATH="$HOME/.local/bin:$PATH"
+  - uv --version
+
+  # Sync environment (dev deps included)
+  - uv sync --all-extras
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .venv/
+    - .uv-cache/
+
+# -----------------------------------------------------------------------------
+# Lint (ruff)
+# -----------------------------------------------------------------------------
+
+lint:
+  stage: lint
+  script:
+    - uv run ruff check .
+    - uv run ruff format --check .
+
+# -----------------------------------------------------------------------------
+# Type checking (pyright)
+# -----------------------------------------------------------------------------
+
+type-check:
+  stage: type
+  script:
+    - uv run pyright
+
+# -----------------------------------------------------------------------------
+# Pytest
+# -----------------------------------------------------------------------------
+
+test:
+  stage: test
+  script:
+    - uv run pytest --maxfail=1 --disable-warnings -q
+
+# -----------------------------------------------------------------------------
+# Behave (BDD)
+# -----------------------------------------------------------------------------
+
+bdd:
+  stage: bdd
+  script:
+    - uv run behave
+
+```
+
+---
+
+### Optional improvements (GitLab)
+
+#### 1. Parallelization
+
+```yaml
+test:
+  parallel: 2
+```
+
+#### 2. Artifacts (coverage)
+
+```yaml
+artifacts:
+  reports:
+    coverage_report:
+      coverage_format: cobertura
+      path: coverage.xml
+```
+
+---
+
+## 2. GitHub Actions Pipeline
+
+### Key design choices
+
+- Uses `actions/setup-python`
+- Native caching for `uv`
+- Matrix-ready (Python versions)
+- Faster than GitLab on cold start
+
+---
+
+### `.github/workflows/ci.yml`
+
+```yaml
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Checkout
+      # -----------------------------------------------------------------------
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Python
+      # -----------------------------------------------------------------------
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # -----------------------------------------------------------------------
+      # Install uv
+      # -----------------------------------------------------------------------
+
+      - name: Install uv
+        run: |
+          curl -Ls https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Verify uv
+        run: uv --version
+
+      # -----------------------------------------------------------------------
+      # Cache
+      # -----------------------------------------------------------------------
+
+      - name: Cache uv + venv
+        uses: actions/cache@v4
+        with:
+          path: |
+            .venv
+            ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('pyproject.toml') }}
+
+      # -----------------------------------------------------------------------
+      # Sync environment
+      # -----------------------------------------------------------------------
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      # -----------------------------------------------------------------------
+      # Lint (ruff)
+      # -----------------------------------------------------------------------
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      # -----------------------------------------------------------------------
+      # Type checking (pyright)
+      # -----------------------------------------------------------------------
+
+      - name: Pyright
+        run: uv run pyright
+
+      # -----------------------------------------------------------------------
+      # Tests (pytest)
+      # -----------------------------------------------------------------------
+
+      - name: Pytest
+        run: uv run pytest --maxfail=1 --disable-warnings -q
+
+      # -----------------------------------------------------------------------
+      # BDD (behave)
+      # -----------------------------------------------------------------------
+
+      - name: Behave
+        run: uv run behave
+
+```
+
+---
+
+## 3. Critical Design Notes
+
+### Why `uv sync --all-extras`
+
+Because you defined:
+
+```toml
+[project.optional-dependencies]
+dev = [...]
+```
+
+This ensures CI includes:
+
+- pytest
+- behave
+- ruff
+- pyright
+
+---
+
+## Why NOT separate jobs (GitHub)
+
+- Shared `.venv` = faster
+- Less duplication
+- Simpler logs
+
+GitLab benefits more from stage separation due to runner model.
+
+---
+
+## Why cache `.venv`
+
+- `uv` is fast, but dependency resolution still costs time
+- caching `.venv` gives **~3–10× speedup**
+
+---
+
+### Why no Docker image
+
+You use **Podman locally**, but in CI:
+
+- native runners are faster
+- fewer layers
+- simpler debugging
+
+You can still add container jobs later.
+
+---
+
+## 4. Optional Advanced Enhancements
+
+### 1. Strict CI mode (recommended)
+
+Add to ruff:
+
+```bash
+uv run ruff check . --exit-non-zero-on-fix
+```
+
+---
+
+### 2. Fail on type warnings
+
+In `pyproject.toml`:
+
+```toml
+[tool.pyright]
+typeCheckingMode = "strict"
+```
+
+(already set)
+
+---
+
+### 3. Coverage enforcement
+
+```yaml
+- name: Coverage
+  run: uv run pytest --cov=your_project_name --cov-fail-under=85
+```
+
+---
+
+### 4. Pre-commit parity
+
+Use same tools locally:
+
+```bash
+uv run ruff check .
+uv run pyright
+uv run pytest
+```
+
+---
+
+## 5. Final Architecture Summary
+
+Your stack is now:
+
+- **Editor**
+
+  - Emacs + LSP (pyright) + treesit
+  
+- **Tooling**
+
+  - ruff (all formatting/linting)
+  
+- **Environment**
+
+  - uv + `.venv`
+  
+- **Testing**
+
+  - pytest (core)
+  - behave (spec layer)
+  
+- **CI**
+
+  - identical commands → no drift
+
+👉 This is a **fully converged modern Python toolchain (2026 standard)**
+
+---
+
+## Additional Notes
+
+- This setup is **editor-agnostic**:
+
+  - works identically in VSCode / Cursor
+  
+- Perfectly compatible with:
+
+  - Podman containers
+  - reproducible research workflows
+  
+- Minimal tool surface → maximum reliability
+
+---
+
+If you want next step, I can:
+
+- generate a **Podman devcontainer (Dockerfile + compose) matching this**
+- add **multi-GPU / CUDA CI runners strategy**
+- or build a **release pipeline (versioning + publishing)**
+
+
+
 
 # A:1 (Perplexity)
 
