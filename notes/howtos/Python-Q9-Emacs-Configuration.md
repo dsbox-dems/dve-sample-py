@@ -2124,89 +2124,405 @@ If you want next step, I can:
 
 # A:1 (Perplexity)
 
-[^](#toc) **_TODO:(a1-ref-perplexity)_**
+[^](#toc) **_Emacs Python Support_**
 
-TODO:(a1-perplexity) ...
+Python development in Emacs benefits from LSP integration with Pyright for type checking and Ruff for linting, building on the existing `lsp-mode` and `lsp-pyright` setup in your `site-pkgs.org`. The configuration already supports `python-ts-mode`, `uv-mode`, `pytest`, and Poetry/Pyenv; proposed changes enhance Ruff LSP, pytest keybindings, and add behave support while recommending Tree-sitter complement LSP. All packages are MELPA-available, actively maintained (e.g., `ruff-lsp` 2026 updates), and `use-package` compatible with Emacs 29+ treesit.
 
-## Q:1.2 (Perplexity)
 
-[^](#toc) **_(=> continue)_**
+## Baseline Analysis
 
-TODO:(q1.2-perplexity) ...
+Your config remaps `python-mode` to `python-ts-mode`, enables `lsp-pyright` on `python-mode` hook (update to ts-mode), includes `uv-mode`, `python-pytest`, `py-isort`, `python-black`, and `yapfify`. No Ruff, behave, or explicit treesit-auto; LSP uses `lsp-mode` with `lsp-ui`. Poetry/pyvenv tracked but uv prioritized per role.
 
----
+## Tree-sitter Recommendation
 
-## A:1.2 (Perplexity)
+Tree-sitter via `treesit-auto` complements LSP by providing precise syntax highlighting, folding, and navigation without replacing semantic features like type checking. Pros: native Emacs 29+, faster parsing than regex; cons: requires grammar install. Recommend complement—activate `python-ts-mode` (already present) + `treesit-auto` for auto-parsing. [github](https://github.com/renzmann/treesit-auto/)
 
-[^](#toc) **_(=> continue)_**
+```org
+#+NAME: treesitter-enhance
+#+begin_src emacs-lisp
+;; ---( Tree-sitter Auto Enhance )------------------------------------------------
+(use-package treesit-auto
+  :ensure t
+  :config
+  (add-to-list 'treesit-language-source-alist
+               '((python . "https://github.com/tree-sitter/tree-sitter-python")))
+  (global-treesit-auto-mode))
+#+end_src
+```
 
-TODO:(a1.2-perplexity) ...
+## Python and UV Integration
+
+Built-in `python-ts-mode` with `uv-mode` auto-activation handles envs efficiently; pros over pyvenv: faster resolution, PEP 508 compliance; cons: newer, less mature than Poetry. Retain existing, add indicator. [github](https://github.com/z80dev/uv-mode)
+
+```org
+#+NAME: python-uv
+#+begin_src emacs-lisp
+;; ---( Python UV Refine )--------------------------------------------------------
+(use-package uv-mode
+  :ensure t
+  :hook (python-ts-mode . uv-mode-auto-activate-hook)
+  :custom (uv-mode-indicator t))
+#+end_src
+```
+
+## Pyright LSP Type Checking
+
+Existing `lsp-pyright` is optimal; pros: fast, venv-aware; cons vs mypy: less strict gradual typing. Tweak hook to ts-mode, disable organize-imports (defer to Ruff). [github](https://github.com/emacs-lsp/lsp-pyright/issues/95)
+
+```org
+#+NAME: pyright-refine
+#+begin_src emacs-lisp
+;; ---( Pyright LSP Refine )-----------------------------------------------------
+(use-package lsp-pyright
+  :ensure t
+  :hook (python-ts-mode . (lambda ()
+                            (lsp-deferred)
+                            (setq lsp-pyright-disable-organize-imports t)))
+  :custom
+  (lsp-pyright-auto-import-completions t))
+#+end_src
+```
+
+## Ruff Linting/Formatting
+
+Add `ruff-lsp` atop Pyright; single Rust binary replaces black/isort/flake8 (drop `py-isort`, `python-black`); pros: 100x faster, all-in-one; cons: config via pyproject.toml only. [docs.astral](https://docs.astral.sh/ruff/editors/setup/)
+
+```org
+#+NAME: ruff-add
+#+begin_src emacs-lisp
+;; ---( Ruff LSP Add )------------------------------------------------------------
+(use-package ruff-lsp
+  :ensure t
+  :hook (python-ts-mode . (lambda ()
+                            (lsp-deferred)
+                            (lsp-register-client
+                             (make-lsp-client :new-connection-function
+                                              #'lsp-stdio-connection
+                                              :major-modes '(python-ts-mode)
+                                              :server-id 'ruff)))))
+#+end_src
+```
+## Pytest Runner
+
+Existing `python-pytest` is solid; pros: DWIM dispatch; cons vs compilation: less flexible for custom args. Enhance bindings. [github](https://github.com/wbolster/emacs-python-pytest)
+
+```org
+#+NAME: pytest-bind
+#+begin_src emacs-lisp
+;; ---( Pytest Bindings )---------------------------------------------------------
+(use-package python-pytest
+  :ensure t
+  :bind (:map python-ts-mode-map
+              ("C-c t d" . python-pytest-dispatch)
+              ("C-c t f" . python-pytest-file-dwim)
+              ("C-c t F" . python-pytest-function-dwim)))
+#+end_src
+```
+
+## Behave BDD Runner
+
+No native package; use `compile` with `uv run behave` for first-class support. Pros: Gherkin for AI specs; cons: manual vs pytest DWIM. [github](https://github.com/Nick287/Behave-Quick-Start)
+
+```org
+#+NAME: behave-compile
+#+begin_src emacs-lisp
+;; ---( Behave Compile )----------------------------------------------------------
+(use-package compile
+  :ensure nil
+  :bind (:map python-ts-mode-map
+              ("C-c b r" . (lambda ()
+                             (interactive)
+                             (compile "uv run behave")))))
+#+end_src
+```
+
+## Integration Notes
+
+Insert blocks after existing Python/LSP sections in `site-pkgs.org`. Remove/disable `py-isort`, `yapfify`, `python-black` post-Ruff. Test: `M-x lsp-workspace-restart`; ensure `uv add ruff-lsp pyright pytest behave` in pyproject.toml.
+
+## Additional Notes /p
+
+- Treesit grammars: `M-x treesit-install-language-grammar python`.
+- Podman: Share `pyproject.toml`/`.venv` via volumes.
+- CI: GitLab CI stage `uv sync && ruff check && pytest && behave`.
+- MELPA health: All active 2026 (e.g., `uv-mode` recent). [reddit](https://www.reddit.com/r/emacs/comments/1kp095s/starting_uvel_an_emacs_frontend_package_for_the/)
+
+## References /p
+
+- [^ap-1]: uv-mode GitHub. [github](https://github.com/z80dev/uv-mode)
+- [^ap-2]: lsp-pyright env. [github](https://github.com/emacs-lsp/lsp-pyright/issues/95)
+- [^ap-3]: python-pytest. [github](https://github.com/wbolster/emacs-python-pytest)
+- [^ap-4]: treesit-auto. [github](https://github.com/renzmann/treesit-auto/)
+- [^ap-5]: Ruff docs. [docs.astral](https://docs.astral.sh/ruff/editors/setup/)
+- [^ap-6]: ruff-lsp. [github](https://github.com/astral-sh/ruff-lsp)
+
 
 # A:1 (DeepSeek)
 
-[^](#toc) **_TODO:(a1-ref-deepseek)_**
+[^](#toc) **_Emacs Python Configuration Update Advice_**
 
-TODO:(a1-deepseek) ...
-
-<!-- }}} \\ %1. -->
-<!-- ::{{{ #TAG: TODO:(q2-section) // -->
-
-# Q:2
-
-## Q:2 - **TODO:(q2-title)**
-
-[^](#toc)
-
-## Question Prompt 2
-
-TODO:(q1-prompt) ...
-
-
-# A:2 (Claude)
-
-[^](#toc) **_TODO:(a1-ref-claude)_**
-
-TODO:(a2-claude) ...
-
-# A:2 (Gemini)
-
-[^](#toc) **_TODO:(a2-ref-gemini)_**
-
-TODO:(a2-gemini) ...
-
-# A:2 (ChatGPT)
-
-[^](#toc) **_TODO:(a2-ref-chatgpt)_**
-
-TODO:(a2-chatgpt) ...
-
-# A:2 (Perplexity)
-
-[^](#toc) **_TODO:(a2-ref-perplexity)_**
-
-TODO:(a2-perplexity) ...
-
-## Q:2.2 (Perplexity)
-
-[^](#toc) **_(=> continue)_**
-
-TODO:(q2.2-perplexity) ...
+Based on a thorough review of your `site-pkgs.org` Emacs configuration, I recommend a set of modern, performant, and well‑integrated packages for Python development. The current setup can be streamlined by adopting tools that are actively maintained, leverage Emacs 29+ built‑in features, and align with the 2026 Python ecosystem (uv, pyright, ruff, pytest, behave). Below are the proposed configuration blocks, each with a justification that weighs pros and cons against credible alternatives.
 
 ---
 
-## A:2.2 (Perplexity)
+## Python Base Mode and Environment Integration
 
-[^](#toc) **_(=> continue)_**
+**Proposed configuration**
 
-TODO:(a2.2-perplexity) ...
+```org
+#+NAME: setup-python-base
+#+begin_src emacs-lisp
+;; ---( python )----------------------------------------------------------------
+(use-package python
+  :ensure nil   ; built-in
+  :hook (python-mode . (lambda ()
+                          (setq-local indent-tabs-mode nil)
+                          (setq-local python-indent-offset 4)))
+  :custom
+  (python-shell-interpreter "python3")
+  (python-shell-virtualenv-root nil)  ; set dynamically via envrc
+  :config
+  ;; Use built-in treesitter if available
+  (when (and (fboundp 'treesit-available-p) (treesit-available-p))
+    (add-hook 'python-mode-hook #'treesit-parser-create 'python)))
+#+end_src
+```
 
-# A:2 (DeepSeek)
+**Justification**  
 
-[^](#toc) **_TODO:(a2-ref-deepseek)_**
+- _python.el_ (built‑in) is stable and requires no external package.
+- Environment integration is delegated to `envrc` (see below) because it works seamlessly with `uv`’s `.venv` directories and respects `.envrc` files.
+- Alternatives like `pyvenv` or `pyenv-mode` are less universal; `envrc` handles any environment manager and is widely adopted.
+- The hook sets basic indentation style and prepares for treesitter, which is recommended later.
 
-TODO:(a2-deepseek) ...
+---
 
-<!-- }}} \\ %2. -->
+## uv Project and Virtual‑Environment Management
+
+**Proposed configuration**
+
+```org
+#+NAME: setup-uv-env
+#+begin_src emacs-lisp
+;; ---( uv / direnv integration )-----------------------------------------------
+(use-package envrc
+  :ensure t
+  :hook (after-init . envrc-global-mode)
+  :config
+  ;; Automatically load environment when entering a project with .envrc
+  (setq envrc-debug nil))
+#+end_src
+```
+
+**Justification**
+
+- `envrc` (MELPA) directly supports `direnv`, which can be configured to activate `uv`’s virtual environment (e.g., with `layout python` or `source .venv/bin/activate` in `.envrc`).
+- **Pros**: Zero Emacs‑side knowledge of `uv`; works with any tool that produces a `.envrc`.
+- **Cons**: Requires the user to create `.envrc` files manually (a one‑time setup).
+- Alternatives: `pyvenv` would need manual activation per project; `pyenv-mode` does not understand `uv`. `envrc` is the most future‑proof and integrates with Emacs’ `process-environment` perfectly.
+
+---
+
+## pyright LSP Integration
+
+### Proposed configuration
+
+```org
+#+NAME: setup-pyright
+#+begin_src emacs-lisp
+;; ---( lsp-mode + pyright )----------------------------------------------------
+(use-package lsp-mode
+  :ensure t
+  :hook ((python-mode . lsp-deferred)
+         (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp
+  :custom
+  (lsp-completion-provider :capf)
+  (lsp-log-io nil)
+  (lsp-document-sync-method 'incremental)
+  (lsp-keymap-prefix "C-c l"))
+
+(use-package lsp-pyright
+  :ensure t
+  :after lsp-mode
+  :hook (python-mode . (lambda () (require 'lsp-pyright) (lsp-deferred)))
+  :custom
+  (lsp-pyright-typechecking-mode "strict")  ; optional
+  (lsp-pyright-disable-organize-imports nil)) ; defer to ruff
+#+end_src
+```
+
+### Justification
+
+- `lsp-pyright` uses Microsoft’s pyright, the fastest and most accurate Python language server.
+- **Pros**: Excellent type checking, completion, and refactoring; large community; MELPA availability.
+- **Cons**: Heavier than `eglot`; requires Node.js (already available via `nvm`).
+- Alternatives: `eglot` with `pyright` is simpler but lacks some LSP‑Mode conveniences (e.g., `lsp-ui`). Given your existing LSP usage, sticking with `lsp-mode` is consistent.
+- Community adoption is extremely high; issue tracker active.
+
+---
+
+## ruff (Linting and Formatting)
+
+### ruff Proposed configuration
+
+```org
+#+NAME: setup-ruff
+#+begin_src emacs-lisp
+;; ---( ruff )------------------------------------------------------------------
+(use-package ruff-format
+  :ensure t
+  :hook (python-mode . (lambda ()
+                          (setq-local format-all-formatters '(("Python" ruff-format)))))
+  :config
+  ;; Optionally point to your pyproject.toml
+  (setq ruff-format-args '("--config" "pyproject.toml")))
+
+(use-package flycheck-ruff
+  :ensure t
+  :after flycheck
+  :hook (python-mode . (lambda () (flycheck-mode +1)))
+  :config
+  (setq flycheck-ruff-max-line-length 88)) ; match your formatter
+#+end_src
+```
+
+### ruff Justification
+
+- `ruff` unifies linting and formatting in one extremely fast tool.
+- `ruff-format` (MELPA) provides a `format-all` integration; `flycheck-ruff` gives real‑time linting.
+- **Pros**: Speed, active development, single dependency, respects `pyproject.toml`.
+- **Cons**: Ruff does not yet support all flake8 plugins, but covers most rules.
+- Alternatives: `black` + `isort` + `flake8` would require three separate packages and slower execution. `ruff` is now the community standard.
+- Both packages are on MELPA and have healthy issue trackers.
+
+---
+
+## pytest Test Runner Integration
+
+### pytest Proposed configuration
+
+```org
+#+NAME: setup-pytest
+#+begin_src emacs-lisp
+;; ---( pytest )----------------------------------------------------------------
+(use-package pytest
+  :ensure t
+  :commands (pytest-pdb pytest-one pytest-last-failed)
+  :hook (python-mode . (lambda ()
+                          (local-set-key (kbd "C-c t") 'pytest-pdb)
+                          (local-set-key (kbd "C-c T") 'pytest-one)))
+  :custom
+  (pytest-cmd-flags "-v"))
+#+end_src
+```
+
+### pytest Justification
+
+- The `pytest` package (MELPA) offers a simple interface to run tests, debug with pdb, and repeat last failures.
+- **Pros**: Dedicated test runner with key bindings; works out of the box with `pytest`.
+- **Cons**: Does not display results in a test‑specific buffer (uses `compilation-mode`).
+- Alternatives: `python-pytest` (less active), `nose` (deprecated), or custom `compile` commands. The `pytest` package is the most straightforward.
+- Active maintenance and good MELPA availability.
+
+---
+
+## behave BDD Test Runner Integration
+
+### behave Proposed configuration
+
+```org
+#+NAME: setup-behave
+#+begin_src emacs-lisp
+;; ---( behave )----------------------------------------------------------------
+(use-package feature-mode
+  :ensure t
+  :mode ("\\.feature\\'" . feature-mode)
+  :config
+  (defun run-behave ()
+    "Run behave from project root."
+    (interactive)
+    (let ((default-directory (projectile-project-root)))
+      (compile "behave --no-capture")))
+
+  (defun run-behave-scenario ()
+    "Run the behave scenario at point (requires line number)."
+    (interactive)
+    (let* ((file (buffer-file-name))
+           (line (line-number-at-pos))
+           (default-directory (projectile-project-root)))
+      (compile (format "behave --no-capture %s:%d" file line))))
+
+  :hook (feature-mode . (lambda ()
+                           (local-set-key (kbd "C-c b") 'run-behave)
+                           (local-set-key (kbd "C-c s") 'run-behave-scenario))))
+#+end_src
+```
+
+### behave Justification
+
+- `feature-mode` (MELPA) provides syntax highlighting and indentation for Gherkin files.  
+- Custom commands run `behave` via `compile` for whole suite or current scenario.  
+- **Pros**: Lightweight, leverages Emacs’ built‑in compilation mode.  
+- **Cons**: No specialised test‑result viewer; uses standard `compilation-mode`.  
+- Alternatives: `cucumber.el` (Ruby‑focused), no dedicated `behave` package. This approach is simple and effective.  
+- `feature-mode` is actively maintained and integrates well with Emacs 29.
+
+---
+
+## Treesitter Integration (Complement vs. Replace)
+
+### Treesitter Proposed configuration
+
+```org
+#+NAME: setup-treesitter
+#+begin_src emacs-lisp
+;; ---( treesit-auto )----------------------------------------------------------
+(use-package treesit-auto
+  :ensure t
+  :custom
+  (treesit-auto-install 'prompt)   ; prompt before downloading grammars
+  :config
+  ;; Automatically use treesitter modes for all supported languages
+  (treesit-auto-add-to-auto-mode-alist 'all)
+  (global-treesit-auto-mode))
+#+end_src
+```
+
+### Treesitter Discussion
+
+- **Role of tree‑sitter**: It provides precise, incremental syntax highlighting and structural navigation (e.g., `treesit-sexp`). This complements the semantic information provided by LSP (type checking, references, renaming).
+- **Complement vs. replace**: LSP cannot be replaced by tree‑sitter because tree‑sitter lacks cross‑file analysis, type awareness, and refactoring capabilities. Conversely, LSP highlighting is often less accurate and slower than tree‑sitter.
+- **Recommendation**: **Complement**. Use tree‑sitter for syntax highlighting, indentation, and code folding; rely on LSP (pyright) for all language‑server features. This hybrid approach gives the best of both worlds.
+- *Compatibility*: Emacs 29+ has built‑in `treesit`. `treesit-auto` (MELPA) automatically downloads and installs grammars, reducing friction. It is actively maintained and works flawlessly with `use-package`.
+- *Integration complexity*: Minimal—just install `treesit-auto` and enable it. The grammar for Python is included, and the mode will switch to `python-ts-mode` automatically. The earlier hook in `setup-python-base` ensures the parser is created, but `treesit-auto` already handles this.
+
+---
+
+## References
+
+[^rf-envrc]: `envrc` MELPA page – https://melpa.org/#/envrc  
+[^rf-lsp-mode]: `lsp-mode` documentation – https://emacs-lsp.github.io/lsp-mode/  
+[^rf-pyright]: pyright language server – https://github.com/microsoft/pyright  
+[^rf-ruff]: Ruff – https://github.com/astral-sh/ruff  
+[^rf-pytest-el]: `pytest` Emacs package – https://github.com/arthurnn/pytest  
+[^rf-feature-mode]: `feature-mode` – https://github.com/michaelklishin/cucumber.el (modern fork)  
+[^rf-treesit-auto]: `treesit-auto` – https://github.com/renzmann/treesit-auto  
+
+## Additional Notes
+
+- All proposed packages are available on MELPA and have seen recent commits (as of 2026).  
+- The configuration assumes you have `use-package` already set up; if not, add `(require 'use-package)` early in your init.  
+- For `ruff`, ensure the `ruff` executable is installed in your environment (`uv tool install ruff` or via project dependency).  
+- The `pytest` package uses the `pytest` executable from the virtual environment; `envrc` guarantees it is on `PATH`.  
+- Behave integration relies on `projectile` for project root detection. If you don’t use Projectile, replace `projectile-project-root` with `locate-dominating-file` looking for `.behave` or `pyproject.toml`.  
+- Treesitter grammars require a C compiler toolchain at install time; if you run Emacs on a system without one, set `treesit-auto-install` to `never` and install grammars manually.
+
+
+
+
+
+<!-- }}} \\ %1. -->
 <!-- ::{{{ #TAG: TODO:(aa-section) // -->
 <details>
 <summary></summary>
@@ -2228,109 +2544,6 @@ TODO:(a2-deepseek) ...
 ## Appendix a
 
 TODO:(aa-text) ...
-
-# A:b
-
-## A:b - **Q2: Prompt distiller**
-
-[^](#toc)
-
-## Appendix b
-
-### User
-
-Act as an expert Prompt Engineer and AI Optimisation Specialist. Your
-objective is to analyse, critique, and significantly enhance the
-user-provided prompt.
-
-The prompt you need to refine begins immediately after the line
-starting with /PROMPT/ marker.
-
-### Your Process
-
-#### Analysis & Evaluation
-
-- Assess the original prompt for clarity, context, constraint
-  definition, and logical flow.
-- Identify specific weaknesses, such as ambiguity, grammatical errors,
-  logic gaps, or lack of sufficient context.
-- Determine if the prompt would benefit from specific engineering
-  techniques (e.g., Chain-of-Thought, persona adoption, or few-shot
-  examples).
-
-#### Critique Presentation
-
-- Provide a brief, professional evaluation of the original text.
-- List specific issues found and explain why they are problematic.
-- Propose concrete improvements to address these issues.
-
-#### Optimisation
-
-- Rewrite the prompt to be precise, fluent, and highly effective.
-- Ensure the English style is professional and grammatically correct.
-- Clarify all requirements and specifications to minimise the risk
-of AI hallucination or misinterpretation.
-
-### Note
-
-- Ignore extra Markdown used in rendering pipelines: GitLab GLFM
-  repository view and pandoc PDF transformations.
-- Keep this Markdown unaltered in reply.
-
-In particular, ignore:
-
-- <details><summary> HTML blocks
-- {=latex} codeblocks
-- [!tip] [!note] block quotes
-- code folding tags '{{{' and '}}}'
-- internal links: e.g. [^]
-
-### Important
-
-> Generate 3 responses to this prompt, each with their probability.
-
-### Output Format
-
-- Present your analysis and critique first.
-- Output the final, polished version of the prompt at the very end.
-- Separate every refined prompt from the analysis using a horizontal line
-  (`---`) and the line start marker `/PROMPT/`.
-
----
-/PROMPT/
-
-TODO:(a2-prompt) ...
-
-# A:b (Claude)
-
-[^](#toc) **_TODO:(ab-ref-claude)_**
-
-TODO:(ab-claude) ...
-
-# A:b (Gemini)
-
-[^](#toc) **_TODO:(ab-ref-gemini)_**
-
-TODO:(a2-gemini) ...
-
-# A:b (ChatGPT)
-
-[^](#toc) **_TODO:(ab-ref-chatgpt)_**
-
-TODO:(ab-chatgpt) ...
-
-# A:b (Perplexity)
-
-[^](#toc) **_TODO:(ab-ref-perplexity)_**
-
-TODO:(ab-perplexity) ...
-
-# A:b (DeepSeek)
-
-[^](#toc) **_TODO:(ab-ref-deepseek)_**
-
-TODO:(ab-deepseek) ...
-
 
 
 <!-- }}} \\ %a. -->
