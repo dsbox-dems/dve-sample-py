@@ -1,19 +1,48 @@
 ---
-title: TODO:(title)
-subtitle: TODO:(subtitle)
+title: Emacs Configuration for Python Development with Modern Tooling
+subtitle: |
+  A structured proposal for revising Emacs Python development support
+  integrating `uv`, `pyright`, `ruff`, `pytest`, and `behave` within
+  a `use-package` literate configuration baseline
 # {{{ // %+
-
-category: LLM-Style
-keywords: [GEN, TODO:(keywords)]
+category: Rcpp-HOWTO
+keywords: [GEN, Emacs, Python, uv, pyright, ruff, tree-sitter, LSP]
 abstract: |
-  TODO:(abstract)
+  This document presents a structured proposal for modernising an Emacs
+  configuration dedicated to Python development in NLP/NLU project
+  contexts built on PyTorch and CUDA environments.
+  The baseline configuration is drawn from an existing `org-mode` literate
+  programming setup hosted on GitHub, which is treated as the authoritative
+  reference for all proposed modifications.
+
+  The proposal systematically addresses the replacement or improvement of
+  key toolchain components: the base `python` mode and virtual-environment
+  integration, `uv` for project and environment management, `pyright` for
+  LSP-based static type checking, `ruff` for linting and formatting, and
+  both `pytest` and `behave` as first-class test runner targets.
+  Each tool selection is justified with explicit pros and cons evaluated
+  against credible alternatives, using criteria such as MELPA/ELPA
+  availability, active maintenance, community adoption, and compatibility
+  with Emacs 29+ built-in `treesit`.
+
+  A dedicated section examines `tree-sitter` integration, clarifying its
+  complementary role alongside the LSP architecture for syntax highlighting
+  and structural navigation, and providing a clear recommendation on
+  whether it should supplement or partially replace LSP features.
+  Configuration changes are provided as `org-mode` literate programming
+  blocks containing `emacs-lisp` source, structured for direct integration
+  into the existing setup.
+
+  The target environment assumes PEP 621 / PEP 508 compliant
+  `pyproject.toml` projects, `use-package`-based Emacs configuration,
+  and shared container/host code via `podman`, with CI/CD pipelines
+  under evaluation across Jenkins, GitLab CI, and GitHub Actions.
   
-  ...
-
 doctype: md-report
-
 # }}} // %+
 ---
+
+
 <!-- {{{ #TAG: TODO:(toc) // -->
 
 <!-- markdownlint-disable MD012 -->
