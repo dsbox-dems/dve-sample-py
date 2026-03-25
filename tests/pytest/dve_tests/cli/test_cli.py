@@ -49,7 +49,6 @@ class CliTest(unittest.TestCase):
     def setUp(self):
         # self.conf_dir = os.environ['CONFIG_DIR']
         log = logging.getLogger(__name__)
-        pass
 
     def tearDown(self):
         pass

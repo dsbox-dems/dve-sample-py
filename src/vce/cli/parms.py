@@ -1,7 +1,7 @@
 from typing import Optional, Callable, TypeVar, Sequence
 from dataclasses import dataclass
 
-import vce.common.util.proc as proc
+from vce.common.util import proc
 import vce.common.util.environ as en
 
 
@@ -80,7 +80,7 @@ class JobSpecs:
             return self.auto
         if self.specs:
             return self.specs[0].name.id
-        raise ValueError(f"Job Specs is empty")
+        raise ValueError("Job Specs is empty")
 
     def get_auto_spec(self) -> JobSpec:
         job_id = self.get_auto_name()

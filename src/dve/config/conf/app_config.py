@@ -60,9 +60,8 @@ class AppConfigImpl(AppConfigEx):
     @classmethod
     def create(cls, name: str, config: vce_conf.AppConfig) -> AppConfig:
         try:
-            from vce.config import conf
 
-            inner = cast(vce_conf.AppConfigEx, config)
+            inner = cast("vce_conf.AppConfigEx", config)
             result = AppConfigImpl(name, inner)
             return result
         except Exception as ex:
@@ -99,7 +98,7 @@ class AppConfigStore(object):
         try:
             from vce.config import conf
 
-            inner = cast(vce_conf.AppConfigEx, conf.get_config())
+            inner = cast("vce_conf.AppConfigEx", conf.get_config())
             result = AppConfigImpl.create(what, inner)
             return result
         except Exception as ex:

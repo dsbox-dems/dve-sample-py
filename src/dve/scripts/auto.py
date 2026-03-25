@@ -6,14 +6,13 @@ from dve.cli.xargs import get_auto_argparser
 
 import dve.cli.parms as sp
 
-from dve.config.data import cfd
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # ---------------------------------------------------------------
 
-import dve.scripts.dummy.dummy_script as dummy_script
-import dve.scripts.dummy.dummy_test as dummy_test
+from dve.scripts.dummy import dummy_script
+from dve.scripts.dummy import dummy_test
 
 # ---------------------------------------------------------------
 

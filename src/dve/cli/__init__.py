@@ -22,7 +22,7 @@ def exec(argv, xargs, **kwargs):
         entry = "main"
 
     if entry == "main":
-        import dve.scripts.runner as runner
+        from dve.scripts import runner
 
         RC = runner.main(argv, **kwargs)
     else:

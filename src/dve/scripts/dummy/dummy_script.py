@@ -3,7 +3,6 @@
 
 # In[1]:
 
-import numpy as np
 import pandas as pd
 
 import time
@@ -22,7 +21,6 @@ from dve.cli.xargs import get_dummy_argparser
 from vce.common.util.trace import trace_logger
 from vce.common.util.kernel import in_notebook
 
-import dve.cli.parms as sp
 
 from dve.config.data import cfd
 

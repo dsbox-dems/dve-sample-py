@@ -49,13 +49,13 @@ class JobSpecs:
         )
 
     def get_job_spec(self, job_id: str, job_ns: Optional[str] = None) -> JobSpec:
-        return cast(JobSpec, self.as_std().get_job_spec(job_id, job_ns))
+        return cast("JobSpec", self.as_std().get_job_spec(job_id, job_ns))
 
     def get_auto_name(self) -> str:
         return self.as_std().get_auto_name()
 
     def get_auto_spec(self) -> JobSpec:
-        return cast(JobSpec, self.as_std().get_auto_spec())
+        return cast("JobSpec", self.as_std().get_auto_spec())
 
 
 # /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

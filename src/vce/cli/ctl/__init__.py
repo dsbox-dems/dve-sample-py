@@ -43,7 +43,7 @@ class StdMain(object):
         self.log.error(StdMain.LOG_PREFIX + message)
 
     def warn(self, message):
-        self.log.warn(StdMain.LOG_PREFIX + message)
+        self.log.warning(StdMain.LOG_PREFIX + message)
 
     def info(self, message):
         self.log.info(StdMain.LOG_PREFIX + message)

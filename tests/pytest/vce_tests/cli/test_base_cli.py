@@ -67,11 +67,9 @@ class BaseCliTest(unittest.TestCase):
 
     def setUp(self):
         conf.AppConfigs.unload_all()
-        pass
 
     def tearDown(self):
         conf.AppConfigs.unload_all()
-        pass
 
 
 if __name__ == "__main__":

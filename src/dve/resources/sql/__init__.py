@@ -1,4 +1,3 @@
-#
 
 import importlib.resources
 from typing import Optional

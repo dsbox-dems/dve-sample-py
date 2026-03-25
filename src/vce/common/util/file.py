@@ -1,7 +1,5 @@
 import os
 import os.path
-import re
-import glob
 import sys
 from tempfile import NamedTemporaryFile
 

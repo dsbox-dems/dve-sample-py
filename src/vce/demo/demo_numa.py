@@ -282,10 +282,10 @@ def exec_test_find(argv, xargs, name, **kwargs):
 
 def exec_test_numa(argv, xargs, name, **kwargs):
     test_script = to_oneline(
-        f"""\
+        """\
         import os;
         import time;
-        print({{}},
+        print({},
            os.getpid(),
            os.getenv(\\"X_CORE_SLOT\\"),
            os.getenv(\\"OMP_NUM_THREADS\\"));
@@ -297,7 +297,7 @@ def exec_test_numa(argv, xargs, name, **kwargs):
 
 
 def exec_test(argv, xargs, name, **kwargs):
-    msg = f"#<numa.test>: cmd={'test_numa'}, xargs:<{str(xargs)}>, argv:<{str(argv)}>, kwargs:<{str(kwargs)}>"
+    msg = f"#<numa.test>: cmd={'test_numa'}, xargs:<{xargs!s}>, argv:<{argv!s}>, kwargs:<{kwargs!s}>"
     log.info(msg)
     print(msg)
     exec_test_numa(argv, xargs, name, **kwargs)

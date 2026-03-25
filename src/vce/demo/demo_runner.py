@@ -29,7 +29,7 @@ def exec(argv, xargs, **kwargs):
 
         RC = script.main(argv, **kwargs)
     elif cmd == "test":
-        msg = f"#<runner.test>: cmd={cmd}, xargs:<{str(xargs)}>, argv:<{str(argv)}>, kwargs:<{str(kwargs)}>"
+        msg = f"#<runner.test>: cmd={cmd}, xargs:<{xargs!s}>, argv:<{argv!s}>, kwargs:<{kwargs!s}>"
         log.info(msg)
         print(msg)
         RC = 0

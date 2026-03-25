@@ -5,7 +5,6 @@ import platform as pf
 from vce.cli.ctl import std_main
 from vce.cli.xargs import get_test_argparser
 
-import vce.cli.parms as sp
 
 from vce.config.data import cfd
 
@@ -33,13 +32,13 @@ def do_process(argv, xargs, **kwargs):
     tag = "x-test"
     msgs = [
         f">> @{tag}.file(name=<{__name__}>)",
-        f">> @{tag}.args(argv=<{str(argv)}>)",
-        f">> @{tag}.args(xargs=<{str(xargs)}>)",
-        f">> @{tag}.args(kwargs=<{str(kwargs)}>)",
-        f">> @{tag}.spec(job_name=<{str(ea('job_name',**kwargs,))}>)",
-        f">> @{tag}.spec(job_xargs=<{str(ea('job_xargs',**kwargs,))}>)",
-        f">> @{tag}.spec(job_spec=<{str(ea('job_spec',**kwargs,))}>)",
-        f">> @{tag}.spec(job_parm=<{str(ep(**kwargs,))}>)",
+        f">> @{tag}.args(argv=<{argv!s}>)",
+        f">> @{tag}.args(xargs=<{xargs!s}>)",
+        f">> @{tag}.args(kwargs=<{kwargs!s}>)",
+        f">> @{tag}.spec(job_name=<{ea('job_name',**kwargs,)!s}>)",
+        f">> @{tag}.spec(job_xargs=<{ea('job_xargs',**kwargs,)!s}>)",
+        f">> @{tag}.spec(job_spec=<{ea('job_spec',**kwargs,)!s}>)",
+        f">> @{tag}.spec(job_parm=<{ep(**kwargs,)!s}>)",
         f">> @{tag}.data(work=<{cfd().DATA_WORK},home=<{cfd().DATA_HOME}>)",
         f">> @{tag}.data(work=<{cfd().DATA_USER},home=<{cfd().DATA_DNET}>)",
         f">> @{tag}.arch(plat=<{pf.platform()},arch=<{pf.architecture()}>)",
