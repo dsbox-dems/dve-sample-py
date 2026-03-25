@@ -4,7 +4,6 @@ from typing import Any
 from abc import ABC, abstractmethod
 
 from dve.config.conf.db import DbConfig
-from dve.config.data import cfd
 
 import vce.config.conf as vce_conf
 import vce.config.conf.db as vce_conf_db
@@ -98,6 +97,7 @@ class AppConfigEx(AppConfig):
         pass
 
 
+# ruff: noqa: PLC0415
 class AppConfigs(object):
     @staticmethod
     def unload_all():

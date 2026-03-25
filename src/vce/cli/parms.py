@@ -72,7 +72,7 @@ class JobSpecs:
                     return spec
         raise ValueError(f"Job Info not found in Specs: id={job_id}, ns={job_ns}")
 
-    def get_auto_name(self) -> str:
+    def get_auto_name(self, name: str = "") -> str:
         job_id = en.env_get(JobParmsConsts.ENV_AUTO)
         if job_id:
             return job_id
@@ -80,7 +80,7 @@ class JobSpecs:
             return self.auto
         if self.specs:
             return self.specs[0].name.id
-        raise ValueError("Job Specs is empty")
+        raise ValueError(f"Job Specs is empty(name={name})")
 
     def get_auto_spec(self) -> JobSpec:
         job_id = self.get_auto_name()

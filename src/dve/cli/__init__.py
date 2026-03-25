@@ -2,6 +2,8 @@ import logging
 
 from vce.cli.ctl import std_main
 from dve.cli.xargs import get_main_argparser
+from dve.scripts import runner
+
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -22,8 +24,6 @@ def exec(argv, xargs, **kwargs):
         entry = "main"
 
     if entry == "main":
-        from dve.scripts import runner
-
         RC = runner.main(argv, **kwargs)
     else:
         raise ValueError(f"invalid command: {entry}!")
@@ -32,10 +32,10 @@ def exec(argv, xargs, **kwargs):
 
 @std_main(log=log, debug=True)
 def main(argv=None, **kwargs):
-    log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
+    log.info(">> ### %s.main(argv=%s)", __name__, str(argv))
     xargs = parse_args(argv, **kwargs)
     RC = exec(argv, xargs, **kwargs)
-    log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
+    log.info("<< ### %s.main => (rc=%d)", __name__, RC)
     return RC
 
 
