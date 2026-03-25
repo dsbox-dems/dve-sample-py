@@ -2566,11 +2566,1298 @@ Based on a thorough review of your `site-pkgs.org` Emacs configuration, I recomm
 
 # A:a
 
-## A:a - **TODO:(aa-title)**
+## A:a - **Emscs Configuration: `site-pkgs.org`**
 
 [^](#toc)
 
-## Appendix a
+## Emacs Configuartion Reposutory
+
+- [emacs-site](https://github.com/hute37/emacs-site)
+- [site-pkgs.org](https://github.com/hute37/emacs-site/blob/master/site-pkgs.org)
+
+## Current Configuration (ASIS)
+
+```org
+** Lang
+*** Lang/begin
+#+NAME: lang-begin
+#+begin_src emacs-lisp
+
+  ;; ;;;////////////////////////////////////////////////////////////////
+  ;; {{{  @LANG
+  ;; ;;;////////////////////////////////////////////////////////////////
+
+#+END_SRC
+*** Lang: LSP
+**** Lang: LSP.setup
+#+NAME: lang-lsp.setup
+#+begin_src emacs-lisp
+
+  ;; ---( lsp-setup )------------------------------------------------------------
+
+(defun h7/lsp-setup ()
+    (interactive)
+
+  ;;lsp server install
+
+  ;; @see
+  (message "https://emacs-lsp.github.io/lsp-mode/page/languages/")
+
+  ;; python
+  (lsp-install-server 'pyright) 
+  ;; powershell
+  (lsp-install-server 'pwsh-ls) 
+  ;; html
+  (lsp-install-server 'html-ls) 
+  ;; css
+  (lsp-install-server 'css-ls) 
+  ;; json
+  (lsp-install-server 'json-ls)
+  ;; graphql
+  (lsp-install-server 'graphql-ls) 
+  ;; dockerfile
+  (lsp-install-server 'dockerfile-ls) 
+  ;; bash
+  (lsp-install-server 'bash-ls) 
+  ;; ansible
+  (lsp-install-server 'ansible-ls) 
+  ;; yaml
+  (lsp-install-server 'yamlls) 
+
+  
+  ;; prolog
+  (message "swipl -g 'pack_install(lsp_server).")
+  )
+
+
+#+END_SRC
+**** Lang: LSP.mode
+#+NAME: lang-lsp.mode
+#+begin_src emacs-lisp
+
+  ;; ---( flycheck )------------------------------------------------------------
+
+  (use-package flycheck
+    :ensure t
+    :init (global-flycheck-mode)
+    )
+
+  ;; ---( LSP mode )------------------------------------------------------------
+
+  (use-package lsp-mode
+    :ensure t
+    :init
+    (setq lsp-keymap-prefix "C-l")
+    :hook (
+           (python-mode . lsp-deferred)
+           )
+    :commands (lsp lsp-deferred)
+    :config
+    (dolist (dir '(
+                   "[/\\\\]\\.cache"
+                   "[/\\\\]\\.mypy_cache"
+                   "[/\\\\]\\.pytest_cache"
+                   "[/\\\\]\\.Rproj.user"
+                   "[/\\\\]venv$"
+                   "[/\\\\]build$"
+                   "[/\\\\]dist$"
+                   "[/\\\\]docker$"
+                   "[/\\\\]notes$"
+                   "[/\\\\]data$"
+                   "[/\\\\]home$"
+                   "[/\\\\]logs$"
+                   "[/\\\\]renv$"
+                   "[/\\\\]temp$"
+                   "[/\\\\]_targets"
+                   ))
+      (push dir lsp-file-watch-ignored-directories))
+    (lsp-enable-which-key-integration t)
+    :custom
+    (lsp-enable-snippet nil)
+    )
+
+  (use-package lsp-ui
+    :ensure t
+    :after lsp
+    :hook (lsp-mode . lsp-ui-mode)
+    :bind (:map lsp-ui-mode-map
+                ("C-c i" . lsp-ui-imenu))
+    :custom
+    (lsp-ui-doc-position 'bottom)
+    (lsp-ui-doc-enable t)
+    (lsp-ui-sideline-enable t)
+    (lsp-ui-imenu-enable t)
+    (lsp-ui-flycheck-enable t)
+    (lsp-ui-doc-delay 2)
+    )
+
+
+  ;; if you are helm user
+  ;;(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+  ;; if you are ivy user
+  ;;(use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+
+  (use-package consult-lsp
+    :ensure t
+    :defer t
+    :after lsp
+    :commands (consult-lsp-diagnostics consult-lsp-symbols consult-lsp-file-symbols)
+    )
+
+  ;; (use-package company-lsp
+  ;;   :ensure t
+  ;;   :defer t
+  ;;   :after lsp
+  ;;   :commands company-lsp
+  ;;   )
+
+
+  (use-package lsp-treemacs
+    :ensure t
+    :defer t
+    :after lsp
+    :commands lsp-treemacs-errors-list)
+
+
+  ;; ---( LSP examples )------------------------------------------------------------
+
+  ;; (use-package company-c-headers
+  ;;   :ensure t
+  ;;   :config
+  ;;   (push 'company-c-headers company-backends)
+  ;;   (add-to-list 'company-c-headers-path-system "/usr/include/c++/7/")
+  ;;   )
+
+  ;; (use-package lsp-mode
+  ;;   :ensure t
+  ;;   :init
+  ;;   (setq lsp-keymap-prefix "C-c l")
+  ;;   :config
+  ;;   (require 'lsp-mode)
+  ;;   (require 'company-capf)
+  ;;   (setq lsp-prefer-capf t)
+  ;;   (setq lsp-completion-provider :capf)
+  ;;   (push 'company-capf company-backends)
+  ;;   ;; Recommended settings
+  ;;   (add-hook 'lsp-mode-hook (lambda ()
+  ;;                  (setq company-minimum-prefix-length 1
+  ;;                    company-idle-delay 0.0)))
+  ;;   ;; Other niceties
+  ;;   (setq lsp-enable-semantic-highlighting t)
+  ;;   (setq lsp-enable-snippet nil)  ;; Enable arguments completion
+  ;;   (setq lsp-signature-auto-activate nil)
+  ;;   )
+
+
+
+#+END_SRC
+
+**** Lang: LSP.dap
+#+NAME: lang-lsp.mode.dap
+#+begin_src emacs-lisp
+
+    ;; ---( dap )--------------------------------------------------------------
+
+    (use-package dap-mode
+      :ensure t
+      :after lsp-mode
+      :commands dap-debug
+      :hook (
+             (python-mode . dap-mode)
+             (python-mode . dap-ui-mode)
+             (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra)))
+             )
+      :custom
+      (lsp-enable-dap-auto-configure t)  
+      ;; (dap-auto-configure-features '(sessions locals controls tooltip))
+      :config
+      ;; (dap-auto-configure-mode)
+      (require 'dap-hydra)
+      (require 'dap-python)
+      (setq dap-python-debugger 'debugpy)
+      (defun dap-python--pyenv-executable-find (command)
+        (with-venv (executable-find "python")))
+
+      (dap-register-debug-template
+       "Poetry :: Run 'main'"
+       (list :type "poetry"
+             :args "run main"
+             :cwd nil
+             :env '(("DEBUG" . "1"))
+             :request "launch"
+             :name "App:main"))
+
+      (dap-register-debug-template
+       "Poetry :: Run 'demo'"
+       (list :type "poetry"
+             :args "run demo"
+             :cwd nil
+             :env '(("DEBUG" . "1"))
+             :request "launch"
+             :name "App:demo"))
+      
+      (dap-register-debug-template
+       "UV :: Run 'pytest'"
+       (list :type "uv"
+             :args "run pytest"
+             :cwd nil
+             :env '(("DEBUG" . "1"))
+             :request "launch"
+             :name "uv:pytest"))
+      )
+
+#+END_SRC
+
+*** Lang: Treesitter
+**** Lang: Treesitter.setup
+#+NAME: lang-treesitter.setup
+#+begin_src emacs-lisp
+
+;; ---( treesitter-setup )------------------------------------------------------------
+
+(defun h7/treesitter-setup ()
+
+  (setq treesit-language-source-alist
+        '((ada "https://github.com/briot/tree-sitter-ada")
+          (bash "https://github.com/tree-sitter/tree-sitter-bash")
+          (cmake "https://github.com/uyha/tree-sitter-cmake")
+          (css "https://github.com/tree-sitter/tree-sitter-css")
+          (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+          (go "https://github.com/tree-sitter/tree-sitter-go")
+          (html "https://github.com/tree-sitter/tree-sitter-html")
+          (javascript "https://github.com/tree-sitter/tree-sitter-javascript"
+                      "master" "src")
+          (json "https://github.com/tree-sitter/tree-sitter-json")
+          (make "https://github.com/alemuller/tree-sitter-make")
+          (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+          (python "https://github.com/tree-sitter/tree-sitter-python")
+          (toml "https://github.com/tree-sitter/tree-sitter-toml")
+          (tsx "https://github.com/tree-sitter/tree-sitter-typescript"
+               "master" "tsx/src")
+          (typescript "https://github.com/tree-sitter/tree-sitter-typescript"
+                      "master" "typescript/src")
+          (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+
+  ;; (mapc #'treesit-install-language-grammar
+  ;;      (mapcar #'car treesit-language-source-alist))
+
+  (setq major-mode-remap-alist
+        '( ;;      (ada-mode . ada-ts-mode)
+          ;;      (yaml-mode . yaml-ts-mode)
+          (toml-mode . toml-ts-mode)
+          ;;      (bash-mode . bash-ts-mode)
+          ;;      (sh-mode . bash-ts-mode)
+          ;;      (js2-mode . js-ts-mode)
+          ;;      (typescript-mode . typescript-ts-mode)
+          ;;      (conf-colon-mode . json-ts-mode)
+          ;;      (json-mode . json-ts-mode)
+          ;;      (css-mode . css-ts-mode)
+          ;;      (python-mode . python-ts-mode)
+          ))
+  )
+
+#+END_SRC
+
+
+*** Lang: R
+**** Lang: R/ess
+#+NAME: lang-r.ess
+#+begin_src emacs-lisp
+
+  ;; ---( R )--------------------------------------------------------------
+
+  (use-package ess
+;;   :if (version<= "25.1" emacs-version)
+;;  :defer t
+    :ensure t
+
+    ;;:load-path "site-lisp/ess/lisp/"
+    ;;:config (ess-toggle-underscore nil)
+    :init
+    (add-hook 'ess-mode-hook
+              (lambda ()
+
+                (ess-set-style 'RStudio)
+
+                ;; Replace \C-c with \M-c for CUA and ctrl key swap
+
+                ;; ;; By popular demand:
+                ;;(define-key map "\C-m"             'ess-newline-and-indent); = [RETURN]
+                ;;(define-key map [remap yank]       'ess-yank)
+
+                (define-key ess-mode-map (kbd "M-c M-c")      'ess-eval-region-and-go)
+
+                (define-key ess-mode-map (kbd "M-c C-r")      'ess-eval-region)
+                (define-key ess-mode-map (kbd "M-c M-r")      'ess-eval-region-and-go)
+                (define-key ess-mode-map (kbd "M-c C-b")      'ess-eval-buffer)
+                (define-key ess-mode-map (kbd "M-c M-b")      'ess-eval-buffer-and-go)
+                (define-key ess-mode-map (kbd "M-c C-<up>")   'ess-eval-buffer-from-beg-to-here)
+                (define-key ess-mode-map (kbd "M-c C-<down>") 'ess-eval-buffer-from-here-to-end)
+                (define-key ess-mode-map (kbd "M-c C-f")      'ess-eval-function)
+                (define-key ess-mode-map (kbd "M-c M-f")      'ess-eval-function-and-go)
+                (define-key ess-mode-map (kbd "M-c C-c")      'ess-eval-region-or-function-or-paragraph-and-step)
+                (define-key ess-mode-map (kbd "M-c C-p")      'ess-eval-paragraph-and-step)
+                (define-key ess-mode-map (kbd "M-c M-p")      'ess-eval-paragraph-and-go)
+                (define-key ess-mode-map (kbd "M-c M-x")      'ess-eval-region-or-function-or-paragraph)
+                (define-key ess-mode-map (kbd "M-c M-n")      'ess-eval-line-and-step)
+                (define-key ess-mode-map (kbd "M-c M-j")      'ess-eval-line)
+                (define-key ess-mode-map [(control return)]   'ess-eval-region-or-line-and-step)
+                (define-key ess-mode-map (kbd "M-c M-j")      'ess-eval-line-and-go)
+                ;; the next three can only work in S/R - mode {FIXME}
+                (define-key ess-mode-map (kbd "M-c M-a")      'ess-goto-beginning-of-function-or-para)
+                (define-key ess-mode-map (kbd "M-c M-e")      'ess-goto-end-of-function-or-para)
+                (define-key ess-mode-map "\C-xnd"             'ess-narrow-to-defun-or-para)
+                (define-key ess-mode-map "\C-xnf"             'ess-narrow-to-defun-or-para)
+                (define-key ess-mode-map (kbd "M-c M-y")      'ess-switch-to-ESS-deprecated)
+                (define-key ess-mode-map (kbd "M-c M-z")      'ess-switch-to-inferior-or-script-buffer)
+                (define-key ess-mode-map (kbd "M-c C-z")      'ess-switch-to-inferior-or-script-buffer)
+                (define-key ess-mode-map (kbd "C-c C-z")      'ess-switch-to-inferior-or-script-buffer)
+                (define-key ess-mode-map (kbd "C-c M-l")      'ess-load-file)
+                (define-key ess-mode-map (kbd "M-c M-l")      'ess-load-file); alias, as in 'iESS' where C-c C-l is comint-list-*
+                (define-key ess-mode-map (kbd "M-c M-v")      'ess-display-help-on-object)
+                ;;(define-key ess-mode-map "\C-c5\C-d"'ess-dump-object-into-edit-buffer-other-frame)
+                (define-key ess-mode-map (kbd "M-c M-s")      'ess-switch-process) ; use a
+
+                ;; different process for the buffer.
+                ;; (define-key map "\C-c\C-t"        'ess-execute-in-tb)
+                ;;(define-key ess-mode-map (kbd "M-c \t")     'ess-complete-object-name-deprecated)
+                ;; (define-key ess-mode-map "\C-c\t"        'comint-dynamic-complete-filename)
+
+                (unless (and (featurep 'emacs) (>= emacs-major-version 24))
+                  (define-key ess-mode-map (kbd "M-c <tab>")  'comint-dynamic-complete))
+                (define-key ess-mode-map (kbd "M-c .")        'ess-list-object-completions)
+
+                ;; wrong here (define-key ess-mode-map "\C-c\C-k" 'ess-request-a-process)
+                (define-key ess-mode-map (kbd "M-c M-k")      'ess-force-buffer-current)
+                (define-key ess-mode-map (kbd "M-c `")        'ess-show-traceback)
+                (define-key ess-mode-map (kbd "M-c \\")       'ess-show-call-stack)
+
+                ;;(define-key ess-mode-map (kbd "M-c .")      (lambda () (interactive) (message "ess-set-style moved to C-c C-e C-s. Sorry for the inconvenience")))
+
+                ;;(define-key ess-mode-map "{"                'ess-electric-brace)
+                ;;(define-key ess-mode-map "}"                'ess-electric-brace)
+
+                (define-key ess-mode-map (kbd "M-c M-q")      'ess-indent-exp)
+                (define-key ess-mode-map (kbd "<M-S-right>")  'ess-mark-function-or-para)
+                (if (featurep 'xemacs) ;; work around Xemacs bug (\C-\M-h redefines M-BS):
+                    (define-key ess-mode-map [(meta backspace)] 'backward-kill-word))
+                ;;(define-key ess-mode-map [delete]           'backward-delete-char-untabify)
+
+                ;;(define-key ess-mode-map "\t"               'ess-indent-or-complete)
+                (define-key ess-mode-map (kbd "M-c C-q")      'ess-quit)
+                (define-key ess-mode-map (kbd "M-c M-r")      'ess-use-this-dir)
+
+                ;; smart operators; most likely will go in the future into a separate local map
+                ;;(define-key map ","          'ess-smart-comma)
+
+                (define-key ess-mode-map (kbd "M-c M-d")       'ess-doc-map)
+                (define-key ess-mode-map (kbd "M-c M-e")       'ess-extra-map)
+                (define-key ess-mode-map (kbd "M-c M-t")       'ess-dev-map)
+                (define-key ess-mode-map (kbd "M-c C-d")       'ess-doc-map)
+                (define-key ess-mode-map (kbd "M-c C-e")       'ess-extra-map)
+                (define-key ess-mode-map (kbd "M-c C-t")       'ess-dev-map)
+
+
+  ;;            (ess-toggle-underscore nil))
+                 ;; (define-key ess-mode-map (kbd "M-c M-c") 
+                 ;;   'ess-eval-region-and-go)
+              ))
+    (add-hook 'inferior-ess-mode-hook
+              #'(lambda nil
+                 (define-key inferior-ess-mode-map [\C-up]
+                   'comint-previous-matching-input-from-input)
+                 (define-key inferior-ess-mode-map [\C-down]
+                   'comint-next-matching-input-from-input)
+                 (define-key inferior-ess-mode-map [\C-x \t]
+                   'comint-dynamic-complete-filename)
+                 )
+              )
+    :commands R)
+
+  (use-package ess-R-data-view
+    :defer t)
+
+  (use-package ess-R-object-popup
+    :defer t)
+
+  (use-package ess-R-data-smart-equals
+    :disabled t)
+
+  (use-package ess-R-data-smart-underscore
+    :disabled t)
+
+
+#+END_SRC
+
+**** Lang: R/polymode
+#+NAME: lang-r.ess.polymode
+#+begin_src emacs-lisp
+
+  ;; ---( polymode )--------------------------------------------------------------
+
+
+(use-package polymode
+  :ensure t
+  :commands (poly-markdown+r-mode)
+  :mode (("\\.rmd\\'" . poly-markdown+r-mode)
+	 ("\\.Rmd\\'" . poly-markdown+r-mode))
+
+  :init
+  (autoload 'r-mode "ess-site.el" "Major mode for editing R source." t)
+)
+
+
+(use-package poly-markdown
+  :ensure t
+  :mode (
+	 ("\\.md" . poly-markdown-mode)
+  )
+)
+
+(use-package poly-R
+  :ensure t
+)
+
+
+#+END_SRC
+
+*** Lang: Python
+**** Lang: Python/mode
+#+NAME: lang-python.mode
+#+begin_src emacs-lisp
+
+
+  ;; ---( python )--------------------------------------------------------------
+
+  ;; @see: https://gitlab.com/nathanfurnal/dotemacs/-/snippets/2060535?utm_source=pocket_mylist
+  ;; @see: https://github.com/jidicula/dotfiles/blob/main/init.el?utm_source=pocket_mylist
+
+
+  ;; Built-in Python utilities
+  (use-package python
+    :ensure t
+    :config
+    ;; Remove guess indent python message
+    (setq python-indent-guess-indent-offset-verbose nil)
+    ;; Use IPython when available or fall back to regular Python 
+    (cond
+     ((executable-find "ipython")
+      (progn
+        (setq python-shell-buffer-name "IPython")
+        (setq python-shell-interpreter "ipython")
+        (setq python-shell-interpreter-args "-i --simple-prompt")))
+     ((executable-find "python3")
+      (setq python-shell-interpreter "python3"))
+     ((executable-find "python2")
+      (setq python-shell-interpreter "python2"))
+     (t
+      (setq python-shell-interpreter "python"))))
+
+
+  ;; Hide the modeline for inferior python processes
+  (use-package inferior-python-mode
+    :ensure nil
+    :hook (inferior-python-mode . hide-mode-line-mode))
+
+  ;; Required to hide the modeline 
+  (use-package hide-mode-line
+    :ensure t
+    :defer t)
+
+
+
+  ;; (use-package python-mode
+  ;;   :mode ("\\.py\\'" . python-mode)
+  ;;   :interpreter ("python" . python-mode)
+  ;;   :config
+  ;;   (defvar python-mode-initialized nil)
+  ;;   (defun my-python-mode-hook ()
+  ;;     (unless python-mode-initialized
+  ;;       (setq python-mode-initialized t)
+  ;;       (info-lookup-add-help
+  ;;        :mode 'python-mode
+  ;;        :regexp "[a-zA-Z_0-9.]+"
+  ;;        :doc-spec
+  ;;        '(("(python)Python Module Index" )
+  ;;          ("(python)Index"
+  ;;           (lambda
+  ;;             (item)
+  ;;             (cond
+  ;;              ((string-match
+  ;;                "\\([A-Za-z0-9_]+\\)() (in module \\([A-Za-z0-9_.]+\\))" item)
+  ;;               (format "%s.%s" (match-string 2 item)
+  ;;                       (match-string 1 item)))))))))
+  ;;     (setq indicate-empty-lines t)
+  ;;     (set (make-local-variable 'parens-require-spaces) nil)
+  ;;     (setq indent-tabs-mode nil)
+  ;;     (bind-key "C-c C-z" 'python-shell python-mode-map)
+  ;;     (unbind-key "C-c c" python-mode-map))
+  ;;   (add-hook 'python-mode-hook 'my-python-mode-hook))
+
+
+
+
+#+END_SRC
+**** Lang: Python/env
+#+NAME: lang-python.env
+#+begin_src emacs-lisp
+
+  ;; ---( virtual env )------------------------------------------------------------
+
+  (use-package with-venv
+    :ensure t)
+
+  ;; ---( pyvenv )--------------------------------------------------------------
+
+  ;; Required to easily switch virtual envs 
+  ;; via the menu bar or with `pyvenv-workon` 
+  ;; Setting the `WORKON_HOME` environment variable points 
+  ;; at where the envs are located. I use (miniconda ^H) poetry. 
+  (use-package pyvenv
+    :ensure t
+    :defer t
+    :config
+    ;; Setting work on to easily switch between environments
+    ;;(setenv "WORKON_HOME" (expand-file-name "~/miniconda3/envs/"))
+    (setenv "WORKON_HOME" (expand-file-name "~/.cache/pypoetry/virtualenvs"))
+    ;; Display virtual envs in the menu bar
+    (setq pyvenv-menu t)
+    ;; Restart the python process when switching environments
+    (add-hook 'pyvenv-post-activate-hooks (lambda ()
+                                            (pyvenv-restart-python)))
+    :hook (python-mode . pyvenv-mode))
+
+
+  ;; ---( poetry )-------------------------------------------------------------
+
+  ;; (use-package poetry
+  ;;   :ensure t
+  ;;   ;; :init
+  ;;   ;; imperfect tracking strategy causes lags in builds
+  ;;   ;; (setq poetry-tracking-strategy 'switch-buffer)
+  ;;   :hook
+  ;;   ;; activate poetry-tracking-mode when python-mode is active
+  ;;   (python-mode . poetry-tracking-mode)
+  ;;   )
+
+  (use-package poetry
+    :ensure t
+    :config
+    (add-hook 'poetry-tracking-mode-hook (lambda () (remove-hook 'post-command-hook 'poetry-track-virtualenv)))
+    (add-hook 'python-mode-hook 'poetry-track-virtualenv)
+    (add-hook 'projectile-after-switch-project-hook 'poetry-track-virtualenv))
+
+
+  ;; ---( uv )-------------------------------------------------------------
+
+(use-package uv-mode
+    :ensure t
+    :hook (python-mode . uv-mode-auto-activate-hook))
+
+  ;;t ---( pipenv )-------------------------------------------------------------
+  ;;
+  ;; (use-package pipenv
+  ;;   :unless (version< emacs-version "25.1")
+  ;;   :defer t
+  ;;   ;; :ensure t
+  ;;   :hook (python-mode . pipenv-mode)
+  ;;   :init
+  ;;   (setq
+  ;;    pipenv-projectile-after-switch-function
+  ;;    #'pipenv-projectile-after-switch-extended))
+
+
+#+END_SRC
+**** Lang: Python/lsp
+#+NAME: lang-python.lsp
+#+begin_src emacs-lisp
+
+  ;; ---( lsp-pyright )--------------------------------------------------------------
+
+  ;; Language server for Python 
+  ;; Read the docs for the different variables set in the config.
+
+  (use-package lsp-pyright
+    :ensure t
+    :defer t
+    :custom
+    (lsp-pyright-langserver-command "pyright") ;; or basedpyright
+    (lsp-pyright-disable-language-service nil)
+    (lsp-pyright-disable-organize-imports nil)
+    (lsp-pyright-auto-import-completions t)
+    (lsp-pyright-use-library-code-for-types t)
+    ;;(lsp-pyright-venv-path "~/.cache/pypoetry/virtualenvs")
+    :config
+    ;;(setq lsp-clients-python-library-directories '("/usr/" "~/miniconda3/pkgs"))
+    ;;(setq lsp-clients-python-library-directories '("/usr/" "~/miniconda3/pkgs"))
+    ;; (setq lsp-pyright-disable-language-service nil
+    ;;       lsp-pyright-disable-organize-imports nil
+    ;;       lsp-pyright-auto-import-completions t
+    ;;       lsp-pyright-use-library-code-for-types t
+    ;;       ;;lsp-pyright-venv-path "~/miniconda3/envs")
+    ;;       lsp-pyright-venv-path "~/.cache/pypoetry/virtualenvs")
+    :hook ((python-mode . (lambda () 
+                            (require 'lsp-pyright) (lsp-deferred))))
+    )
+
+#+END_SRC
+**** Lang: Python/tools
+#+NAME: lang-python.tools
+#+begin_src emacs-lisp
+
+
+  ;; ---( pytest )------------------------------------------------------------
+
+
+(use-package python-pytest
+  :ensure t
+ :custom
+ (python-pytest-confirm t))
+
+  ;; ---( yapfify )-------------------------------------------------------------
+
+  ;; Format the python buffer following YAPF rules
+  ;; There's also blacken if you like it better.
+  (use-package yapfify
+    :ensure t
+    :defer t
+    :hook (python-mode . yapf-mode))
+
+
+  ;; ---( python-black )--------------------------------------------------------------
+
+  (use-package python-black
+    ;;:delight python-black-on-save-mode "⚫️"
+    :ensure t
+    :hook
+    (python-mode . python-black-on-save-mode)
+    :init
+    (put 'python-black-command 'safe-local-variable #'stringp)
+    (put 'python-black-extra-args 'safe-local-variable #'stringp)
+    (put 'python-black-on-save-mode 'safe-local-variable #'booleanp)
+    )
+
+  ;; ---( pyisort )-------------------------------------------------------------
+
+  (use-package py-isort
+    :ensure t
+    :after python
+    :hook ((python-mode . pyvenv-mode)
+           (before-save . py-isort-before-save)))
+
+
+#+END_SRC
+**** Lang: Python/elpy
+#+NAME: lang-python.elpy
+#+begin_src emacs-lisp
+
+
+  ;; ---( python: elpy )--------------------------------------------------------------
+
+  (use-package elpy
+    :disabled t
+    :preface
+
+    ;; @see: https://elpy.readthedocs.org/en/latest/
+    ;; @see: https://github.com/jorgenschaefer/elpy
+    ;; @see: https://youtu.be/0kuCeS-mfyc
+
+    (defvar elpy-mode-map
+      (let ((map (make-sparse-keymap)))
+        ;; Alphabetical order to make it easier to find free C-c C-X
+        ;; bindings in the future. Heh.
+
+        ;; (define-key map (kbd "<backspace>") 'python-indent-dedent-line-backspace)
+        ;; (define-key map (kbd "<backtab>")   'python-indent-dedent-line)
+
+        ;; (define-key map (kbd "C-M-x")   'python-shell-send-defun)
+
+        (define-key map (kbd "M-c <")   'python-indent-shift-left)
+        (define-key map (kbd "M-c >")   'python-indent-shift-right)
+
+        (define-key map (kbd "M-c RET") 'elpy-importmagic-add-import)
+        (define-key map (kbd "M-c M-b") 'elpy-nav-expand-to-indentation)
+        (define-key map (kbd "M-c M-c") 'elpy-shell-send-region-or-buffer)
+        (define-key map (kbd "M-c M-d") 'elpy-doc)
+        (define-key map (kbd "M-c M-e") 'elpy-multiedit-python-symbol-at-point)
+        (define-key map (kbd "M-c M-f") 'elpy-find-file)
+        (define-key map (kbd "M-c M-n") 'elpy-flymake-next-error)
+        (define-key map (kbd "M-c M-o") 'elpy-occur-definitions)
+        (define-key map (kbd "M-c M-p") 'elpy-flymake-previous-error)
+        (define-key map (kbd "M-c M-s") 'elpy-rgrep-symbol)
+        (define-key map (kbd "M-c M-t") 'elpy-test)
+        (define-key map (kbd "M-c M-v") 'elpy-check)
+        (define-key map (kbd "M-c M-z") 'elpy-shell-switch-to-shell)
+        (define-key map (kbd "M-c M-r i") 'elpy-importmagic-fixup)
+        (define-key map (kbd "M-c M-r p") 'elpy-autopep8-fix-code)
+        (define-key map (kbd "M-c M-r r") 'elpy-refactor)
+
+        ;; (define-key map (kbd "<S-return>") 'elpy-open-and-indent-line-below)
+        ;; (define-key map (kbd "<C-S-return>") 'elpy-open-and-indent-line-above)
+
+        ;; (define-key map (kbd "<C-return>") 'elpy-shell-send-current-statement)
+
+        ;; (define-key map (kbd "<C-down>") 'elpy-nav-forward-block)
+        ;; (define-key map (kbd "<C-up>") 'elpy-nav-backward-block)
+        ;; (define-key map (kbd "<C-left>") 'elpy-nav-backward-indent)
+        ;; (define-key map (kbd "<C-right>") 'elpy-nav-forward-indent)
+
+        ;; (define-key map (kbd "<M-down>") 'elpy-nav-move-line-or-region-down)
+        ;; (define-key map (kbd "<M-up>") 'elpy-nav-move-line-or-region-up)
+        ;; (define-key map (kbd "<M-left>") 'elpy-nav-indent-shift-left)
+        ;; (define-key map (kbd "<M-right>") 'elpy-nav-indent-shift-right)
+
+        ;; (define-key map (kbd "M-.")     'elpy-goto-definition)
+        ;; (define-key map (kbd "M-TAB")   'elpy-company-backend)
+
+        (define-key map (kbd "<C-S-return>") 'elpy-open-and-indent-line-below)
+        ;;(define-key map (kbd "<C-S-return>") 'elpy-open-and-indent-line-above)
+
+        ;;(define-key map (kbd "<C-return>") 'elpy-shell-send-current-statement)
+
+        (define-key map (kbd "<M-right>") 'elpy-nav-forward-block)
+        (define-key map (kbd "<M-left>") 'elpy-nav-backward-block)
+        ;; (define-key map (kbd "<C-S-left>") 'elpy-nav-backward-indent)
+        ;; (define-key map (kbd "<C-S-right>") 'elpy-nav-forward-indent)
+
+        ;; (define-key map (kbd "<M-S-down>") 'elpy-nav-move-line-or-region-down)
+        ;; (define-key map (kbd "<M-S-up>") 'elpy-nav-move-line-or-region-up)
+        (define-key map (kbd "<M-S-left>") 'elpy-nav-indent-shift-left)
+        (define-key map (kbd "<M-S-right>") 'elpy-nav-indent-shift-right)
+
+        (define-key map [(meta prior)]    'elpy-goto-definition)
+        (define-key map [(meta next)]     'pop-tag-mark)
+
+        (define-key map [(control menu)]   'elpy-company-backend)
+
+        map)
+      "Key map for the Emacs Lisp Python Environment.")
+    :config
+    (elpy-enable)
+    (setq python-shell-interpreter "jupyter"
+          python-shell-interpreter-args "console --simple-prompt")
+
+    ;; (elpy-use-ipython "ipython3") 
+    (defalias 'workon 'pyvenv-workon))
+
+  (setenv "PYTHONIOENCODING" "utf-8")
+  (add-to-list 'process-coding-system-alist '("python" . (utf-8 . utf-8)))
+  (add-to-list 'process-coding-system-alist '("elpy" . (utf-8 . utf-8)))
+  (add-to-list 'process-coding-system-alist '("flake8" . (utf-8 . utf-8)))
+
+#+END_SRC
+**** Lang: Python/ein
+#+NAME: lang-python.ein
+#+begin_src emacs-lisp
+
+  ;; ---( python: ein )--------------------------------------------------------------
+
+
+  (use-package ein
+    :unless (version< emacs-version "25.1")
+    ;; :defer t
+    ;;:ensure t
+    :disabled t
+    :init
+    (progn
+      (with-eval-after-load 'ein-notebooklist
+        (define-key ein:notebooklist-mode-map (kbd "<S-return>") 'ein:worksheet-execute-cell-and-goto-next-km)
+        (define-key ein:notebooklist-mode-map (kbd "<C-return>") 'ein:worksheet-execute-cell)
+        ))
+    :config
+    (defalias 'eip 'ein:notebooklist-open))
+
+
+
+  ;; (use-package ein
+  ;;   :unless (version< emacs-version "25.1")
+  ;;   :ensure t
+  ;;   :defer t
+  ;;   :commands ein:notebooklist-open
+  ;;   :init
+  ;;   ;; (progn
+  ;;   ;;   (with-eval-after-load 'ein-notebooklist
+  ;;   ;;     ;; removing keybindings
+  ;;   ;;     (define-key ein:notebook-mode-map (kbd "M-p") nil)
+  ;;   ;;     (define-key ein:notebook-mode-map (kbd "<M-up>") nil)
+  ;;   ;;     (define-key ein:notebook-mode-map (kbd "<M-down>") nil)
+  ;;   ;;     ;; changing keybinding
+  ;;   ;;     (define-key ein:notebook-mode-map (kbd "C-s") 'ein:notebook-save-notebook-command)
+  ;;   ;;     (define-key ein:notebook-mode-map (kbd "<M-S-up>") 'ein:worksheet-move-cell-up)
+  ;;   ;;     (define-key ein:notebook-mode-map (kbd "<M-S-down>") 'ein:worksheet-move-cell-down)))
+  ;;   :config
+  ;;   (defalias 'einp 'ein:notebooklist-open)
+  ;;   (defalias 'eins 'ein:jupyter-server-start)
+  ;;   )
+
+  ;; ---( python: 0mq )--------------------------------------------------------------
+
+  ;; @see: https://github.com/nnicandro/emacs-zmq
+  ;; @see: https://github.com/nnicandro/emacs-zmq/issues/48
+  ;; dnf install zeromq-devel
+  ;; apt install libczmq-dev
+
+
+  ;; python and jupyter
+  ;;; custom zmq build - see https://github.com/alexmurray/emacs-snap/issues/66
+  ;;; @see: https://github.com/martibosch/snakemacs/blob/main/main.el#L346
+
+  (cond ((getenv "EMACS_SNAP_DIR")
+
+         (let* ((emacs-snap-dir (file-name-as-directory (getenv "EMACS_SNAP_DIR")))
+                (process-environment (append process-environment `(,(concat "CC=" emacs-snap-dir "usr/bin/gcc-10" )
+                                                                   ,(concat "CXX=" emacs-snap-dir "usr/bin/g++-10")
+                                                                   ,(concat "CFLAGS=--sysroot=" emacs-snap-dir)
+							           ,(concat "CPPFLAGS=--sysroot=" emacs-snap-dir)
+							           ,(concat "LDFLAGS=--sysroot=" emacs-snap-dir " -L" emacs-snap-dir "/usr/lib")))))
+           (use-package zmq
+            :if (h7/use-py-jupyter)
+            :defer t
+            :ensure t)
+           ))
+        (t 
+          (use-package zmq
+            :if (h7/use-py-jupyter)
+            :defer t
+            :ensure t)
+          ))
+
+
+
+  ;; (use-package zmq
+  ;;   :if (h7/use-py-jupyter)
+  ;;   :defer t
+  ;;   :ensure t
+  ;;   :preface
+
+;;     (package-install "zmq")
+;;     (vterm)
+
+;; cd ~/.emacs.d/elpa
+
+;; ls -lda zmq*
+;; cd      zmq*
+
+
+;; ES=${EMACS_SNAP_DIR:-/snap/emacs/current}
+;; export CC=${ES}/usr/bin/gcc-10
+;; export CXX=${ES}/usr/bin/g++-10
+;; export CFLAGS=--sysroot=${ES}
+;; export LDFLAGS="--sysroot=${ES} -L${ES}/usr/lib"
+
+;; printenv | grep -i -e ^cc= -e ^cxx= -e ^cflags= -e ^ldflags=
+;; ls -l $CC $CXX
+
+;; make all
+
+;;     (package-install "jupyter")
+    
+    ;; :init
+    ;; :config
+    ;; )
+
+  ;; (use-package zmq
+  ;;   :ensure t
+  ;;   :preface
+  ;;   (when (getenv "EMACS_SNAP_DIR")
+  ;;     (unless (directory-files-recursively (concat user-emacs-directory "") "zmq-.*\\.so$" nil)
+  ;;              (progn
+  ;;                ;; @see: https://github.com/nnicandro/emacs-zmq/issues/48
+  ;;                (let* ((emacs-snap-dir (file-name-as-directory (getenv "EMACS_SNAP_DIR")))
+  ;;                       (process-environment
+  ;;                        (append `(,(concat "CC=" emacs-snap-dir "usr/bin/gcc-10" )
+  ;;                                  ,(concat "CXX=" emacs-snap-dir "usr/bin/g++-10")
+  ;;                                  ,(concat "CFLAGS=--sysroot=" emacs-snap-dir " -B" emacs-snap-dir "usr/lib/gcc")
+  ;;                                  ,(concat "CPATH=" (file-name-directory (car (file-expand-wildcards (concat emacs-snap-dir "usr/include/*/bits")))))
+  ;;       			   ,(concat "CPPFLAGS=--sysroot=" emacs-snap-dir)
+  ;;       			   ,(concat "LDFLAGS=--sysroot=" emacs-snap-dir " -L" emacs-snap-dir "usr/lib")
+  ;;                                  ,(concat "PKG_CONFIG_PATH=" (car (file-expand-wildcards (concat emacs-snap-dir "usr/lib/*/pkgconfig")))))
+  ;;                                process-environment)))
+  ;;                  ;; @see: https://github.com/nnicandro/emacs-zmq/issues/48#issuecomment-2208834904
+  ;;                  (when (fboundp 'native-compile-async)
+  ;;                    (progn
+  ;;                      (setq native-comp-deferred-compilation t
+  ;;                            native-comp-deferred-compilation-deny-list
+  ;;                            '("/mu4e.*\\.el$" "jupyter" "zmq" "eaf" "eaf-mode" "emacs-zmq"))))
+  ;;               ;; (custom-set-variables
+  ;;               ;;  '(native-comp-async-report-warnings-errors 'silent))
+  ;;               ;; ;; (let ((snap (file-name-as-directory "/snap/emacs/current")))
+  ;;               ;; ;; 	(setq-default native-comp-driver-options (list (concat "--sysroot=" snap)
+  ;;               ;; ;;                                                  (concat "-B" snap "usr/lib/gcc/"))))
+                   
+  ;;                  (load-library "zmq")
+                   
+  ;;                  ))))
+  ;;   :init
+  ;;   :config
+  ;;   )
+
+
+  ;; ---( python: jupyter )--------------------------------------------------------------
+
+  ;; @see: https://sqrtminusone.xyz/posts/2021-05-01-org-python/
+
+  (use-package jupyter
+    :if (h7/use-py-jupyter)
+    :defer t
+    :ensure t
+    :init
+    :config
+    )
+
+
+  ;; ---( python: code cells )--------------------------------------------------------------
+
+  ;; @see: https://github.com/martibosch/snakemacs/blob/main/main.el#L444
+
+  (use-package code-cells
+    :ensure t
+    :after org
+    :config
+    (setq code-cells-convert-ipynb-style '(("pandoc" "--to" "ipynb" "--from" "org")
+     					 ("pandoc" "--to" "org" "--from" "ipynb")
+     					 org-mode))
+    ;; see https://github.com/astoff/code-cells.el/issues/22
+    ;; (defun gm/jupyter-eval-region (beg end)
+    ;;   (jupyter-eval-region nil beg end))
+    ;; (add-to-list 'code-cells-eval-region-commands '(jupyter-repl-interaction-mode . gm/jupyter-eval-region))
+    (let ((map code-cells-mode-map))
+      (define-key map (kbd "C-c <up>") 'code-cells-backward-cell)
+      (define-key map (kbd "C-c <down>") 'code-cells-forward-cell)
+      (define-key map (kbd "M-<up>") 'code-cells-move-cell-up)
+      (define-key map (kbd "M-<down>") 'code-cells-move-cell-down)
+      (define-key map (kbd "C-c C-c") 'code-cells-eval)
+      ;; Overriding other minor mode bindings requires some insistence...
+      (define-key map [remap jupyter-eval-line-or-region] 'code-cells-eval)))
+      (defun my/new-notebook (notebook-name &optional kernel)
+        "Creates an empty notebook in the current directory with an associated kernel."
+        (interactive "sEnter the notebook name: ")
+        (when (file-name-extension notebook-name)
+          (setq notebook-name (file-name-sans-extension notebook-name)))
+        (unless kernel
+          (setq kernel (jupyter-kernelspec-name (jupyter-completing-read-kernelspec))))
+        (unless (executable-find "jupytext")
+          (error "Can't find \"jupytext\""))
+        (let ((notebook-py (concat notebook-name ".py")))
+          (shell-command (concat "touch " notebook-py))
+          (shell-command (concat "jupytext --set-kernel " kernel " " notebook-py))
+          (shell-command (concat "jupytext --to notebook " notebook-py))
+          (shell-command (concat "rm " notebook-py))
+          (message (concat "Notebook successfully created at " notebook-name ".ipynb"))))
+
+
+
+#+END_SRC
+
+*** Lang: Julia
+#+NAME: lang-julia
+#+begin_src emacs-lisp
+
+  ;; ---( julia )--------------------------------------------------------------
+
+  ;; @see: https://github.com/JuliaEditorSupport/julia-emacs
+  ;; @see: https://github.com/tpapp/julia-repl
+  ;; @see: https://github.com/nnicandro/emacs-jupyter
+  ;; @see: https://julia-users-zurich.github.io/talks/talk-2018-04/emacs.html
+  ;; @see: https://github.com/cgroll/dot_emacs.d/blob/master/init.el
+
+  (use-package julia-mode
+     :ensure t
+     :defer t
+     :commands julia-mode
+     :mode ("\\.jl$" . julia-mode)
+     :init
+     (progn
+        (autoload 'julia-mode "julia-mode" nil t)
+        (setq inferior-julia-program-name "julia")
+        )
+     :config
+     (progn
+        (setq inferior-julia-program-name "julia")
+        )
+     )
+
+
+  (use-package julia-repl
+     :ensure t
+     :defer t
+     :config
+     (progn
+       (add-to-list 'julia-mode-hook 'julia-repl-mode)
+       )
+     )
+
+  ;; ;; allow julia to be loaded through call to julia-mode or
+  ;; ;; ess-inferior process
+  ;; ;; follow-ups: etags?
+  ;; (use-package julia-mode
+  ;;    :defer t
+  ;;    :commands julia-mode
+  ;;    :mode ("\\.jl$" . julia-mode)
+  ;;    :init
+  ;;    (progn
+  ;;       (autoload 'julia-mode "julia-mode" nil t)
+  ;;       (setq inferior-julia-program-name "/usr/bin/julia")
+  ;;       )
+  ;;    :config
+  ;;    (progn
+  ;;       (add-to-list 'julia-mode-hook 'cg/modify-current-syntax-table)
+  ;;       (setq inferior-julia-program-name "/usr/bin/julia")
+  ;;       (add-to-list 'julia-mode-hook 'cg/command-line-keybindings)
+  ;;       ;; (add-to-list 'inferior-ess-mode-hook 'cg/command-line-keybindings)      
+  ;;       )
+  ;;    )
+
+  ;; (use-package ess-julia.el
+  ;;    :defer t
+  ;;    :commands julia
+  ;;    :init                                ; run before actual loading
+  ;;    (progn
+  ;;       (autoload 'julia "ess-julia.el" nil t)
+  ;;       (setq inferior-julia-program-name "/usr/bin/julia")
+  ;;       )
+  ;;    :config
+  ;;    (progn
+  ;;       (require 'ess-site)
+  ;;       (setq inferior-julia-program-name "/usr/bin/julia")
+  ;;       (setq ess-tracebug-prefix "\M-c")   ; define debug-mode starting key
+  ;;       (setq ess-use-tracebug t)           ; tracebug is called for R
+  ;;                                         ; AND JULIA!!
+  ;;       (setq ess-tracebug-inject-source-p t)
+  ;;       (add-to-list 'julia-mode-hook 'cg/command-line-keybindings)
+  ;;       ;; (add-to-list 'inferior-ess-mode-hook 'cg/command-line-keybindings)            
+  ;;       )
+  ;;    )
+  ;; ;; in order to add ess-process afterward, apply julia-mode again on
+  ;; ;; open buffers - probably ess-julia.el has to be loaded again also:
+  ;; ;; M-x load-file ess-julia.el
+
+#+END_SRC
+
+
+*** Lang/end
+#+NAME: lang-end
+#+begin_src emacs-lisp
+
+  ;; }}}  .lang
+
+#+END_SRC
+
+
+** Keys
+*** keys/develop
+
+#+begin_src emacs-lisp
+
+;; ============================================
+;; ---( Function Keys )-----
+;; ============================================
+(message "SITE:K-FUNKEYS")
+
+
+;; ---( F1: Help )---------------------------------------------------------
+
+
+(global-set-key [f1] 'help )
+;; (global-set-key [(shift f1)] 'woman )
+(global-set-key [(control f1)] 'find-function )
+(global-set-key [(meta f1)]	'function-key-error)
+(global-set-key [(shift meta f1)] 'function-key-error)
+
+
+;; ---( F2: Bookmarks/Breakpoints )-------------------------------------
+
+(global-set-key [f2] 'dashboard-open)
+(global-set-key [(shift f2)] 'bookmark-set )
+
+;; (global-set-key [(control f2)]
+;;     #'(lambda () (interactive)
+;;        (if (eq hs-minor-mode nil)
+;; 	   (progn
+;; 	     (hs-minor-mode t)
+;; 	     (hs-hide-all))
+;;          (progn
+;;            (hs-toggle-hiding)
+;; 	   (hs-minor-mode nil)))))
+
+;; (global-set-key [(control f2)]
+;;     #'(lambda () (interactive)
+;;          (progn
+;;            ;;(vimish-fold-delete-all)
+;;            (vimish-fold-from-marks)
+;; 	   (vimish-fold-toggle))))
+;; ;; (global-set-key [(shift control f2)]
+;; ;;     #'(lambda () (interactive)
+;; ;;          (progn
+;; ;;            (vimish-fold-from-marks)
+;; ;;            ;; (outline-hide-sublevels 1)
+;; ;; 	   (vimish-fold-refold-all))))
+
+(global-set-key [(control f2)]
+    #'(lambda () (interactive)
+         (progn
+           (outline-hide-sublevels 1))))
+
+(global-set-key [(shift control f2)]
+    #'(lambda () (interactive)
+         (progn
+           (outline-show-all))))
+
+(global-set-key [(meta f2)] 'bookmark-bmenu-list)
+(global-set-key [(hyper f2)] 'bookmark-bmenu-list)
+(global-set-key [(shift meta f2)]
+    #'(lambda () (interactive)
+        (progn
+          (toggle-line-wrapping)
+          (linum-mode 'toggle))))
+
+
+;; ---( F3: ISearch/Find )----------------------------------------------------
+
+(global-set-key [f3] 'isearch-repeat-forward )
+(global-set-key [(shift f3)] 'isearch-repeat-backward )
+(global-set-key [(control f3)] 'isearch-iforward )
+(global-set-key [(meta f3)] 'occur )
+(global-set-key [(shift meta f3)] 'function-key-error)
+
+;; ---( F4: Fold )----------------------------------------------------
+
+(global-set-key [f4] 'vimish-fold-toggle) ;; or 'vimish-fold is on selected regzion
+(global-set-key [(shift f4)] 'hydra-fold/body)
+(global-set-key [(control f4)] 'vimish-fold-refold-all-from-marks)
+(global-set-key [(shift control f4)] 'vimish-fold-unfold-all)
+(global-set-key [(shift meta f4)] 'vimish-fold)
+;; (global-set-key [f4] 'call-last-kbd-macro)
+;; (global-set-key [(shift f4)] 'start-or-end-kbd-macro )
+;; (global-set-key [(control f4)] 'edit-last-kbd-macro )
+;; (global-set-key [(meta f4)] 'kbd-macro-query )
+;; (global-set-key [(shift meta f4)] 'edit-last-kbd-macro )
+;; ;; (global-set-key [(control f4)] 'start-kbd-macro )
+;; ;; (global-set-key [(meta f4)] 'end-kbd-macro )
+
+;; ---( F5: Search/Grep )----------------------------------------------------
+
+(global-set-key [f5] 'isearch-forward-regexp )
+(global-set-key [(shift f5)] 'isearch-backward-regexp )
+(global-set-key [(control f5)] 'find-grep-dired )
+(global-set-key [(meta f5)] 'grep  )
+(global-set-key [(shift meta f5)] 'function-key-error)
+
+;; ---( F6: Replace/Ediff )----------------------------------------------------
+
+(global-set-key [f6] 'query-replace )
+(global-set-key [(shift f6)] 'query-replace-regexp )
+(global-set-key [(control f6)] 'compare-windows )
+(global-set-key [(meta f6)] 'ediff )
+(global-set-key [(shift meta f6)] 'function-key-error)
+
+;; ---( F7: Debug/Step )----------------------------------------------------
+
+;; (global-set-key [f7] 'gud-step ) ;;@TODO: move to local mode map
+;; ;; (global-set-key [(control f7)] 'function-key-error)
+;; (global-set-key [(meta f7)] 'function-key-error)
+;; (global-set-key [(shift f7)] 'function-key-error)
+;; (global-set-key [(shift meta f7)] 'function-key-error)
+
+;; ---( F8: Debug/Next )----------------------------------------------------
+
+;; ;;(global-set-key [f8] 'function-key-error ) ;;WM expose
+;; (global-set-key [(control f8)] 'gud-next) ;;@TODO: move to local mode map
+;; (global-set-key [(meta f8)] 'function-key-error)
+;; (global-set-key [(shift f8)] 'function-key-error)
+;; (global-set-key [(shift meta f8)] 'function-key-error)
+
+;; ---( F9: compile/run )----------------------------------------------------
+
+;;(global-set-key [f9] 'function-key-error ) ;;WM expose
+;;(global-set-key [f9] 'perldb ) ;;@TODO: move to local mode map
+(global-set-key [(f9)] 'eshell-toggle )
+(global-set-key [(shift f9)] 'eshell-here )
+
+(cond
+ ((fboundp 'vterm);;
+  (progn
+    (message "vterm:bind [C-u] [C-u] C-F9")
+    (global-set-key [(control f9)] 'vterm-here )
+    ))
+ ((fboundp 'multi-term);;
+  (progn
+    (global-set-key [(control f9)] 'multi-term )
+    ))
+ (t ;; fallback to VC bindings
+  (progn
+    (global-set-key [(control f9)] 'ansi-term )
+    ))
+ )
+
+(global-set-key [(shift meta f9)] 'projectile-run-vterm )
+
+;;(global-set-key [(shift meta f9)] 'mode-compile-kill )
+;;(global-set-key [(meta f9)] 'mode-compile )
+;;(global-set-key [(meta f9)] 'recompile )
+;;(global-set-key [(shift meta f9)] 'compile)
+;;(global-set-key [(meta f9)] 'shell)
+(global-set-key [(meta f9)] 'list-processes)
+
+
+;; ---( F10: UI )----------------------------------------------------
+
+;;(global-set-key [f10] 'menu )
+;;(global-set-key [(control f10)] 'menu-bar-mode )
+(global-set-key [(control f10)] 'toggle-menubar )
+(global-set-key [(shift f10)] 'toggle-toolbar )
+(global-set-key [(meta f10)] 'speedbar )
+(global-set-key [(hyper f10)] 'treemacs )
+(global-set-key [(shift meta f10)] 'toggle-gutter)
+
+
+;; ---( F11: VCS )----------------------------------------------------
+
+(cond
+ ((fboundp 'magit-status);; Git magit
+  (progn
+    (global-set-key [f11] 'magit-status )
+    (global-set-key [(shift meta f11)] 'vc-next-action)
+    (global-set-key [(meta f11)] 'vc-diff )
+    (global-set-key [(control meta f11)] 'toggle-fullscreen )
+    ))
+ (t ;; fallback to VC bindings
+  (progn
+    (global-set-key [f11] 'vc-next-action )
+    (global-set-key [(shift f11)] 'vc-annotate )
+    (global-set-key [(control f11)] 'vc-directory )
+    (global-set-key [(meta f11)] 'vc-version-diff )
+    (global-set-key [(shift meta f11)] 'function-key-error)
+    (global-set-key [(control meta f11)] 'toggle-fullscreen )
+    ))
+ )
+
+
+
+
+
+;;(define-key speedbar-key-map [button1] 'dframe-click)
+
+
+;; ---( F12: Frames )----------------------------------------------------
+
+;; (global-set-key [f12] 'make-frame )
+(global-set-key [f12] 'h7/make-note-frame )
+(global-set-key [(control f12)] 'delete-frame )
+(global-set-key [(shift f12)] 'buffer-menu )
+(global-set-key [(meta f12)] 'toggle-frame-maximized )
+(global-set-key [(shift meta f12)] 'function-key-error)
+
+
+
+
+
+#+END_SRC
+
+
+```
+
+## Next Configuration (TOBE)
 
 TODO:(aa-text) ...
 
