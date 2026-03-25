@@ -96,6 +96,7 @@ dependencies = [
   "types-pyyaml",
   "toml",
   "types-toml",
+  "piny",
   "click",
   "pathspec",
 
