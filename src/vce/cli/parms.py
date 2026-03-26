@@ -15,7 +15,7 @@ class JobName:
     ns: str
 
 
-JobNameT = TypeVar("JobNameT", bound=JobName, covariant=True)
+JobNameT_co = TypeVar("JobNameT_co", bound=JobName, covariant=True)
 
 
 @dataclass(kw_only=True)
@@ -39,7 +39,7 @@ class JobCall:
         return script_wrapper
 
 
-JobCallT = TypeVar("JobCallT", bound=JobCall, covariant=True)
+JobCallT_co = TypeVar("JobCallT_co", bound=JobCall, covariant=True)
 
 
 @dataclass(kw_only=True)
@@ -47,7 +47,7 @@ class JobParm:
     v: dict
 
 
-JobParmT = TypeVar("JobParmT", bound=JobParm, covariant=True)
+JobParmT_co = TypeVar("JobParmT_co", bound=JobParm, covariant=True)
 
 
 @dataclass(kw_only=True)
@@ -57,7 +57,7 @@ class JobSpec:
     parm: JobParm
 
 
-JobSpecT = TypeVar("JobSpecT", bound=JobSpec, covariant=True)
+JobSpecT_co = TypeVar("JobSpecT_co", bound=JobSpec, covariant=True)
 
 
 @dataclass
@@ -88,7 +88,7 @@ class JobSpecs:
         return result
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def parm(**kwargs) -> JobParm:
@@ -117,7 +117,6 @@ def get_job_specs() -> JobSpecs:
 
 
 def set_job_specs(specs: JobSpecs) -> JobSpecs:
-    global _specs
     _specs = specs
     return _specs
 

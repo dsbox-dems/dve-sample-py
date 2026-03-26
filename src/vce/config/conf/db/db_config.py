@@ -5,6 +5,7 @@ DB_TYPE_GENERIC = "generic"
 DB_TYPE_MYSQL = "mysql"
 DB_TYPE_POSTGRESQL = "postgresql"
 
+# ruff: noqa: PLW0108
 DB_REG_CLASSES = {
     DB_TYPE_MYSQL: lambda name, config: MyDbConfig.create(name, config),
     DB_TYPE_POSTGRESQL: lambda name, config: PgDbConfig.create(name, config),

@@ -26,7 +26,7 @@ def replace_ext(path, ext):
 
 def program_name():
     program_path = sys.argv[0] if bool(sys.argv) else "_"
-    program_name, ext = os.path.splitext(os.path.basename(program_path))
+    program_name, _ = os.path.splitext(os.path.basename(program_path))
     return program_name
 
 

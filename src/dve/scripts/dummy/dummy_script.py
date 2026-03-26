@@ -220,8 +220,8 @@ df: pd.DataFrame = pd.DataFrame(columns=["null"])
 
 def prepare_data(df=None, model: Optional[Model] = model):
     assert model is not None
-    _spec = model.spec
-    _parms = model.parms
+    # spec = model.spec
+    # parms = model.parms
 
     in_data = InputData(df=df)
     return in_data
@@ -231,12 +231,13 @@ def prepare_data(df=None, model: Optional[Model] = model):
 
 
 def evaluate_model(limits, in_data=in_data, model=model, dd_conf: Optional[DataConf] = dd_conf):
+    unused(limits)
     t1 = time.time()
     assert model is not None
     assert dd_conf is not None
     assert in_data is not None
-    _spec, _parms = model.spec, model.parms
-    _df = in_data.df
+    # spec, _parms = model.spec, model.parms
+    # df = in_data.df
     results = pd.DataFrame(
         columns=[
             "id",
@@ -262,6 +263,7 @@ out_data: Optional[OutputData] = None
 
 def process_data(in_data=in_data, model=model, dd_conf: Optional[DataConf] = dd_conf) -> OutputData:
     assert dd_conf is not None
+    assert in_data is not None
     assert in_data.df is not None
     lim = len(in_data.df)
     with trc:
@@ -313,7 +315,7 @@ def run_worker():
     return RC
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def parse_args(argv, **kwargs):
@@ -323,6 +325,7 @@ def parse_args(argv, **kwargs):
 
 
 def exec(argv, xargs, **kwargs):
+    unused(argv, xargs, kwargs)
     RC = run_worker()
     return RC
 

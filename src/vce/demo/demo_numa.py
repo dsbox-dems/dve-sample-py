@@ -12,13 +12,17 @@ from vce.cli.xargs import get_numa_argparser
 
 import vce.common.util.time as tm
 import vce.common.util.file as fu
+from vce.common.util.lint import unused
 
 from vce.config.data import cfd
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# ruff: noqa: C408
+# ruff: noqa: PYI024
+
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def parm(job: str, group: str, filename: str):
@@ -26,7 +30,7 @@ def parm(job: str, group: str, filename: str):
 
 
 def to_parms(parms):
-    result = dict()
+    result = {}
     for parm in parms:
         result[parm["job"]] = parm
     if parms:
@@ -34,7 +38,7 @@ def to_parms(parms):
     return result
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 X_SCRIPT = "demo_script.py"
 
@@ -44,7 +48,7 @@ DD_PARMS = to_parms(
     ]
 )
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 X_ARCH = "H16"  # @TODO: arch getenv
 
@@ -73,19 +77,23 @@ X_MP_CONF = dict(
 
 
 def mp_conf(argv, xargs, name, sub, parm, **kwargs):
+    unused(argv, xargs, name, sub, parm, kwargs)
     return X_MP_CONF[X_ARCH]
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
-proc_num = 0
+
+class Globals:
+    proc_num = 0
+
+
 init_timer = tm.timer()
 
 
 def new_proc_id():
-    global proc_num
-    proc_num = proc_num + 1
-    return proc_num
+    Globals.proc_num = Globals.proc_num + 1
+    return Globals.proc_num
 
 
 def to_oneline(command_line):
@@ -118,14 +126,16 @@ def run_context(argv, xargs, name, sub, parm, **kwargs):
 
 def run_proc(ctx, command):
     command_line = command
-    log.info(f"* {ctx['prefix']} {command_line}")
+    msg = f"* {ctx['prefix']} {command_line}"
+    log.info(msg)
     rp = run(command_line, shell=True, check=True)
     rc = rp.returncode
     return rc
 
 
+# ruff: noqa: E501
 def run_para_imm(ctx, command):
-    mp_conf = ctx["mp_conf"]
+    # mp_conf = ctx["mp_conf"]
     command_line = f"""\
     (
     :
@@ -158,14 +168,15 @@ def run_para_imm(ctx, command):
     )
     """
     command_line = to_oneline(command_line)
-    log.info(f"* {ctx['prefix']} {command_line}")
+    msg = f"* {ctx['prefix']} {command_line}"
+    log.info(msg)
     rp = run(command_line, shell=True, check=True)
     rc = rp.returncode
     return rc
 
 
 def run_para(ctx, command):
-    mp_conf = ctx["mp_conf"]
+    # mp_conf = ctx["mp_conf"]
     script_body = f"""\
     #!/bin/sh
 
@@ -207,7 +218,8 @@ def run_para(ctx, command):
     script_file = fu.write_script(script_body)
     script_out = fu.replace_ext(script_file, ".out")
     script_command = f"/bin/bash -c {script_file} 2>&1 | tee -a {script_out} "
-    log.info(f"* {ctx['prefix']} {script_command} # {command}")
+    msg = f"* {ctx['prefix']} {script_command} # {command}"
+    log.info(msg)
     rp = run(script_command, shell=True, check=True)
     rc = rp.returncode
     return rc
@@ -215,19 +227,22 @@ def run_para(ctx, command):
 
 def run_command(argv, xargs, name, sub, parm, **kwargs):
     ctx = run_context(argv, xargs, name, sub, parm, **kwargs)
-    log.info(f"> {ctx['prefix']} {sub}")
+    msg = f"> {ctx['prefix']} {sub}"
+    log.info(msg)
     if ctx["mp_conf"]:  # .enable
         rc = run_para(ctx, sub)
     else:
         rc = run_proc(ctx, sub)
-    log.info(f"< {ctx['prefix']}  (rc:{rc},elapsed{ctx['timer']})")
+    msg = f"< {ctx['prefix']}  (rc:{rc},elapsed{ctx['timer']})"
+    log.info(msg)
     return rc
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def cmd_args(argv, xargs, name, parm, **kwargs):
+    unused(argv, xargs, name, kwargs)
     result = [
         "--jobname",
         parm["job"],
@@ -257,7 +272,7 @@ def call_script(argv, xargs, name, **kwargs):
     run_command(argv, xargs, name, sub, parm, **kwargs)
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def exec_auto(argv, xargs, name, **kwargs):
@@ -268,7 +283,7 @@ def exec_demo_script(argv, xargs, name, **kwargs):
     call_script(argv, xargs, name, **kwargs)
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def exec_test_find(argv, xargs, name, **kwargs):
@@ -297,13 +312,15 @@ def exec_test_numa(argv, xargs, name, **kwargs):
 
 
 def exec_test(argv, xargs, name, **kwargs):
-    msg = f"#<numa.test>: cmd={'test_numa'}, xargs:<{xargs!s}>, argv:<{argv!s}>, kwargs:<{kwargs!s}>"
+    msg = (
+        f"#<numa.test>: cmd={'test_numa'}, xargs:<{xargs!s}>, argv:<{argv!s}>, kwargs:<{kwargs!s}>"
+    )
     log.info(msg)
     print(msg)
     exec_test_numa(argv, xargs, name, **kwargs)
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def parse_args(argv=None, **kwargs):
@@ -334,10 +351,10 @@ def exec(argv, xargs, **kwargs):
 def main(argv=None, **kwargs):
     """Process command line arguments."""
     print(__name__ + "main:" + str(argv))
-    log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    args = parse_args(argv)
-    RC = exec(argv, args)
-    log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
+    log.info(">> ### %s.main(argv=%s)", __name__, str(argv))
+    xargs = parse_args(argv, **kwargs)
+    RC = exec(argv, xargs, **kwargs)
+    log.info("<< ### %s.main => (rc=%d)", __name__, RC)
     return RC
 
 

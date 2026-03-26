@@ -21,6 +21,7 @@ def exec(argv, xargs, **kwargs):
         cmd = "auto"
 
     if cmd == "auto":
+        # ruff: noqa: PLC0415
         import dve.scripts.auto as script
 
         RC = script.main(argv, **kwargs)
@@ -36,10 +37,10 @@ def exec(argv, xargs, **kwargs):
 
 @std_main(log=log, debug=True)
 def main(argv=None, **kwargs):
-    log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
+    log.info(">> ### %s.main(argv=%s)", __name__, str(argv))
     xargs = parse_args(argv, **kwargs)
     RC = exec(argv, xargs, **kwargs)
-    log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
+    log.info("<< ### %s.main => (rc=%d)", __name__, RC)
     return RC
 
 

@@ -7,7 +7,7 @@ from vce.cli.xargs import get_auto_argparser
 import vce.cli.parms as sp
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # ---------------------------------------------------------------
 
@@ -46,7 +46,7 @@ JOB_SPECS = sp.init_specs(
     auto="test-00",
 )
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -67,11 +67,11 @@ def auto_dispatch(argv, xargs, name, **kwargs):
 
 
 def auto_exec(argv, xargs, name, **kwargs):
-    auto_id = JOB_SPECS.get_auto_name()
+    auto_id = JOB_SPECS.get_auto_name(name)
     return auto_dispatch(argv, xargs, auto_id, **kwargs)
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def parse_args(argv=None, **kwargs):
@@ -94,10 +94,10 @@ def exec(argv, xargs, **kwargs):
 
 @std_main(log=log, debug=True)
 def main(argv=None, **kwargs):
-    log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
+    log.info(">> ### %s.main(argv=%s)", __name__, str(argv))
     xargs = parse_args(argv, **kwargs)
     RC = exec(argv, xargs, **kwargs)
-    log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
+    log.info("<< ### %s.main => (rc=%d)", __name__, RC)
     return RC
 
 

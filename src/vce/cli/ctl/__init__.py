@@ -10,8 +10,12 @@ log = logging.getLogger(__name__)
 class StdMain(object):
     LOG_PREFIX = "#++ "
 
-    def __init__(self, func, log=logging.getLogger(__name__), debug=False, **kwargs):
+    def __init__(self, func, log=None, debug=False, **kwargs):
         functools.update_wrapper(self, func)
+
+        if log is None:
+            log = logging.getLogger(__name__)
+
         self.func = func
         self.debug = debug
         self.extra = kwargs
@@ -40,20 +44,28 @@ class StdMain(object):
         return result
 
     def error(self, message):
-        self.log.error(StdMain.LOG_PREFIX + message)
+        msg = StdMain.LOG_PREFIX + message
+        self.log.error(msg)
 
     def warn(self, message):
-        self.log.warning(StdMain.LOG_PREFIX + message)
+        msg = StdMain.LOG_PREFIX + message
+        self.log.warning(msg)
 
     def info(self, message):
-        self.log.info(StdMain.LOG_PREFIX + message)
+        msg = StdMain.LOG_PREFIX + message
+        self.log.info(msg)
 
     def trace(self, message):
-        self.log.debug(StdMain.LOG_PREFIX + message)
+        msg = StdMain.LOG_PREFIX + message
+        self.log.debug(msg)
 
 
-def std_main(log=logging.getLogger(__name__), debug=False, **kwargs):
+def std_main(log=None, debug=False, **kwargs):
     def _std_main(func):
-        return StdMain(func, log, debug, **kwargs)
+        if log is None:
+            logger = logging.getLogger(__name__)
+        else:
+            logger = log
+        return StdMain(func, logger, debug, **kwargs)
 
     return _std_main

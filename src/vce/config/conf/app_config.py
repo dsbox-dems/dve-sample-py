@@ -17,6 +17,7 @@ class AbsAppConfig(AppConfigEx):
         return result
 
     def db(self, db_name: str) -> DbConfig:
+        # ruff: noqa: PLC0415
         from vce.config.conf.db.db_config import DbConfigFactory
 
         result = DbConfigFactory.get_instance(self, db_name)
@@ -33,12 +34,14 @@ class AbsAppConfig(AppConfigEx):
         keys = self.key_path(key)
         cfg = self.conf
         ks = []
+        # ruff: noqa: PERF203
         for k in keys:
             try:
                 ks.append(k)
                 cfg = cfg[k]
-            except:
-                raise ValueError(f"config key not found: {ks} in key: {key}")
+            except KeyError as ex:
+                msg = f"config key not found: {ks} in key: {key}"
+                raise ValueError(msg) from ex
         return cfg
 
     def has_value(self, key: str) -> bool:
@@ -102,7 +105,7 @@ class ErrAbsConfig(AbsAppConfig):
     cfg_type = AppConfigConsts.CFG_TYPE_ERROR
 
     def __init__(self, name: str, ex: Exception):
-        super().__init__(name, dict(ex=ex))
+        super().__init__(name, {"ex": ex})
         self.ex = ex
 
 
@@ -127,7 +130,7 @@ class YamlAppConfig(AbsAppConfig):
 
 class AppConfigStore(object):
     def __init__(self):
-        self._config = dict()
+        self._config = {}
 
     @classmethod
     def config_name(cls, what=AppConfigConsts.CONFIG_S_DEFAULT):
@@ -194,14 +197,13 @@ class AppConfigStore(object):
         return result
 
 
-_store = AppConfigStore()
+class AppConfigStoreGlobals:
+    store = AppConfigStore()
 
 
 def unload_all_configs():
-    global _store
-    _store = AppConfigStore()
+    AppConfigStoreGlobals.store = AppConfigStore()
 
 
 def get_config_store() -> AppConfigStore:
-    global _store
-    return _store
+    return AppConfigStoreGlobals.store
