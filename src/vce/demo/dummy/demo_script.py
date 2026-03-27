@@ -99,8 +99,8 @@ model: Optional[Model] = None
 
 def retrieve_model():
     global model
-    spec = dict()
-    parms = dict()
+    spec = {}
+    parms = {}
     model = Model(spec, parms)
     return model
 

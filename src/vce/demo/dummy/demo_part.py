@@ -344,10 +344,9 @@ def softmax(x):
 
 
 def evaluate_model(limits, in_data=in_data, model=model):
-    t1 = time.time()
-    finbert, tokenizer = model.finbert, model.tokenizer
+    time.time()
+    _finbert, _tokenizer = model.finbert, model.tokenizer
     # id, sentence, dat = in_data.id, in_data.sentence, in_data.dat
-    labels = {0: "positive", 1: "negative", 2: "neutral"}
     results = pd.DataFrame(
         columns=[
             "id",
@@ -361,7 +360,6 @@ def evaluate_model(limits, in_data=in_data, model=model):
         ]
     )
 
-    rows = []
 
     # for idk in range(limits):
     # inputs = tokenizer(sentence[idk], return_tensors="pt", padding=True)
@@ -463,7 +461,7 @@ def collect_data(dd_conf: Optional[DataConf] = dd_conf):
     os.chdir(dd_temp)
 
     extension = "csv"
-    all_csvfiles = [i for i in glob.glob("*.{}".format(extension))]
+    all_csvfiles = list(glob.glob("*.{}".format(extension)))
     all_outfiles = filter(lambda x: re.search(rf"{dd_outdir}", x), all_csvfiles)
 
     combined_csv = pd.concat([pd.read_csv(f) for f in all_outfiles])
@@ -527,7 +525,7 @@ def main(argv=None, **kwargs):
     argv = get_argv(argv)
 
     log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
-    xargs = parse_args(argv, **kwargs)
+    parse_args(argv, **kwargs)
 
     if is_core_parallel():
         if is_core_distributor():

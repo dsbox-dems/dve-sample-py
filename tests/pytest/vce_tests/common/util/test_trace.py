@@ -62,7 +62,7 @@ class TraceUtilTest(unittest.TestCase):
             self.sleep()
             trc.update(1)
 
-        self.assertTrue(True)
+        assert True
 
     def test_trace_updates(self):
         log.debug("+++ test trace updates:" + str(datetime.datetime.now()))
@@ -88,7 +88,7 @@ class TraceUtilTest(unittest.TestCase):
 
                 trc.update(1000)
 
-        self.assertTrue(True)
+        assert True
 
     def test_trace_summaries(self):
         log.debug("+++ test trace summaries:" + str(datetime.datetime.now()))
@@ -114,7 +114,7 @@ class TraceUtilTest(unittest.TestCase):
 
                 trc.update(1000)
 
-        self.assertTrue(True)
+        assert True
 
     def test_trace_context(self):
         log.debug("+++ test trace context:" + str(datetime.datetime.now()))
@@ -148,7 +148,7 @@ class TraceUtilTest(unittest.TestCase):
 
                 trc.update(1000)
 
-        self.assertTrue(True)
+        assert True
 
     def test_trace_verbose(self):
         log.debug("+++ test trace verbose:" + str(datetime.datetime.now()))
@@ -182,7 +182,7 @@ class TraceUtilTest(unittest.TestCase):
 
                 trc.update(1000)
 
-        self.assertTrue(True)
+        assert True
 
     def setUp(self):
         # self.conf_dir = os.environ['CONFIG_DIR']

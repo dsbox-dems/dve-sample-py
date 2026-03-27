@@ -27,7 +27,7 @@ class BaseCliTest(unittest.TestCase):
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
-        s = out.getvalue()
+        out.getvalue()
         assert argv[0] in out.getvalue()
 
     def test_auto_default(self):
