@@ -11,7 +11,7 @@ from vce.config.data import cfd
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 RC_C_FAIL = 1
 RC_C_OK = 0
@@ -35,10 +35,10 @@ def do_process(argv, xargs, **kwargs):
         f">> @{tag}.args(argv=<{argv!s}>)",
         f">> @{tag}.args(xargs=<{xargs!s}>)",
         f">> @{tag}.args(kwargs=<{kwargs!s}>)",
-        f">> @{tag}.spec(job_name=<{ea('job_name',**kwargs,)!s}>)",
-        f">> @{tag}.spec(job_xargs=<{ea('job_xargs',**kwargs,)!s}>)",
-        f">> @{tag}.spec(job_spec=<{ea('job_spec',**kwargs,)!s}>)",
-        f">> @{tag}.spec(job_parm=<{ep(**kwargs,)!s}>)",
+        f">> @{tag}.spec(job_name=<{ea('job_name', **kwargs)!s}>)",
+        f">> @{tag}.spec(job_xargs=<{ea('job_xargs', **kwargs)!s}>)",
+        f">> @{tag}.spec(job_spec=<{ea('job_spec', **kwargs)!s}>)",
+        f">> @{tag}.spec(job_parm=<{ep(**kwargs)!s}>)",
         f">> @{tag}.data(work=<{cfd().DATA_WORK},home=<{cfd().DATA_HOME}>)",
         f">> @{tag}.data(work=<{cfd().DATA_USER},home=<{cfd().DATA_DNET}>)",
         f">> @{tag}.arch(plat=<{pf.platform()},arch=<{pf.architecture()}>)",
@@ -60,7 +60,7 @@ def do_process(argv, xargs, **kwargs):
     return RC
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def parse_args(argv, **kwargs):
@@ -70,18 +70,16 @@ def parse_args(argv, **kwargs):
 
 
 def exec(argv, xargs, **kwargs):
-    global RC
     RC = do_process(argv, xargs, **kwargs)
     return RC
 
 
 @std_main(log=log, debug=True)
 def main(argv, **kwargs):
-    global RC
-    log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
+    log.info(">> ### %s.main(argv=%s)", __name__, str(argv))
     xargs = parse_args(argv=argv, **kwargs)
     RC = exec(argv, xargs, **kwargs)
-    log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
+    log.info("<< ### %s.main => (rc=%d)", __name__, RC)
     return RC
 
 

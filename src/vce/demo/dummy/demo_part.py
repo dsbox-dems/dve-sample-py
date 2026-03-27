@@ -5,6 +5,7 @@
 
 # In[1]:
 
+from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
@@ -14,7 +15,6 @@ import os.path
 import re
 import glob
 import sys
-from collections import namedtuple
 import argparse
 from datetime import datetime
 from typing import Optional
@@ -25,6 +25,7 @@ from vce.cli.xargs import get_part_argparser
 
 from vce.common.util.trace import trace_logger
 from vce.common.util.kernel import in_notebook
+from vce.common.util.lint import unused
 from vce.config.data import cfd
 
 # In[3]:
@@ -35,7 +36,7 @@ logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 trc = trace_logger("dmy")
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[3]:
 
@@ -68,8 +69,9 @@ out_data = None
 df = None
 sentence = None
 dat = None
+model = None
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[4]:
 
@@ -86,13 +88,12 @@ def get_argv(argv=None):
 
 def argparser(options=None):
     """Base Argument Parser."""
+    unused(options)
     parser = argparse.ArgumentParser(add_help=False, conflict_handler="resolve")
 
     parser.add_argument("-j", "--jobname", type=str, help="job name", default="_")
     parser.add_argument("-g", "--group", type=str, help="job group", default="_")
-    parser.add_argument(
-        "-f", "--filename", type=str, help="data file name", default="_"
-    )
+    parser.add_argument("-f", "--filename", type=str, help="data file name", default="_")
     return parser
 
 
@@ -102,7 +103,7 @@ def parse_args(argv=None, **kwargs):
     return result
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def is_core_parallel():
@@ -117,7 +118,7 @@ def is_core_simple():
 
 
 def is_core_mode(mode):
-    if is_core_simple:
+    if is_core_simple():
         return False
     env_mode = os.getenv("X_CORE_MODE")
     if not env_mode:
@@ -126,7 +127,7 @@ def is_core_mode(mode):
 
 
 def is_core_worker():
-    if is_core_simple:
+    if is_core_simple():
         return True
     return is_core_mode(0)
 
@@ -160,49 +161,50 @@ def jobid():
     return jobid
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[5]:
 
-Model = namedtuple("Model", ["finbert", "tokenizer"])
+
+@dataclass
+class Model:
+    finbert: dict = field(default_factory=lambda: {"empty": True})
+    tokenizer: dict = field(default_factory=dict)
 
 
 def retrieve_model():
-    global model
-    finbert = (
-        {}
-    )  # AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
+    finbert = {}  # AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
     tokenizer = {}  # AutoTokenizer.from_pretrained("ProsusAI/finbert")
     model = Model(finbert, tokenizer)
     return model
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[6]:
 
-DataConf = namedtuple(
-    "DataConf",
-    [
-        "dd_jobid",
-        "dd_slot",
-        "dd_slots",
-        "dd_group",
-        "dd_filename",
-        "dd_path",
-        "dd_temp",
-        "dd_part",
-        "dd_indir",
-        "dd_outdir",
-        "dd_infile",
-        "dd_outfile",
-    ],
-)
+
+@dataclass
+class DataConf:
+    dd_jobid: str
+    dd_slot: int
+    dd_slots: int
+    dd_group: str
+    dd_filename: str
+    dd_path: str
+    dd_temp: str
+    dd_part: str
+    dd_indir: str
+    dd_outdir: str
+    dd_infile: str
+    dd_outfile: str
+
 
 dd_conf: Optional[DataConf] = None
 
 
 def arg_jobid(args):
+    unused(args)
     return jobid()
 
 
@@ -215,16 +217,16 @@ def arg_filename(args):
 
 
 def arg_slotid(args):
+    unused(args)
     return slot_idx()
 
 
 def arg_slotnum(args):
+    unused(args)
     return slots_num()
 
 
 def config_data() -> DataConf:
-    global dd_conf, args
-
     dd_jobid = arg_jobid(args)
     dd_slot = arg_slotid(args)
     dd_slots = arg_slotnum(args)
@@ -275,7 +277,7 @@ def config_data() -> DataConf:
     return dd_conf
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[7]:
 
@@ -287,7 +289,7 @@ def ensure_path(filename):
 
 
 def load_data(dd_conf=dd_conf):
-    global df
+    unused(dd_conf)
     dd_infile = "infile.csv"  # dd_conf.dd_infile
     df = pd.read_csv(dd_infile, sep=";")
     # print (df)
@@ -296,12 +298,22 @@ def load_data(dd_conf=dd_conf):
 
 # In[8]:
 
-InputData = namedtuple("InputData", ["df", "id", "sentence", "dat"])
+
+@dataclass
+class InputData:
+    df: Optional[pd.DataFrame] = None
+    id: Optional[pd.Series] = None
+    sentence: Optional[pd.Series] = None
+    dat: Optional[pd.Series] = None
+
+
+CNF_INPUT_MAX_INDEXES = 512
 
 
 def prepare_data(df=df, model=model):
-    global sentence, dat, in_data
+    assert model is not None
     tokenizer = model.tokenizer
+    assert df is not None
     sentence = df["text"]
     dat = df["created_at"]
     id = df["id"]
@@ -312,7 +324,7 @@ def prepare_data(df=df, model=model):
     t11 = time.time()
     for ind in range(len(sentence)):
         inputs2 = tokenizer(sentence[ind], return_tensors="pt", padding=True)
-        if len(inputs2["input_ids"][0]) >= 512:
+        if len(inputs2["input_ids"][0]) >= CNF_INPUT_MAX_INDEXES:
             alert = 1
             i = ind
 
@@ -344,8 +356,9 @@ def softmax(x):
 
 
 def evaluate_model(limits, in_data=in_data, model=model):
+    unused(limits, in_data, model)
     time.time()
-    _finbert, _tokenizer = model.finbert, model.tokenizer
+    # _finbert, _tokenizer = model.finbert, model.tokenizer
     # id, sentence, dat = in_data.id, in_data.sentence, in_data.dat
     results = pd.DataFrame(
         columns=[
@@ -359,7 +372,6 @@ def evaluate_model(limits, in_data=in_data, model=model):
             "sentiment_score",
         ]
     )
-
 
     # for idk in range(limits):
     # inputs = tokenizer(sentence[idk], return_tensors="pt", padding=True)
@@ -387,12 +399,9 @@ def evaluate_model(limits, in_data=in_data, model=model):
     return results
 
 
-OutputData = namedtuple(
-    "OutputData",
-    [
-        "out",
-    ],
-)
+@dataclass
+class OutputData:
+    out: Optional[pd.DataFrame] = None
 
 
 def process_data(in_data=in_data, model=model):
@@ -404,7 +413,6 @@ def process_data(in_data=in_data, model=model):
         # print(out)
         # ciclo()
         # print(out.iloc[999,0:7])
-        global out_data
         out_data = OutputData(out=out)
         return out_data
 
@@ -413,14 +421,15 @@ def process_data(in_data=in_data, model=model):
 
 
 def save_data(out_data=out_data, dd_conf=dd_conf):
+    unused(dd_conf)
     dd_outfile = "outfil.csv"  # dd_conf.dd_outfile
     ensure_path(dd_outfile)
-
+    assert out_data is not None
     out = out_data.out
     out.to_csv(dd_outfile, sep=";", index=False, encoding="utf-8-sig")
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[11]:
 
@@ -445,7 +454,7 @@ def distribute_data(dd_conf: Optional[DataConf] = dd_conf):
             i = i + 1
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[12]:
 
@@ -468,7 +477,7 @@ def collect_data(dd_conf: Optional[DataConf] = dd_conf):
     combined_csv.to_csv(dd_outfile, index=False, encoding="utf-8-sig")
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[13]:
 
@@ -517,14 +526,12 @@ def run_collector():
 
 
 def main(argv=None, **kwargs):
-    global args
-
     print(argv)
     print(__name__ + "main:" + str(argv))
 
     argv = get_argv(argv)
 
-    log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
+    log.info(">> ### %s.main(argv=%s)", __name__, str(argv))
     parse_args(argv, **kwargs)
 
     if is_core_parallel():
@@ -541,11 +548,11 @@ def main(argv=None, **kwargs):
     else:
         raise ValueError("is_core_what")
 
-    log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
+    log.info("<< ### %s.main => (rc=%d)", __name__, RC)
     return RC
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[14]:
 

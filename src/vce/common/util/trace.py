@@ -2,7 +2,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from textwrap import dedent
 import re
 from datetime import datetime
-
+from typing import ClassVar
 from vce.common.util.time import timer
 from vce.common.util.lint import unused
 
@@ -321,6 +321,8 @@ class TraceFrame:
 
 
 class TraceLogger:
+    global_ctx: ClassVar[dict] = {}
+
     def __init__(self, name="_", time_period=30, item_samples=0, verbose=0):
         self.start = timer()
         self.name = name
@@ -379,9 +381,9 @@ class TraceLogger:
         unused(exc_type, exc_value, exc_tb)
         self.exit()
 
-    def ctx(self):
+    def ctx(self) -> dict:
         if self.top is None:
-            return None
+            return TraceLogger.global_ctx
         return self.top.ctx
 
     def all(self):
@@ -396,6 +398,6 @@ class TraceLogger:
         return self.top.update(item_delta=item_delta)
 
 
-def trace_logger(name="_", time_period=30, item_samples=0, verbose=0):
+def trace_logger(name="_", time_period=30, item_samples=0, verbose=0) -> TraceLogger:
     result = TraceLogger(name, time_period=time_period, item_samples=item_samples, verbose=verbose)
     return result

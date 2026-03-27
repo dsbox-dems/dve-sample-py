@@ -30,7 +30,7 @@ class TraceUtilTest(unittest.TestCase):
             time.sleep(d)
 
     def test_trace_callee(self):
-        log.debug("+++ test trace callee:" + str(datetime.datetime.now()))
+        log.debug("+++ test trace callee: %s", str(datetime.datetime.now()))
 
         trc = trace_logger("test-trace", item_samples=1)
 
@@ -65,7 +65,7 @@ class TraceUtilTest(unittest.TestCase):
         assert True
 
     def test_trace_updates(self):
-        log.debug("+++ test trace updates:" + str(datetime.datetime.now()))
+        log.debug("+++ test trace updates: %s", str(datetime.datetime.now()))
 
         trc = trace_logger("test-trace", item_samples=1500)
 
@@ -91,7 +91,7 @@ class TraceUtilTest(unittest.TestCase):
         assert True
 
     def test_trace_summaries(self):
-        log.debug("+++ test trace summaries:" + str(datetime.datetime.now()))
+        log.debug("+++ test trace summaries: %s", str(datetime.datetime.now()))
 
         trc = trace_logger("test-trace")
 
@@ -117,7 +117,7 @@ class TraceUtilTest(unittest.TestCase):
         assert True
 
     def test_trace_context(self):
-        log.debug("+++ test trace context:" + str(datetime.datetime.now()))
+        log.debug("+++ test trace context: %s", str(datetime.datetime.now()))
 
         trc = trace_logger("test-trace", item_samples=1500)
 
@@ -151,7 +151,7 @@ class TraceUtilTest(unittest.TestCase):
         assert True
 
     def test_trace_verbose(self):
-        log.debug("+++ test trace verbose:" + str(datetime.datetime.now()))
+        log.debug("+++ test trace verbose: %s", str(datetime.datetime.now()))
 
         trc = trace_logger("test-trace", item_samples=1500, verbose=1)
 

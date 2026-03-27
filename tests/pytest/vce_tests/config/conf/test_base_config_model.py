@@ -16,27 +16,25 @@ class ConfigModelTest(unittest.TestCase):
     def test_config_name(self):
         cfg = conf.get_config()
         actual_name = cfg.name
-        log.debug("+++ CONFIG NAME (default):" + actual_name)
+        log.debug("+++ CONFIG NAME (default): %s", actual_name)
         assert actual_name is not None
 
     def test_load_config(self):
         cfg = conf.get_config()
         assert cfg is not None
-        log.debug("+++ CONFIG MODEL (default):" + cfg.dump())
+        log.debug("+++ CONFIG MODEL (default): %s", cfg.dump())
 
     def test_get_config(self):
         actual_config = conf.get_config()
         cached_config = conf.get_config()
         assert actual_config == cached_config
-        log.debug(
-            f"+++ CONFIG MODEL ID (default): {id(actual_config)}, {id(cached_config)}"
-        )
+        log.debug("+++ CONFIG MODEL ID (default): %s %s", id(actual_config), id(cached_config))
 
     def test_get_demo_my(self):
         cfg = conf.get_config()
         db_config = cfg.get_value("data/db/demo_my")
         assert db_config is not None
-        log.debug(f'+++ CONFIG DB (demo.my): {cfg.dump_value("data/db/demo_my")} ')
+        log.debug("+++ CONFIG DB (demo.my): %s", cfg.dump_value("data/db/demo_my"))
 
     def test_env_my_defaults(self):
         exp = {
@@ -47,7 +45,7 @@ class ConfigModelTest(unittest.TestCase):
         }
         cfg = conf.get_config()
         act = cfg.get_value("data/db/demo_my")
-        log.debug(f"+++ CONFIG DB (demo.my): {cfg.dump_object(act)}")
+        log.debug("+++ CONFIG DB (demo.my): %s", cfg.dump_object(act))
         assert exp["host"] == act["host"]
         assert exp["port"] == act["port"]
         assert exp["user"] == act["user"]
@@ -62,7 +60,7 @@ class ConfigModelTest(unittest.TestCase):
         }
         cfg = conf.get_config()
         act = cfg.get_value("data/db/demo_pg")
-        log.debug(f"+++ CONFIG DB (demo.pg): {cfg.dump_object(act)}")
+        log.debug("+++ CONFIG DB (demo.pg): %s", cfg.dump_object(act))
         assert exp["host"] == act["host"]
         assert exp["port"] == act["port"]
         assert exp["user"] == act["user"]
@@ -85,7 +83,7 @@ class ConfigModelTest(unittest.TestCase):
         ):
             cfg = conf.get_config()
             act = cfg.get_value("data/db/demo_my")
-            log.debug(f"+++ CONFIG DB(e) (demo.my): {cfg.dump_object(act)}")
+            log.debug("+++ CONFIG DB(e) (demo.my): %s", cfg.dump_object(act))
             assert exp["host"] == act["host"]
             assert exp["port"] == act["port"]
             assert exp["user"] == act["user"]
@@ -109,7 +107,7 @@ class ConfigModelTest(unittest.TestCase):
         ):
             cfg = conf.get_config()
             act = cfg.get_value("data/db/demo_pg")
-            log.debug(f"+++ CONFIG DB(e) (demo.pg): {cfg.dump_object(act)}")
+            log.debug("+++ CONFIG DB(e) (demo.pg):  %s", cfg.dump_object(act))
             assert exp["host"] == act["host"]
             assert exp["port"] == act["port"]
             assert exp["user"] == act["user"]

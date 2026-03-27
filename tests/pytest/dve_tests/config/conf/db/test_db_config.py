@@ -18,8 +18,8 @@ class ConfigDbTest(unittest.TestCase):
         assert actual_db_config is not None
         actual_uri = actual_db_config.uri()
         assert re.search("://", actual_uri)
-        log.debug("+++ CONFIG MODEL (demo):" + actual_db_config.dump(True))
-        log.debug("+++ CONFIG URI   (demo):" + actual_db_config.dump())
+        log.debug("+++ CONFIG MODEL (demo): %s", actual_db_config.dump(True))
+        log.debug("+++ CONFIG URI   (demo): %s", actual_db_config.dump())
 
     def test_config_demo_my(self):
         actual_db_config = conf.get_config().db("demo_my")
@@ -27,8 +27,8 @@ class ConfigDbTest(unittest.TestCase):
         actual_uri = actual_db_config.uri()
         assert re.search("://", actual_uri)
         assert re.search("^mysql", actual_uri)
-        log.debug("+++ CONFIG MODEL (demo_my):" + actual_db_config.dump(True))
-        log.debug("+++ CONFIG URI   (demo_my):" + actual_db_config.dump())
+        log.debug("+++ CONFIG MODEL (demo_my): %s", actual_db_config.dump(True))
+        log.debug("+++ CONFIG URI   (demo_my): %s", actual_db_config.dump())
 
     def test_config_demo_pg(self):
         actual_db_config = conf.get_config().db("demo_pg")
@@ -36,8 +36,8 @@ class ConfigDbTest(unittest.TestCase):
         actual_uri = actual_db_config.uri()
         assert re.search("://", actual_uri)
         assert re.search("^postgresql", actual_uri)
-        log.debug("+++ CONFIG MODEL (demo_pg):" + actual_db_config.dump(True))
-        log.debug("+++ CONFIG URI   (demo_pg):" + actual_db_config.dump())
+        log.debug("+++ CONFIG MODEL (demo_pg): %s", actual_db_config.dump(True))
+        log.debug("+++ CONFIG URI   (demo_pg): %s", actual_db_config.dump())
 
     def setUp(self):
         pass
