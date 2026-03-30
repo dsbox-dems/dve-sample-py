@@ -11,11 +11,7 @@ def conf_dir(env_key, default_value):
         return v if x is None else x
 
     p = os.path.expanduser(os.getenv(env_key, default_value))
-    return (
-        nvl(rootpath.detect(__file__, "^.git$"), "") + p[1:]
-        if p.startswith("./")
-        else p
-    )
+    return nvl(rootpath.detect(__file__, "^.git$"), "") + p[1:] if p.startswith("./") else p
 
 
 @dataclass
