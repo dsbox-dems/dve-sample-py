@@ -26,46 +26,46 @@ ENV IMG_TYPE cuda
 
 
 
-ENV NV_TOOLKIT_VERSION 12-8.1
+# ENV NV_TOOLKIT_VERSION 12-8.1
 
-ENV NV_TOOLKIT_PACKAGE_NAME "cuda-toolkit-12-8"
-ENV NV_TOOLKIT_PACKAGE_LIST "cuda-toolkit-12-8"
+# ENV NV_TOOLKIT_PACKAGE_NAME "cuda-toolkit-12-8"
+# ENV NV_TOOLKIT_PACKAGE_LIST "cuda-toolkit-12-8"
 
-ENV NV_TOOLKIT_PACKAGE "cuda-toolkit-12-8"
-
-
-
-ENV NV_CUDNN_VERSION 9.8.0.87
-
-ENV NV_CUDNN_PACKAGE_NAME "libcudnn9-cuda-12"
-ENV NV_CUDNN_PACKAGE_LIST "libcudnn9-cuda-12 libcudnn8-dev"
-
-ENV NV_CUDNN_PACKAGE "libcudnn9-cuda-12"
-ENV NV_CUDNN_PACKAGE_DEV "libcudnn9-dev-cuda-12"
+# ENV NV_TOOLKIT_PACKAGE "cuda-toolkit-12-8"
 
 
-# ENV NV_NVINFER_VERSION 10.9.0.34
-# ENV NV_NVINFER_VER "$NV_NVINFER_VERSION-1+cuda12.8"
 
-ENV NV_NVINFER_PACKAGE_NAME "libnvinfer10"
-# ENV NV_NVINFER_PACKAGE_LIST "libnvinfer10 libnvinfer-dev libnvinfer-headers-dev libnvinfer-headers-plugin-dev libnvinfer-plugin8 libnvinfer-plugin-dev"
+# ENV NV_CUDNN_VERSION 9.8.0.87
+
+# ENV NV_CUDNN_PACKAGE_NAME "libcudnn9-cuda-12"
+# ENV NV_CUDNN_PACKAGE_LIST "libcudnn9-cuda-12 libcudnn8-dev"
+
+# ENV NV_CUDNN_PACKAGE "libcudnn9-cuda-12"
+# ENV NV_CUDNN_PACKAGE_DEV "libcudnn9-dev-cuda-12"
 
 
-ENV NV_NVINFER_PACKAGES "\
-libnvinfer-bin \
-libnvinfer-dev \
-libnvinfer-dispatch-dev \
-libnvinfer-dispatch10 \
-libnvinfer-headers-dev \
-libnvinfer-headers-plugin-dev \
-libnvinfer-lean-dev \
-libnvinfer-lean10 \
-libnvinfer-plugin-dev \
-libnvinfer-plugin10 \
-libnvinfer-samples \
-libnvinfer-vc-plugin-dev \
-libnvinfer-vc-plugin10 \
-libnvinfer10"
+# # ENV NV_NVINFER_VERSION 10.9.0.34
+# # ENV NV_NVINFER_VER "$NV_NVINFER_VERSION-1+cuda12.8"
+
+# ENV NV_NVINFER_PACKAGE_NAME "libnvinfer10"
+# # ENV NV_NVINFER_PACKAGE_LIST "libnvinfer10 libnvinfer-dev libnvinfer-headers-dev libnvinfer-headers-plugin-dev libnvinfer-plugin8 libnvinfer-plugin-dev"
+
+
+# ENV NV_NVINFER_PACKAGES "\
+# libnvinfer-bin \
+# libnvinfer-dev \
+# libnvinfer-dispatch-dev \
+# libnvinfer-dispatch10 \
+# libnvinfer-headers-dev \
+# libnvinfer-headers-plugin-dev \
+# libnvinfer-lean-dev \
+# libnvinfer-lean10 \
+# libnvinfer-plugin-dev \
+# libnvinfer-plugin10 \
+# libnvinfer-samples \
+# libnvinfer-vc-plugin-dev \
+# libnvinfer-vc-plugin10 \
+# libnvinfer10"
 
 ENV NV_NVTOP_PACKAGES "nvtop nvitop"
 
@@ -96,8 +96,9 @@ ARG  Y_DEBUG_ENV=0
 ENV  X_DEBUG_ENV $Y_DEBUG_ENV
 
 # cuda
-RUN /rocker_scripts/install_ubs-cuda-11-470.sh
-RUN /rocker_scripts/install_ubs-cuda-12-560.sh
+#RUN /rocker_scripts/install_ubs-cuda-11-470.sh
+#RUN /rocker_scripts/install_ubs-cuda-12-560.sh
+RUN /rocker_scripts/install_ubs-cuda-mamba.sh
 
 
 

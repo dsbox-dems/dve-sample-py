@@ -618,6 +618,7 @@ build-image/%:
 		-t $$X_BLD_IMAGE_NAME \
 		--build-arg Y_WORK_DIR="${RUN_USER_HOME}/${WORK_DIR}" \
 		--build-arg Y_DEBUG_ENV="${Y_DEBUG_ENV:-0}" \
+		--build-arg Y_PY_MODE="${Y_PY_MODE:-uv}" \
 		--label="it.unimib.datalab.project=${ID_PROJECT}" \
 		--label="it.unimib.datalab.branch=${BRANCH_NAME}" \
 		--label="it.unimib.datalab.commit=${COMMIT_HASH}" \

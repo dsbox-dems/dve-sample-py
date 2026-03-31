@@ -278,6 +278,7 @@ $(echo "${PATH}" | tr ':' '\n' | sl)
 $(echo "${LD_LIBRARY_PATH}" | tr ':' '\n' | sl)
     python: "$(which python || echo NOPYTHON )"
     python-version: "$(python --version || echo NOPYTHON)"
+    python-mode: "${X_PY_MODE}"
     uv: "$(which uv || echo NOUV )"
     uv-version: "$(uv --version || echo NOUV )"
     poetry: "$(which poetry || echo NOPOETRY )"
@@ -542,7 +543,7 @@ env_dump() {
 
 }
 check_is_root()  { [ "$(id -u)" == "0" ] || die "must run as root: $(whoami)"; }
-check_not_root() { [ "$(id -u)" == "0" ] && die "cannot run as root: $(whoami)"; }
+check_not_root() { [ "$(id -u)" == "0" ] && die "caxnnot run as root: $(whoami)"; }
 # --------------------------------------------------------------
 mk_public_dir() {
     [ -z "$1" ] && return 1
@@ -607,6 +608,26 @@ exit_main() {
 # ////////////////////////////////////////////////////////////////////////
 
 
+activate() {
+    
+    case "$X_PY_MODE" in
+        uv)
+            source .venv/bin/activate || \
+            error "activate[uv] failed"
+        ;;
+        poetry)
+            source $(poetry env info --path)/bin/activate || \
+            error "activate[poetry] failed"
+                
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
+    
+}
+
+
 deactivate () {
     # reset old environment variables
     if [ -n "${_OLD_VIRTUAL_PATH:-}" ] ; then
@@ -663,8 +684,20 @@ do_py_init() {
         warn "+(do_py_init):" "py - venv active: VIRTUAL_ENV=$VIRTUAL_ENV, deactivating, done."
     fi
 
-    poetry env info
-    poetry env list
+    case "$X_PY_MODE" in
+        uv)
+            ls -lda ./.venv
+        ;;
+        poetry)
+            poetry env info
+            poetry env list
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
+    
+
     log "+(do_py_init):" "py - venv detected: (rc:$?)"
 
     log "<(do_py_init):" "py - venv init,  done."
@@ -676,11 +709,21 @@ do_py_remove() {
 
     log ">(do_py_remove):" "py - venv remove, ..."
 
-    if poetry env list > /dev/null; then
-        poetry env remove $(poetry env list)
-    else
-        warn "venv  not found, skip"
-    fi
+    case "$X_PY_MODE" in
+        uv)
+            [ -d ./.venv ] && rm -rf ./.venv
+        ;;
+        poetry)
+            if poetry env list > /dev/null; then
+                poetry env remove $(poetry env list)
+            else
+                warn "venv  not found, skip"
+            fi
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
 
     log "<(do_py_remove):" "py - venv remove,  done."
     
@@ -731,18 +774,27 @@ do_py_venv() {
 
     log ">(do_py_venv):" "py - venv define, ..."
 
-    if ! poetry env list > /dev/null; then
-        #poetry config virtualenvs.create true --local
-        #poetry config virtualenvs.in-project false --local
-        poetry env use $(which python)
-        [ -L ./venv ] && rm ./venv
-        ln -s "~/$(realpath $(poetry  env info -p) --relative-to=$HOME -s)" ./venv
-        info "venv $(poetry env list) defined."
-        poetry env info | show
-    else
-        warn "venv $(poetry env list) already defined, skip"
-    fi
-
+    case "$X_PY_MODE" in
+        uv)
+            uv venv --clear
+        ;;
+        poetry)
+            if ! poetry env list > /dev/null; then
+                #poetry config virtualenvs.create true --local
+                #poetry config virtualenvs.in-project false --local
+                poetry env use $(which python)
+                [ -L ./venv ] && rm ./venv
+                #ln -s "~/$(realpath $(poetry  env info -p) --relative-to=$HOME -s)" ./venv
+                info "venv $(poetry env list) defined."
+                poetry env info | show
+            else
+                warn "venv $(poetry env list) already defined, skip"
+            fi
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
     
     log "<(do_py_venv):" "py - venv define,  done."
     
@@ -753,11 +805,25 @@ do_py_reset() {
 
     log ">(do_py_reset):" "py - unlock, ..."
 
-    if [ -f ./poetry.lock ]; then
-        rm ./poetry.lock
-    else
-        warn "./poetry.lock not found, skip"
-    fi
+    case "$X_PY_MODE" in
+        uv)
+            if [ -f ./uv.lock ]; then
+                rm ./uv.lock
+            else
+                warn "./uv.lock not found, skip"
+            fi
+        ;;
+        poetry)
+            if [ -f ./poetry.lock ]; then
+                rm ./poetry.lock
+            else
+                warn "./poetry.lock not found, skip"
+            fi
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
 
     do_py_remove
 
@@ -787,14 +853,31 @@ do_py_lock() {
 
     log ">(do_py_lock):" "py - lock, ..."
 
-    if [ ! -f ./poetry.lock ]; then
-        export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
-        poetry lock
-        info "./poetry.lock created."
-        poetry show | show
-    else
-        log "./poetry.lock found, skip"
-    fi
+    case "$X_PY_MODE" in
+        uv)
+            if [ ! -f ./uv.lock ]; then
+                export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+                uv lock
+                info "./uv.lock created."
+                uv pip list
+            else
+                log "./uv.lock found, skip"
+            fi
+        ;;
+        poetry)
+            if [ ! -f ./poetry.lock ]; then
+                export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+                poetry lock
+                info "./poetry.lock created."
+                poetry show
+            else
+                log "./poetry.lock found, skip"
+            fi
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
 
     log "<(do_py_lock):" "py - lock,  done."
     
@@ -804,12 +887,26 @@ do_py_install() {
 
     log ">(do_py_install):" "py - install define, ..."
 
-    export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
-    
-    poetry install --no-interaction -vv
-    
-    info "poetry install -- (rc: $?) -- from $(ls -l poetry.lock)"
-    
+    case "$X_PY_MODE" in
+        uv)
+            export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+            
+            uv sync --all-extras --all-groups  
+            
+            info "uv sync -- (rc: $?) -- from $(ls -l poetry.lock)"
+        ;;
+        poetry)
+            export PYTHON_KEYRING_BACKEND="keyring.backends.null.Keyring"
+            
+            poetry install --no-interaction -vv
+            
+            info "poetry install -- (rc: $?) -- from $(ls -l poetry.lock)"
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
+
     log "<(do_py_install):" "py - install,  done."
     
 }
@@ -819,9 +916,9 @@ do_py_reticulate() {
 
     log ">(do_py_reticulate):" "py - reticulate config, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       which python
       python --version
@@ -831,13 +928,23 @@ do_py_reticulate() {
       # R - python
       # install2.r --error --skipmissing --skipinstalled -n $NCPUS  reticulate
 
+      case "$X_PY_MODE" in
+          uv)
+              eval "export X_ENV_VENV=$(realpath ./.venv)"
+          ;;
+          poetry)
+              eval "export X_ENV_VENV=$(poetry env info --path)"
+          ;;
+          *)
+              error "undefined X_PY_MODE=$X_PY_MODE"
+              ;;
+      esac
       
       # @see: https://rstudio.github.io/reticulate/articles/versions.html#order-of-discovery
 
       eval "export X_ENV_PATH=$(bash --login -i -c 'printf \"%s\" "$PATH"' | tail -n1)"
-      eval "export X_ENV_VENV=$(poetry env info --path)"
 
-      export RETICULATE_PYTHON_ENV="$(poetry env info --path)"
+      export RETICULATE_PYTHON_ENV="${X_ENV_VENV}"
 
       touch ~/.Rsession
       touch ~/.Renviron
@@ -858,13 +965,10 @@ PATH=${X_ENV_PATH}
 RETICULATE_PYTHON_ENV=${RETICULATE_PYTHON_ENV}
 _R_CHECK_SYSTEM_CLOCK_=0
 EOR
-    
-      
       
       R -q -e 'reticulate::py_discover_config(required_module = NULL, use_environment = NULL)'
 
       R -e "reticulate::py_config()"
-      
       
     )
 
@@ -877,9 +981,9 @@ do_py_jupyter_build() {
 
     log ">(do_py_jupyter):" "py - jupyter prepare, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       [ -f ~/.jupyter/jupyter_server_config.py ] || \
           jupyter server --generate-config
@@ -951,10 +1055,9 @@ do_py_irkernel_reg() {
 
     log ">(do_py_irkernel):" "py - irkernel install, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
-
+    ( activate
 
       # @see: https://github.com/IRkernel/IRkernel
 
@@ -974,9 +1077,9 @@ do_py_jupyter_show() {
 
     log ">(do_py_jupyter_show):" "py - jupyter show, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       which python
       which jupyter
@@ -989,7 +1092,6 @@ do_py_jupyter_show() {
       jupyter labextension list
       jupyter kernelspec list
       
-      
     )
 
     log "<(do_py_jupyter_show):" "py - jupyter show,  done."
@@ -1000,23 +1102,54 @@ do_py_show() {
 
     log ">(do_py_show):" "py - show config, ..."
 
-    # run in poetry shell -- venv activated
+    case "$X_PY_MODE" in
+        uv)
+            # TODO(uv)
+        ;;
+        poetry)
+        ;;
+        *)
+            error "undefined X_PY_MODE=$X_PY_MODE"
+        ;;
+    esac
+    
 
-    ( source $(poetry env info --path)/bin/activate
+    # run in venv activated subshell
+
+    ( activate
 
       which python
       python --version
 
-      case "$X_VERBOSE" in
-          1*)
-              poetry show
-              ;;
-          12*)
-              poetry show --tree
+      case "$X_PY_MODE" in
+          uv)
+              case "$X_VERBOSE" in
+                  1*)
+                      uv pip list
+                      ;;
+                  12*)
+                      uv tree
+                      ;;
+                  *)
+                      ;;
+              esac    
+          ;;
+          poetry)
+              case "$X_VERBOSE" in
+                  1*)
+                      poetry show
+                      ;;
+                  12*)
+                      poetry show --tree
+                      ;;
+                  *)
+                      ;;
+              esac    
               ;;
           *)
+              error "undefined X_PY_MODE=$X_PY_MODE"
               ;;
-      esac    
+      esac
 
       R -e "reticulate::py_config()"
       
@@ -1167,9 +1300,9 @@ do_renv_install() {
 
     log ">(do_renv_install):" "renv - install, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       R -q -e 'renv::install(dependencies = TRUE)' ; rc_renv_install=$?
 
@@ -1189,9 +1322,9 @@ do_renv_upgrade() {
 
     log ">(do_renv_upgrade):" "renv - upgrade, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       R -q -e 'renv::upgrade()' ; rc_renv_upgrade=$?
 
@@ -1211,9 +1344,9 @@ do_renv_snapshot() {
 
     log ">(do_renv_snapshot):" "renv - snapshot, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       R -q -e 'renv::snapshot()' ; rc_renv_snapshot=$?
 
@@ -1233,9 +1366,9 @@ do_renv_restore() {
 
     log ">(do_renv_restore):" "renv - restore, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       R -q -e 'renv::restore()' ; rc_renv_restore=$?
 
@@ -1256,9 +1389,9 @@ do_renv_show() {
 
     log ">(do_renv_show):" "renv - show status, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
 
       R -q -e 'renv::status()'
 
@@ -1276,9 +1409,9 @@ do_renv_reset() {
 
     log ">(do_renv_reset):" "renv - reset, ..."
 
-    # run in poetry shell -- venv activated
+    # run in venv activated subshell
 
-    ( source $(poetry env info --path)/bin/activate
+    ( activate
       
       if [ -f ./renv.lock ]; then
           rm ./renv.lock
@@ -1353,6 +1486,18 @@ do_re_force() {
 }
 
 # ////////////////////////////////////////////////////////////////////////
+
+
+
+do_js_node() {
+
+    log ">(do_js_node):" "js - node modules install, ..."
+
+    npm install -g markdownlint-cli2
+
+    log "<(do_js_node):" "js - node modules install, done."
+    
+}
 
 do_js_code() {
 
@@ -1429,6 +1574,8 @@ parse_args_run() {
     X_ALL_MODE=1
     X_PYTHON_MODE=0
     X_R_MODE=0
+    X_CODE_MODE=0
+    X_NODE_MODE=0
     cmds=""
 
     while [ $# -gt 0 ]; do
@@ -1455,6 +1602,7 @@ parse_args_run() {
                 RUN_PY_JUPYTER=1
                 RUN_PY_SHOW=1
                 RUN_JS_CODE=1
+                RUN_JS_NODE=1
                 RUN_RE_SETUP=1
                 RUN_RE_UPGRADE="$Y_RE_RENV_UPGRADE"
                 RUN_RE_RESTORE="$Y_RE_RENV_RESTORE"
@@ -1478,6 +1626,12 @@ parse_args_run() {
                 X_ALL_MODE:='0'
                 X_R_MODE:='1'
                 cmds="$cmds -R"
+                ;;
+            
+            --node|-J)
+                X_ALL_MODE:='0'
+                X_NODE_MODE:='1'
+                cmds="$cmds -J"
                 ;;
             
             --full|-F)
@@ -1559,6 +1713,7 @@ parse_args_run() {
             X_PYTHON_MODE="1"
             X_R_MODE="1"
             X_CODE_MODE="1"
+            X_NODE_MODE="1"
             ;;
         *)  ;;
     esac
@@ -1594,6 +1749,13 @@ parse_args_run() {
         *)  ;;
     esac
 
+    case "$X_NODE_MODE" in
+        0)
+            RUN_JS_NODE=0
+            ;;
+        *)  ;;
+    esac
+
     set +x
 
     debug "#(args): {\n $(set | sort | grep -e ^PY_OPTS -e ^RE_OPTS -e ^RUN_  -e ^X_  -e ^Y_ ) \n} ###"
@@ -1613,7 +1775,7 @@ parse_args_run() {
     env_defined RUN_RE_SHOW
     
     env_defined RUN_JS_CODE
-    
+    env_defined RUN_JS_NODE
 
     log "<(args):" "cmds: $cmds"
     
@@ -1687,6 +1849,11 @@ main_run() {
 
     if [ "$RUN_RE_SHOW" = '1' ]; then
         do_re_show $@
+        rc_exit $?
+    fi
+
+    if [ "$RUN_JS_NODE" = '1' ]; then
+        do_js_node $@
         rc_exit $?
     fi
 

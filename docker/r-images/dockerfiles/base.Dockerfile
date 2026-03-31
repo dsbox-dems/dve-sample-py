@@ -1,19 +1,19 @@
-FROM ubdems/dve-sample-r.cuda
+FROM ubdems/dve-sample-py.cuda
 #FROM ubdems/dve-sample-r.anchor
 
 LABEL org.opencontainers.image.vendor="ubdems" \
-      org.opencontainers.image.base.name="ubdems/dve-sample-r.anchor" \
-      org.opencontainers.image.title="ubdems/dve-sample-r.base" \
-      org.opencontainers.image.source="https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r" \
+      org.opencontainers.image.base.name="ubdems/dve-sample-py.anchor" \
+      org.opencontainers.image.title="ubdems/dve-sample-py.base" \
+      org.opencontainers.image.source="https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py" \
       org.opencontainers.image.authors="DEMS/datalab <dsuser.dems@gmail.com>" \
       org.opencontainers.image.description="TODO:description" \
       org.opencontainers.image.licenses="GPL-2.0-or-later" \
       it.unimib.datalab.type="project.base" \
-      it.unimib.datalab.name="dve-sample-r" \
+      it.unimib.datalab.name="dve-sample-py" \
       it.unimib.datalab.group="ub-dems-public/ds-labs" \
-      it.unimib.datalab.path="ub-dems-public/ds-labs/dve-sample-r" \
+      it.unimib.datalab.path="ub-dems-public/ds-labs/dve-sample-py" \
       it.unimib.datalab.schema="dve:1.0" \
-      it.unimib.datalab.lang="R" \
+      it.unimib.datalab.lang="R+Python" \
       it.unimib.datalab.from="2026-03-16" \
       it.unimib.datalab.until="2222-02-02" \
       it.unimib.datalab.owner="ab21010" \
@@ -26,6 +26,9 @@ ENV IMG_TYPE base
 
 ARG  Y_WORK_DIR
 ENV  X_WORK_DIR=$Y_WORK_DIR
+
+ARG  Y_PY_MODE
+ENV  X_PY_MODE=$Y_PY_MODE
 
 
 
@@ -92,6 +95,11 @@ ENV POETRY_HOME=/opt/poetry
 ENV PYVENVS_ROOT=/opt/pyvenvs
 ENV GLOBAL_VENV=/opt/pyvenvs/global
 
+ENV UV_ROOT=/usr/local/bin
+ENV UV_PYTHON_INSTALL_DIR=/opt/uv/python
+ENV UV_CACHE_DIR=/opt/uv/cache
+
+
 ENV FNM_ROOT=/opt/fnm
 ENV NODE_ROOT=/opt/nodejs
 ENV FNM_DIR=$NODE_ROOT/.fnm
@@ -112,6 +120,7 @@ RUN /rocker_scripts/install_ubs-py_base.sh
 RUN /rocker_scripts/install_ubs-py_system.sh
 RUN /rocker_scripts/install_ubs-py_pyenv.sh
 RUN /rocker_scripts/install_ubs-py_poetry.sh
+RUN /rocker_scripts/install_ubs-py_uv.sh
 RUN /rocker_scripts/install_ubs-py_lang.sh
 RUN /rocker_scripts/install_ubs-py_jupyter.sh
 
