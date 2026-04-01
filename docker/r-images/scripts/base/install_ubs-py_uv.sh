@@ -22,6 +22,7 @@ set -a
 
 : ${PYTHON_VERSION=${Y_PY_PYTHON_VERSION:-'3.14.3'}}
 : ${UV_ROOT:="/usr/local/bin"}
+: ${UV_INSTALL_DIR:="/usr/local/bin"}
 : ${UV_PYTHON_INSTALL_DIR:="/opt/uv/python"}
 : ${UV_CACHE_DIR:="/opt/uv/cache"}
 
@@ -98,8 +99,6 @@ function env_dump() {
     echo "+++< #ENV($0): $@"
 
 }
-
-
 
 function debug_uv() {
 
@@ -181,7 +180,7 @@ function install_uv() {
     debug_uv "install_uv_uv::pre"
 
     curl -LsSf https://astral.sh/uv/install.sh | \
-        env UV_INSTALL_DIR="/usr/local/bin" sh
+        env UV_INSTALL_DIR="$UV_INSTALL_DIR" sh
 
     debug_uv "install_uv_uv::post"
 
@@ -195,6 +194,7 @@ function config_uv() {
 
     mkdir -p "$UV_PYTHON_INSTALL_DIR"
     mkdir -p "$UV_CACHE_DIR"
+    mkdir -p "$UV_TOOL_DIR"
 
     echo "# +++ pyenv: PATH=${PATH}"
 
@@ -212,7 +212,11 @@ function install_uv_python() {
     # python setup
 
     env PYTHON_CONFIGURE_OPTS=${PYTHON_CONFIGURE_OPTS}  \
-        uv python install $Y_PY_PYTHON_VERSION --default
+        uv python install ${PYTHON_VERSION} \
+        --python-preference managed \
+        --preview
+
+    ## --default
 
     debug_uv "install_uv_python::post"
 
@@ -226,7 +230,37 @@ function config_uv_python() {
 
     debug_uv "config_uv_python::pre"
 
-    uv python pin --global
+    ## uv python update-shell
+    ## setenv_rehash
+    
+    ## uv python pin --global
+
+    # ── Locate the binary directly - never trust `uv python find` ────────────────
+    # uv installs to: $UV_PYTHON_INSTALL_DIR/cpython-<ver>-linux-<arch>/bin/python3
+    PYTHON_BIN=$(find "$UV_PYTHON_INSTALL_DIR" \
+                      -path "*/cpython-${PYTHON_VERSION}*/bin/python3" \
+                      -not -type d \
+                     | head -1)
+
+    if [[ -z "$PYTHON_BIN" ]]; then
+        error "ERROR: Could not locate python3 binary under ${UV_PYTHON_INSTALL_DIR}"
+        error "Contents: $(find "$UV_PYTHON_INSTALL_DIR" -name "python*" | sort)"
+        fatal "uv python setup failed"
+    fi
+
+    debug_uv "config_uv_python::==> Found managed binary: ${PYTHON_BIN}"
+    "$PYTHON_BIN" --version   # smoke test before symlinking
+
+    # ── System-wide symlinks ──────────────────────────────────────────────────────
+    PYTHON_MINOR="${PYTHON_VERSION%.*}"   # "3.14" from "3.14.3"
+    ln -sf "$PYTHON_BIN" /usr/local/bin/python
+    ln -sf "$PYTHON_BIN" /usr/local/bin/python3
+    ln -sf "$PYTHON_BIN" "/usr/local/bin/python${PYTHON_MINOR}"
+
+    python --version
+    python3 --version
+
+    debug_uv "config_uv_python::==> Done: $(python --version) at $(which python)"
 
     debug_uv "config_uv_python::post"
 
@@ -238,14 +272,21 @@ function upgrade_uv_python() {
 
     debug_uv "upgrade_uv_python::pre"
 
-    python -m pip --no-cache-dir install --upgrade --ignore-installed \
-            pip
+    # ── pip upgrade - explicitly pinned to managed binary ────────────────────────
+    # Do NOT use --system: install pip into the managed python's own site-packages
+    uv pip install \
+       --python "$PYTHON_BIN" \
+       --upgrade \
+       pip
 
-    python -m pip --no-cache-dir install --upgrade --ignore-installed \
-            setuptools \
-            wheel \
-            pipenv \
-            numpy
+    
+    uv pip install \
+       --python "$PYTHON_BIN" \
+       --upgrade \
+       setuptools \
+       wheel \
+       pipenv \
+       numpy
 
     debug_uv "upgrade_uv_python::post"
 
@@ -258,9 +299,11 @@ function install_uv_extras() {
 
     debug_uv "install_uv_extras::pre"
 
-    python -m pip --no-cache-dir install --upgrade --ignore-installed \
-            ipython \
-            cookiecutter
+    uv pip install \
+       --python "$PYTHON_BIN" \
+       --upgrade \
+       ipython \
+       cookiecutter
 
     debug_uv "install_uv_extras::post"
 
@@ -286,10 +329,12 @@ function install_uv_pipx() {
 #   PIPX_HOME_ALLOW_SPACE  Overrides default warning on spaces in the home path
 
     export PIP_REQUIRE_VIRTUALENV=false
-    python -m pip --no-cache-dir install --upgrade --ignore-installed \
-            pipx
+    uv pip install \
+       --python "$PYTHON_BIN" \
+       --upgrade \
+       pipx
 
-    python -m pipx ensurepath --global
+    uv run python -m pipx ensurepath --global
 
     debug_uv "install_uv_pipx::path"
 

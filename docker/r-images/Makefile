@@ -131,10 +131,16 @@ X_BUILD_CONF ?= ${CONF_DIR}/build.conf
 Y_RUNTIME_CONF ?= /etc/runtime.conf
 X_RUNTIME_CONF ?= ${CONF_DIR}/runtime.conf
 
+# ---(BUILD CONFIG)------------------------------------------------
+
+Y_DEBUG_ENV ?= 0
+
 # ---(PYTHON)------------------------------------------------
 
-X_PY_PYENV_VERSION ?= $(shell (cd ${ROOT_DIR} && cat .python-version))
-X_PY_RUN ?= poetry run
+Y_PY_PYTHON_VERSION ?= $(shell (cd ${ROOT_DIR} && cat .python-version))
+X_PY_PYENV_VERSION = $(Y_PY_PYTHON_VERSION)
+Y_PY_MODE ?= uv
+X_PY_RUN ?= uv run
 
 # ---(runtime)------------------------------------------------
 
@@ -617,8 +623,9 @@ build-image/%:
 		-f $$X_BLD_DOCKERFILE \
 		-t $$X_BLD_IMAGE_NAME \
 		--build-arg Y_WORK_DIR="${RUN_USER_HOME}/${WORK_DIR}" \
-		--build-arg Y_DEBUG_ENV="${Y_DEBUG_ENV:-0}" \
-		--build-arg Y_PY_MODE="${Y_PY_MODE:-uv}" \
+		--build-arg Y_DEBUG_ENV="${Y_DEBUG_ENV}" \
+		--build-arg Y_PY_MODE="${Y_PY_MODE}" \
+		--build-arg Y_PY_PYTHON_VERSION="${Y_PY_PYTHON_VERSION}" \
 		--label="it.unimib.datalab.project=${ID_PROJECT}" \
 		--label="it.unimib.datalab.branch=${BRANCH_NAME}" \
 		--label="it.unimib.datalab.commit=${COMMIT_HASH}" \

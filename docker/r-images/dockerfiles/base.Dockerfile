@@ -1,5 +1,5 @@
 FROM ubdems/dve-sample-py.cuda
-#FROM ubdems/dve-sample-r.anchor
+#FROM ubdems/dve-sample-py.anchor
 
 LABEL org.opencontainers.image.vendor="ubdems" \
       org.opencontainers.image.base.name="ubdems/dve-sample-py.anchor" \
@@ -30,6 +30,8 @@ ENV  X_WORK_DIR=$Y_WORK_DIR
 ARG  Y_PY_MODE
 ENV  X_PY_MODE=$Y_PY_MODE
 
+ARG  Y_PY_PYTHON_VERSION
+ENV  X_PY_PYTHON_VERSION=$Y_PY_PYTHON_VERSION
 
 
 #ARG DEBIAN_FRONTEND=noninteractive
@@ -95,9 +97,23 @@ ENV POETRY_HOME=/opt/poetry
 ENV PYVENVS_ROOT=/opt/pyvenvs
 ENV GLOBAL_VENV=/opt/pyvenvs/global
 
+# uv binary location
 ENV UV_ROOT=/usr/local/bin
+ENV UV_INSTALL_DIR=/usr/local/bin
+
+# Python managed by uv - system-wide, no home dependency
 ENV UV_PYTHON_INSTALL_DIR=/opt/uv/python
 ENV UV_CACHE_DIR=/opt/uv/cache
+ENV UV_TOOL_DIR=/opt/uv/tools
+ENV UV_TOOL_BIN_DIR=/usr/local/bin
+
+# Make uv-managed python visible system-wide
+ENV UV_PYTHON_PREFERENCE=only-managed
+ENV UV_LINK_MODE=copy
+
+# Ensure no home dir is ever consulted
+ENV UV_NO_CONFIG=1
+
 
 
 ENV FNM_ROOT=/opt/fnm

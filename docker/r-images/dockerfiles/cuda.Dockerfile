@@ -1,16 +1,16 @@
-FROM ubdems/dve-sample-r.anchor
+FROM ubdems/dve-sample-py.anchor
 
 LABEL org.opencontainers.image.vendor="ubdems" \
-      org.opencontainers.image.base.name="ubdems/dve-sample-r.cuda" \
-      org.opencontainers.image.title="ubdems/dve-sample-r.cuda" \
-      org.opencontainers.image.source="https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r" \
+      org.opencontainers.image.base.name="ubdems/dve-sample-py.cuda" \
+      org.opencontainers.image.title="ubdems/dve-sample-py.cuda" \
+      org.opencontainers.image.source="https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py" \
       org.opencontainers.image.authors="DEMS/datalab <dsuser.dems@gmail.com>" \
       org.opencontainers.image.description="TODO:description" \
       org.opencontainers.image.licenses="GPL-2.0-or-later" \
       it.unimib.datalab.type="project.cuda" \
-      it.unimib.datalab.name="dve-sample-r" \
+      it.unimib.datalab.name="dve-sample-py" \
       it.unimib.datalab.group="ub-dems-public/ds-labs" \
-      it.unimib.datalab.path="ub-dems-public/ds-labs/dve-sample-r" \
+      it.unimib.datalab.path="ub-dems-public/ds-labs/dve-sample-py" \
       it.unimib.datalab.schema="dve:1.0" \
       it.unimib.datalab.lang="R" \
       it.unimib.datalab.from="2026-03-16" \
@@ -20,6 +20,17 @@ LABEL org.opencontainers.image.vendor="ubdems" \
       it.unimib.datalab.tags="none"
 
 ENV IMG_TYPE cuda
+
+# from makefile (autodetect) - no default
+
+ARG  Y_WORK_DIR
+ENV  X_WORK_DIR=$Y_WORK_DIR
+
+ARG  Y_PY_MODE
+ENV  X_PY_MODE=$Y_PY_MODE
+
+ARG  Y_DEBUG_ENV=0
+ENV  X_DEBUG_ENV=$Y_DEBUG_ENV
 
 
 #ARG DEBIAN_FRONTEND=noninteractive
@@ -91,9 +102,6 @@ RUN  mkdir -p     /etc/ubs
 COPY scripts/cuda /rocker_scripts
 COPY cuda.conf    /etc/ubs/cuda.conf
 ARG  Y_BUILD_CONF=/etc/ubs/cuda.conf
-
-ARG  Y_DEBUG_ENV=0
-ENV  X_DEBUG_ENV $Y_DEBUG_ENV
 
 # cuda
 #RUN /rocker_scripts/install_ubs-cuda-11-470.sh
