@@ -23,6 +23,7 @@ set -a
 : ${PYTHON_VERSION=${Y_PY_PYTHON_VERSION:-'3.14.3'}}
 : ${UV_ROOT:="/usr/local/bin"}
 : ${UV_INSTALL_DIR:="/usr/local/bin"}
+: ${UV_TOOL_BIN_DIR:="/usr/local/bin"}
 : ${UV_PYTHON_INSTALL_DIR:="/opt/uv/python"}
 : ${UV_CACHE_DIR:="/opt/uv/cache"}
 
@@ -119,12 +120,12 @@ function debug_uv() {
 
     python --version  || true
 
-    which    pip      || true
-    which -a pip3     || true
+    # which    pip      || true
+    # which -a pip3     || true
 
-    pyenv --version   || true
-    pyenv   versions  || true
-    pyenv   version   || true
+    # pyenv --version   || true
+    # pyenv   versions  || true
+    # pyenv   version   || true
 
     which   pipx      || true
     pipx  --version   || true
@@ -272,21 +273,34 @@ function upgrade_uv_python() {
 
     debug_uv "upgrade_uv_python::pre"
 
+    # @unsupportd
+    # @see: https://claude.ai/share/c50dd24f-f3d1-4636-a989-7b5c04e361c3
+    #
+    # error (by design):
+    # "This Python installation is managed by uv and should not be modified."
+    #
+    #  The core principle:
+    #  in a uv-managed world, nothing installs into the base Python.
+    #  The base Python is a clean interpreter;
+    #  all packages live in venvs (per-project) or tool envs (uv tool).
+    #
+    
+    
     # ── pip upgrade - explicitly pinned to managed binary ────────────────────────
     # Do NOT use --system: install pip into the managed python's own site-packages
-    uv pip install \
-       --python "$PYTHON_BIN" \
-       --upgrade \
-       pip
-
     
-    uv pip install \
-       --python "$PYTHON_BIN" \
-       --upgrade \
-       setuptools \
-       wheel \
-       pipenv \
-       numpy
+    # uv pip install \
+    #    --python "$PYTHON_BIN" \
+    #    --upgrade \
+    #    pip
+    
+    # uv pip install \
+    #    --python "$PYTHON_BIN" \
+    #    --upgrade \
+    #    setuptools \
+    #    wheel \
+    #    pipenv \
+    #    numpy
 
     debug_uv "upgrade_uv_python::post"
 
@@ -299,11 +313,8 @@ function install_uv_extras() {
 
     debug_uv "install_uv_extras::pre"
 
-    uv pip install \
-       --python "$PYTHON_BIN" \
-       --upgrade \
-       ipython \
-       cookiecutter
+    uv tool install ipython
+    uv tool install cookiecutter    
 
     debug_uv "install_uv_extras::post"
 
@@ -328,22 +339,32 @@ function install_uv_pipx() {
 #   USE_EMOJI              Overrides emoji behavior. Default value varies based on platform.
 #   PIPX_HOME_ALLOW_SPACE  Overrides default warning on spaces in the home path
 
-    export PIP_REQUIRE_VIRTUALENV=false
-    uv pip install \
-       --python "$PYTHON_BIN" \
-       --upgrade \
-       pipx
-
-    uv run python -m pipx ensurepath --global
 
     debug_uv "install_uv_pipx::path"
 
     #setenv_rehash
 
-    pipx reinstall-all
-    pipx install --global --force pycowsay
+    # ── Install system tools via `uv tool` (replaces pipx pattern) ───────────────
+    # UV_TOOL_BIN_DIR=/usr/local/bin means shims are immediately on PATH,
+    # no `pipx ensurepath` or PATH export needed.
+    uv tool install pipx          # available if legacy pipx is still needed
+
+    # ── Install pipx-style global tools via pipx (if truly needed) ───────────────
+    # pipx itself is now a uv tool; use UV_TOOL_BIN_DIR instead of --global
+    # pycowsay example:
+    uv tool install pycowsay
+
+    # ── Smoke tests ───────────────────────────────────────────────────────────────
+    uv tool list
+    python --version
+    python3 --version
+    which -a pipx
+    which -a pycowsay
+    
+    uv run python -c "import sys; print('sys.prefix:', sys.prefix)"
+    pycowsay "uv=$(uv --version), python=$(python --version)"
+    
     pipx list
-    pipx run pycowsay "moooo! -- pyenv=$(pyenv --version), python=$(python --version), pipx=$(pipx --version)"
 
     pycowsay 'moooo!'
 
@@ -387,12 +408,12 @@ function check_uv() {
 
     python --version  || false
 
-    which    pip      || true
-    which -a pip3     || true
-    pip    --version  || false
+    # which    pip      || true
+    # which -a pip3     || true
+    # pip    --version  || false
 
     which   pipx      || true
-    pipx  --version   || false
+    pipx  --version   || true
 
     pipx    list \
           --global    || true
