@@ -36,6 +36,20 @@ set -a
 : ${X_PYTHON_MODE:=''}
 : ${X_R_MODE:=''}
 
+: ${X_PY_MODE:='uv'}
+
+# ------------------------------------------------------
+
+: ${PYTHON_VERSION=${Y_PY_PYTHON_VERSION:-'3.14.3'}}
+: ${UV_ROOT:="/usr/local/bin"}
+: ${UV_INSTALL_DIR:="/usr/local/bin"}
+: ${UV_TOOL_BIN_DIR:="/usr/local/bin"}
+: ${UV_PYTHON_INSTALL_DIR:="/opt/uv/python"}
+: ${UV_CACHE_DIR:="/opt/uv/cache"}
+: ${UV_PROJECT_ENVIRONMENT:=".venv.cdk"}
+
+: ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
+
 # ------------------------------------------------------
 
 X_ENV_SCRIPT="docker/r-images/scripts/setup/environ_ubs-all.sh"
@@ -612,7 +626,7 @@ activate() {
     
     case "$X_PY_MODE" in
         uv)
-            source .venv/bin/activate || \
+            source ${UV_PROJECT_ENVIRONMENT}/bin/activate || \
             error "activate[uv] failed"
         ;;
         poetry)
@@ -686,19 +700,20 @@ do_py_init() {
 
     case "$X_PY_MODE" in
         uv)
-            ls -lda ./.venv
+            [ -n "${UV_PROJECT_ENVIRONMENT}" ] && \
+                [ -d "./${UV_PROJECT_ENVIRONMENT}" ] && \
+                ( ls -lda ./${UV_PROJECT_ENVIRONMENT}; \
+                  log "+(do_py_init):" "py - venv detected: (rc:$?)" )
         ;;
         poetry)
             poetry env info
             poetry env list
+            log "+(do_py_init):" "py - venv detected: (rc:$?)"
         ;;
         *)
             error "undefined X_PY_MODE=$X_PY_MODE"
         ;;
     esac
-    
-
-    log "+(do_py_init):" "py - venv detected: (rc:$?)"
 
     log "<(do_py_init):" "py - venv init,  done."
     
@@ -711,7 +726,9 @@ do_py_remove() {
 
     case "$X_PY_MODE" in
         uv)
-            [ -d ./.venv ] && rm -rf ./.venv
+            [ -n "${UV_PROJECT_ENVIRONMENT}" ] && \
+                [ -d "./${UV_PROJECT_ENVIRONMENT}" ] && \
+                rm -rf "./${UV_PROJECT_ENVIRONMENT}"
         ;;
         poetry)
             if poetry env list > /dev/null; then
@@ -776,7 +793,7 @@ do_py_venv() {
 
     case "$X_PY_MODE" in
         uv)
-            uv venv --clear
+            uv venv --clear "${UV_PROJECT_ENVIRONMENT}"
         ;;
         poetry)
             if ! poetry env list > /dev/null; then
@@ -930,7 +947,7 @@ do_py_reticulate() {
 
       case "$X_PY_MODE" in
           uv)
-              eval "export X_ENV_VENV=$(realpath ./.venv)"
+              eval "export X_ENV_VENV=$(realpath "./${UV_PROJECT_ENVIRONMENT}")"
           ;;
           poetry)
               eval "export X_ENV_VENV=$(poetry env info --path)"
@@ -1675,11 +1692,12 @@ parse_args_run() {
 
     PY_OPTS=""
     PY_OPTS="$PY_OPTS:$Y_PY_SYSTEM_SUPPORT"
+    PY_OPTS="$PY_OPTS:$Y_PY_UV_SUPPORT"
     PY_OPTS="$PY_OPTS:$Y_PY_PYENV_SUPPORT"
     PY_OPTS="$PY_OPTS:$Y_PY_POETRY_SUPPORT"
     
     case "$PY_OPTS" in
-        :1:*|:*:0:*|:*:*:0)
+        :1:*|:*:0:0:0*)
             RUN_PY_CLEAR=0
             RUN_PY_RESET=0
             RUN_PY_VENV=0

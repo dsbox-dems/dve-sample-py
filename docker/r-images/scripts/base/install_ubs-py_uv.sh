@@ -26,6 +26,7 @@ set -a
 : ${UV_TOOL_BIN_DIR:="/usr/local/bin"}
 : ${UV_PYTHON_INSTALL_DIR:="/opt/uv/python"}
 : ${UV_CACHE_DIR:="/opt/uv/cache"}
+: ${UV_PROJECT_ENVIRONMENT:=".venv.cdk"}
 
 : ${PYTHON_CONFIGURE_OPTS:="--enable-shared"}
 

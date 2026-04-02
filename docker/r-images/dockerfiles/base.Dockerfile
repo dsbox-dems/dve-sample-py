@@ -106,6 +106,7 @@ ENV UV_PYTHON_INSTALL_DIR=/opt/uv/python
 ENV UV_CACHE_DIR=/opt/uv/cache
 ENV UV_TOOL_DIR=/opt/uv/tools
 ENV UV_TOOL_BIN_DIR=/usr/local/bin
+ENV UV_PROJECT_ENVIRONMENT=.venv.cdk
 
 # Make uv-managed python visible system-wide
 ENV UV_PYTHON_PREFERENCE=only-managed
