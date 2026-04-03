@@ -137,7 +137,7 @@ RUN /rocker_scripts/install_ubs-py_base.sh
 RUN /rocker_scripts/install_ubs-py_system.sh
 RUN /rocker_scripts/install_ubs-py_pyenv.sh
 RUN /rocker_scripts/install_ubs-py_uv.sh
-RUN /rocker_scripts/install_ubs-py_poetry.sh
+## RUN /rocker_scripts/install_ubs-py_poetry.sh
 RUN /rocker_scripts/install_ubs-py_lang.sh
 RUN /rocker_scripts/install_ubs-py_jupyter.sh
 

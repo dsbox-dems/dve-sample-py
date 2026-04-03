@@ -374,6 +374,27 @@ function install_uv_pipx() {
 
 }
 
+function install_uv_poetry() {
+
+    [ "$Y_PY_UV_EXTRAS" = 1 ] || return 0
+
+    debug_uv "install_uv_poetry::pre"
+
+    uv tool install poetry
+
+    # ── Smoke tests ───────────────────────────────────────────────────────────────
+    uv tool list
+    python --version
+    python3 --version
+    which -a poetry   || true
+    
+    poetry --version  || true
+
+    debug_uv "install_uv_poetry::post"
+
+
+}
+
 
 function define_uv_default() {
 
@@ -452,6 +473,7 @@ function main() {
     upgrade_uv_python
     install_uv_extras
     install_uv_pipx
+    install_uv_poetry
 
     define_uv_default
 
