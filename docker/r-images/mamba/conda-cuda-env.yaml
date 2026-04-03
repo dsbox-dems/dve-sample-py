@@ -1,0 +1,34 @@
+# conda-env.yaml
+# System-wide CUDA/cuDNN/BLAS environment managed by micromamba.
+# Targets NVIDIA driver 580+ (CTK 13.x / CUDA 13.1).
+# Installed to /opt/mamba/envs/cuda-base — no user-home dependency.
+---
+name: cuda-base
+
+channels:
+  - nvidia          # Primary source for CTK 13.x packages
+  - conda-forge     # Fallback and cuDNN supplementary builds
+
+dependencies:
+  # ── CUDA Toolkit ────────────────────────────────────────────────────────
+  # cuda-toolkit is a meta-package that pulls the compiler (nvcc),
+  # runtime libraries, and development headers as a matched set.
+  - cuda-toolkit=13.1
+
+  # ── cuDNN ───────────────────────────────────────────────────────────────
+  # Let the solver pin the cuDNN major version compatible with CUDA 13.1.
+  # As of 2025-Q2 that resolves to cuDNN 9.x.
+  - cudnn
+
+  # ── BLAS / NVBLAS ───────────────────────────────────────────────────────
+  # libblas from conda-forge provides the BLAS API; the solver will
+  # select the NVBLAS implementation when the nvidia channel is present.
+  - libblas=*=*nvidia   # selects the nvidia NVBLAS build string
+  - libcublas           # explicit cuBLAS shared libraries
+
+  # ── Compiler toolchain (required by nvcc at build time) ─────────────────
+  - gxx_linux-64>=12
+
+  # ── Runtime utilities ───────────────────────────────────────────────────
+  - nccl               # multi-GPU collective communication
+  - cuda-nvtx          # NVIDIA Tools Extension (profiling hooks)
