@@ -99,15 +99,25 @@ RUN  echo "$TZ" > /etc/timezone
 ARG  Y_KBD_LAYOUT_SET=it
 
 RUN  mkdir -p     /etc/ubs
+COPY mamba/conda-cuda-env.yaml   /etc/ubs/conda-cuda-env.yaml
 COPY scripts/cuda /rocker_scripts
 COPY cuda.conf    /etc/ubs/cuda.conf
 ARG  Y_BUILD_CONF=/etc/ubs/cuda.conf
+
+
+ENV MAMBA_VERSION=latest
+ENV MAMBA_ARCH=linux-64
+ENV MAMBA_INSTALL_URL=https://micro.mamba.pm/api/micromamba/${MAMBA_ARCH}/${MAMBA_VERSION}
+ENV MAMBA_BIN=/usr/local/bin/micromamba
+ENV MAMBA_ROOT=/opt/mamba
+ENV CONDA_ENV_NAME=cuda-base
+ENV CONDA_ENV_PREFIX=$MAMBA_ROOT/envs/$ENV_NAME
+ENV CONDA_ENV_FILE:=/etc/usb/conda-cuda-env.yaml
 
 # cuda
 #RUN /rocker_scripts/install_ubs-cuda-11-470.sh
 #RUN /rocker_scripts/install_ubs-cuda-12-560.sh
 RUN /rocker_scripts/install_ubs-cuda-mamba.sh
-
 
 
 RUN echo "# +++ #cuda(post): PATH=${PATH}"

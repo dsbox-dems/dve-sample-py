@@ -713,8 +713,6 @@ system-python = true
 - [ag-4] [Podman Rootless Guide: Handling Persistent Volumes](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md)
 - [ag-5] [NVIDIA Conda Channel Documentation](https://anaconda.org/nvidia/cuda-toolkit)
 
-
-
 # A:1 (ChatGPT)
 
 [^](#toc) **_Reproducible CUDA Base Image for Rootless Podman (Ubuntu + Rocker)_**

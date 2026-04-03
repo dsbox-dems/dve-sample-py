@@ -15,6 +15,23 @@ source ${Y_CUDA_CONF:-/etc/ubs/cuda.conf}
 NCPUS=${NCPUS:--1}
 
 
+set -a
+# ------------------------------------------------------
+
+# ${MAMBA_VERSION:="2.3.0-0"}
+: ${MAMBA_VERSION:="latest"}
+: ${MAMBA_ARCH:="linux-64"}
+: ${MAMBA_INSTALL_URL:="https://micro.mamba.pm/api/micromamba/${MAMBA_ARCH}/${MAMBA_VERSION}"}
+: ${MAMBA_BIN:="/usr/local/bin/micromamba"}
+: ${MAMBA_ROOT:="/opt/mamba"}
+: ${CONDA_ENV_NAME:="cuda-base"}
+: ${CONDA_ENV_PREFIX:="${MAMBA_ROOT}/envs/${CONDA_ENV_NAME}"}
+: ${CONDA_ENV_FILE:="/etc/usb/conda-cuda-env.yaml"}
+
+
+# ------------------------------------------------------
+set +a
+
 # ---(colors)------------------------------------------------
 C_OFF='\033[0m'
 C_Green='\033[0;32m'
@@ -104,20 +121,130 @@ function apt_install() {
 
 function install_mamba() {
 
-    [ "$Y_NV_CUDA_MAMBA" = 1 ] || return 0
+    [ "$Y_NV_MAMBA_INSTALL" = 1 ] || return 0
 
     debug "> install micro-mamba, ..."
 
-    "${SHELL}" <(curl -L micro.mamba.pm/install.sh) -b
+    # ── 1. Install micromamba binary ─────────────────────────────────────────────
+    debug  "[1/5] Downloading micromamba ${MAMBA_VERSION} (${MAMBA_ARCH})..."
+    curl -fsSL "${MAMBA_INSTALL_URL}" \
+        | tar -xj -C /tmp --strip-components=1 bin/micromamba
+    install -m 0755 /tmp/micromamba "${MAMBA_BIN}"
+    rm -f /tmp/micromamba
 
-    source ${HOME}/.$(basename ${SHELL})rc
+    # ── 2. Initialise the global mamba root ──────────────────────────────────────
+    debug "[2/5] Initialising MAMBA_ROOT_PREFIX at ${MAMBA_ROOT}..."
+    mkdir -p "${MAMBA_ROOT}"/{pkgs,etc,envs}
 
-    micromamba self-update
-    micromamba --version
+    # Provide a minimal .mambarc that is root-owned but world-readable.
+    # MAMBA_ROOT_PREFIX is exported; no ~/.bashrc manipulation required.
+    cat > /etc/mambarc <<'EOF'
+# System-wide micromamba configuration
+# No user-home dependency — compatible with rootless Podman builds.
+auto_activate_base: false
+always_yes: true
+EOF
+
+    export MAMBA_ROOT_PREFIX="${MAMBA_ROOT}"
 
     debug "> install micro-mamba, done."
     
 }
+
+
+function config_mamba() {
+
+    [ "$Y_NV_MAMBA_CONFIG" = 1 ] || return 0
+
+    debug "> config micro-mamba, ..."
+
+    # ── 2. Initialise the global mamba root ──────────────────────────────────────
+    debug "[2/5] Initialising MAMBA_ROOT_PREFIX at ${MAMBA_ROOT}, [etc]..."
+    mkdir -p "${MAMBA_ROOT}"/{etc}
+
+    export MAMBA_ROOT_PREFIX="${MAMBA_ROOT}"
+
+    # ── 3. Create the CUDA environment from the spec file ────────────────────────
+    debug "[3/5] Creating conda environment '${CONDA_ENV_NAME}' from ${CONDA_ENV_FILE}..."
+    "${MAMBA_BIN}" env create \
+                   --root-prefix "${MAMBA_ROOT}" \
+                   --name "${CONDA_ENV_NAME}" \
+                   --file "${CONDA_ENV_FILE}" \
+                   --yes
+
+    # ── 4. Export system-wide environment variables ───────────────────────────────
+    debug  "[4/5] Writing ${MAMBA_ROOT}/etc/profile.d/cuda-base.sh ..."
+    cat > "${MAMBA_ROOT}/etc/cuda-base.sh" <<EOF
+# CUDA / micromamba system environment — sourced for all login shells.
+export MAMBA_ROOT_PREFIX="${MAMBA_ROOT}"
+export CONDA_ENV_PREFIX="${CONDA_ENV_PREFIX}"
+export CUDA_HOME="${CONDA_ENV_PREFIX}"
+export CUDA_ROOT="${CONDA_ENV_PREFIX}"
+export PATH="${CONDA_ENV_PREFIX}/bin:\${PATH}"
+export LD_LIBRARY_PATH="${CONDA_ENV_PREFIX}/lib:${CONDA_ENV_PREFIX}/lib/stubs:\${LD_LIBRARY_PATH:-}"
+export NVBLAS_CONFIG_FILE="${CONDA_ENV_PREFIX}/etc/nvblas.conf"
+EOF
+    chmod 0644 "${MAMBA_ROOT}/etc/cuda-base.sh"
+
+    # Write the same variables to /etc/environment for non-login, non-interactive
+    # shells (e.g. systemd units, container entrypoints without a login shell).
+    # Note: /etc/environment does not support variable expansion — paths are literal.
+    echo "[4/5] Writing ${MAMBA_ROOT}/etc/environment entries..."
+    {
+        echo "MAMBA_ROOT_PREFIX=${MAMBA_ROOT}"
+        echo "CONDA_ENV_PREFIX=${CONDA_ENV_PREFIX}"
+        echo "CUDA_HOME=${CONDA_ENV_PREFIX}"
+        echo "CUDA_ROOT=${CONDA_ENV_PREFIX}"
+        # PATH prepend is not honoured by all parsers of /etc/environment;
+        # the profile.d entry above is the canonical PATH source.
+        echo "LD_LIBRARY_PATH=${CONDA_ENV_PREFIX}/lib:${CONDA_ENV_PREFIX}/lib/stubs"
+        echo "NVBLAS_CONFIG_FILE=${CONDA_ENV_PREFIX}/etc/nvblas.conf"
+    } >> "${MAMBA_ROOT}/etc/environment"
+
+    debug "> config micro-mamba, done."
+    
+}
+
+function enable_mamba() {
+
+    [ "$Y_NV_MAMBA_ENABLE" = 1 ] || return 0
+
+    debug "> enable micro-mamba, ..."
+
+
+    # ── 4. Export system-wide environment variables ───────────────────────────────
+    debug  "[4/5] Writing /etc/profile.d/cuda-base.sh ..."
+    
+    cp -v "${MAMBA_ROOT}/etc/cuda-base.sh" /etc/profile.d/cuda-base.sh 
+    chmod 0644 /etc/profile.d/cuda-base.sh
+
+    # Write the same variables to /etc/environment for non-login, non-interactive
+    # shells (e.g. systemd units, container entrypoints without a login shell).
+    # Note: /etc/environment does not support variable expansion — paths are literal.
+    echo "[4/5] Writing /etc/environment entries..."
+    cat "${MAMBA_ROOT}/etc/environment" >> /etc/environment
+
+    debug "> enable micro-mamba, done."
+    
+}
+
+function check_mamba() {
+
+    [ "$Y_NV_MAMBA_CHECK" = 1 ] || return 0
+
+    debug "> check micro-mamba, ..."
+
+    # ── 5. Verify the CUDA toolkit is present ────────────────────────────────────
+    echo "[5/5] Verifying installation..."
+    "${CONDA_ENV_PREFIX}/bin/nvcc" --version
+    echo "micromamba env '${CONDA_ENV_NAME}' ready at ${CONDA_ENV_PREFIX}"
+
+    debug "> check micro-mamba, done."
+    
+}
+
+
+
 
 function install_toolkit() {
 
@@ -284,6 +411,7 @@ function clean_up() {
 function main() {
     
     [ "$Y_NV_ANY_SUPPORT" = 1 ] || return 0
+    [ "$Y_NV_MAMBA_SUPPORT" = 1 ] || return 0
 
     env_dump $@
 
@@ -293,7 +421,11 @@ function main() {
 
     info "> script($0) -- STARTED, ..."
 
-    install_repo
+    install_mamba
+    config_mamba
+    enable_mamba
+    check_mamba
+    
     install_toolkit
     install_cudnn
     install_nvinfer
