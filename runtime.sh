@@ -8,18 +8,30 @@
 #  "./runtime.sh help" for usage info
 #
 
+#set -x   # trace mode
+
+# --------------------------------------------------------------
+
 E_ROOT_DIR="$(dirname $0)"
 E_MAKE_FILE="${E_ROOT_DIR}/Makefile"
-#E_DOCKER_DIR="${E_ROOT_DIR}/docker/r-images"
-#E_MAKE_FILE="${E_DOCKER_DIR}/Makefile"
+E_DOCKER_BASE="${E_ROOT_DIR}/docker"
 
 #-----------------------------------------------------------
 set -a
 
-: ${E_CONF_DIR:="${E_ROOT_DIR}/docker/r-images"}
+: ${E_DOCKER_NAME:="r-images"}
+
+: ${E_CONF_DIR:="${E_DOCKER_BASE}/${E_DOCKER_NAME}"}
+    
+: ${E_BUILD_FILE:="${E_CONF_DIR}/build.conf"}
+: ${E_CUDA_FILE:="${E_CONF_DIR}/cuda.conf"}
+
 : ${E_META_FILE:="${E_CONF_DIR}/project.conf"}
 : ${E_CONF_FILE:="${E_CONF_DIR}/runtime.conf"}
 : ${E_AUTO_FILE:="${E_CONF_DIR}/starter.conf"}
+
+[ -r "${E_CUDA_FILE}" ] && source "${E_CUDA_FILE}" || true
+[ -r "${E_BUILD_FILE}" ] && source "${E_BUILD_FILE}" || true
 
 [ -r "${E_META_FILE}" ] && source "${E_META_FILE}" || true
 [ -r "${E_CONF_FILE}" ] && source "${E_CONF_FILE}" || true

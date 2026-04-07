@@ -128,6 +128,8 @@ PRC_WORKER ?= "wrk-${ID_PROJECT}"
 
 Y_BUILD_CONF ?= /etc/build.conf
 X_BUILD_CONF ?= ${CONF_DIR}/build.conf
+Y_CUDA_CONF ?= /etc/cuda.conf
+X_CUDA_CONF ?= ${CONF_DIR}/cuda.conf
 Y_RUNTIME_CONF ?= /etc/runtime.conf
 X_RUNTIME_CONF ?= ${CONF_DIR}/runtime.conf
 
@@ -624,6 +626,8 @@ build-image/%:
 		-t $$X_BLD_IMAGE_NAME \
 		--build-arg Y_WORK_DIR="${RUN_USER_HOME}/${WORK_DIR}" \
 		--build-arg Y_DEBUG_ENV="${Y_DEBUG_ENV}" \
+		--build-arg Y_NV_CONDA_ENV_NAME="${Y_NV_CONDA_ENV_NAME}" \
+		--build-arg Y_NV_CONDA_ENV_FILE="${Y_NV_CONDA_ENV_FILE}" \
 		--build-arg Y_PY_MODE="${Y_PY_MODE}" \
 		--build-arg Y_PY_PYTHON_VERSION="${Y_PY_PYTHON_VERSION}" \
 		--label="it.unimib.datalab.project=${ID_PROJECT}" \
@@ -693,6 +697,7 @@ run/shell:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -732,6 +737,7 @@ run/status:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -780,6 +786,7 @@ run/setup:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -816,6 +823,7 @@ run/upgrade:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -852,6 +860,7 @@ run/clear:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -892,6 +901,7 @@ run/environ:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -930,6 +940,7 @@ run/profile:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1079,6 +1090,7 @@ run/rscript-rs:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1119,6 +1131,7 @@ run/python-repl:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1157,6 +1170,7 @@ run/python-run:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1198,6 +1212,7 @@ run/exec-auto:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1237,6 +1252,7 @@ run/rscript-cli:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1280,6 +1296,7 @@ run/build:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1318,6 +1335,7 @@ run/test:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1356,6 +1374,7 @@ run/check:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1394,6 +1413,7 @@ run/command:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1433,6 +1453,7 @@ run/code-server:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1473,6 +1494,7 @@ run/jupyter-lab:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1512,6 +1534,7 @@ run/jupyter-notebook:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
@@ -1566,6 +1589,7 @@ run/rstudio-server:
 		-e GROUPID=${RUN_USER_GID} \
 		-e ROOT=true  \
 		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
 		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
 		-e X_DEBUG="${X_DEBUG:-0}" \
 		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \

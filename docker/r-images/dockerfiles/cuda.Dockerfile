@@ -102,17 +102,26 @@ RUN  mkdir -p     /etc/ubs
 COPY mamba/conda-cuda-env.yaml   /etc/ubs/conda-cuda-env.yaml
 COPY scripts/cuda /rocker_scripts
 COPY cuda.conf    /etc/ubs/cuda.conf
-ARG  Y_BUILD_CONF=/etc/ubs/cuda.conf
+ARG  Y_CUDA_CONF=/etc/ubs/cuda.conf
+
+ARG  Y_TERM_SET=xterm-256color
+ENV  TERM $Y_TERM_SET
 
 
-ENV MAMBA_VERSION=latest
-ENV MAMBA_ARCH=linux-64
-ENV MAMBA_INSTALL_URL=https://micro.mamba.pm/api/micromamba/${MAMBA_ARCH}/${MAMBA_VERSION}
-ENV MAMBA_BIN=/usr/local/bin/micromamba
-ENV MAMBA_ROOT=/opt/mamba
-ENV CONDA_ENV_NAME=cuda-base
-ENV CONDA_ENV_PREFIX=$MAMBA_ROOT/envs/$ENV_NAME
-ENV CONDA_ENV_FILE:=/etc/usb/conda-cuda-env.yaml
+ENV MAMBA_VERSION     latest
+ENV MAMBA_ARCH        linux-64
+ENV MAMBA_INSTALL_URL https://micro.mamba.pm/api/micromamba/${MAMBA_ARCH}/${MAMBA_VERSION}
+ENV MAMBA_BIN         /usr/local/bin/micromamba
+ENV MAMBA_ROOT        /opt/mamba
+
+
+ARG Y_NV_CONDA_ENV_NAME=cuda-base
+ENV CONDA_ENV_NAME $Y_NV_CONDA_ENV_NAME
+
+ARG Y_NV_CONDA_ENV_FILE=conda-cuda-env.yaml
+ENV CONDA_ENV_FILE $Y_NV_CONDA_ENV_FILE
+
+ENV CONDA_ENV_PREFIX=$MAMBA_ROOT/envs/${CONDA_ENV_NAME}
 
 # cuda
 #RUN /rocker_scripts/install_ubs-cuda-11-470.sh

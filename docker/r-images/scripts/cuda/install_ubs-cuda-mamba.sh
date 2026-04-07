@@ -26,7 +26,7 @@ set -a
 : ${MAMBA_ROOT:="/opt/mamba"}
 : ${CONDA_ENV_NAME:="cuda-base"}
 : ${CONDA_ENV_PREFIX:="${MAMBA_ROOT}/envs/${CONDA_ENV_NAME}"}
-: ${CONDA_ENV_FILE:="/etc/usb/conda-cuda-env.yaml"}
+: ${CONDA_ENV_FILE:="conda-cuda-env.yaml"}
 
 
 # ------------------------------------------------------
@@ -138,7 +138,7 @@ function install_mamba() {
 
     # Provide a minimal .mambarc that is root-owned but world-readable.
     # MAMBA_ROOT_PREFIX is exported; no ~/.bashrc manipulation required.
-    cat > /etc/mambarc <<'EOF'
+    cat > ${MAMBA_ROOT}/.mambarc <<'EOF'
 # System-wide micromamba configuration
 # No user-home dependency — compatible with rootless Podman builds.
 auto_activate_base: false
@@ -152,11 +152,11 @@ EOF
 }
 
 
-function config_mamba() {
+function environ_mamba() {
 
-    [ "$Y_NV_MAMBA_CONFIG" = 1 ] || return 0
+    [ "$Y_NV_MAMBA_ENVIRON" = 1 ] || return 0
 
-    debug "> config micro-mamba, ..."
+    debug "> environ micro-mamba, ..."
 
     # ── 2. Initialise the global mamba root ──────────────────────────────────────
     debug "[2/5] Initialising MAMBA_ROOT_PREFIX at ${MAMBA_ROOT}, [etc]..."
@@ -169,7 +169,7 @@ function config_mamba() {
     "${MAMBA_BIN}" env create \
                    --root-prefix "${MAMBA_ROOT}" \
                    --name "${CONDA_ENV_NAME}" \
-                   --file "${CONDA_ENV_FILE}" \
+                   --file "/etc/ubs/${CONDA_ENV_FILE}" \
                    --yes
 
     # ── 4. Export system-wide environment variables ───────────────────────────────
@@ -183,6 +183,7 @@ export CUDA_ROOT="${CONDA_ENV_PREFIX}"
 export PATH="${CONDA_ENV_PREFIX}/bin:\${PATH}"
 export LD_LIBRARY_PATH="${CONDA_ENV_PREFIX}/lib:${CONDA_ENV_PREFIX}/lib/stubs:\${LD_LIBRARY_PATH:-}"
 export NVBLAS_CONFIG_FILE="${CONDA_ENV_PREFIX}/etc/nvblas.conf"
+#@(NVBLAS): export LD_PRELOAD=/opt/mamba/envs/cuda-base/lib/libnvblas.so
 EOF
     chmod 0644 "${MAMBA_ROOT}/etc/cuda-base.sh"
 
@@ -201,7 +202,18 @@ EOF
         echo "NVBLAS_CONFIG_FILE=${CONDA_ENV_PREFIX}/etc/nvblas.conf"
     } >> "${MAMBA_ROOT}/etc/environment"
 
-    debug "> config micro-mamba, done."
+    cat > "${MAMBA_ROOT}/etc/nvblas.conf" <<EOF
+# CUDA nvBLAS config
+NVBLAS_LOGFILE /tmp/nvblas.log
+NVBLAS_CPU_BLAS_LIB /opt/mamba/envs/cuda-base/lib/libopenblas.so.0
+NVBLAS_GPU_LIST ALL0
+NVBLAS_TILE_DIM 2048
+NVBLAS_AUTOPIN_MEM_ENABLEDEOF
+EOF
+    
+    chmod 0644 "${MAMBA_ROOT}/etc/nvblas.conf"
+
+    debug "> environ micro-mamba, done."
     
 }
 
@@ -215,7 +227,7 @@ function enable_mamba() {
     # ── 4. Export system-wide environment variables ───────────────────────────────
     debug  "[4/5] Writing /etc/profile.d/cuda-base.sh ..."
     
-    cp -v "${MAMBA_ROOT}/etc/cuda-base.sh" /etc/profile.d/cuda-base.sh 
+    ln -s "${MAMBA_ROOT}/etc/cuda-base.sh" /etc/profile.d/cuda-base.sh 
     chmod 0644 /etc/profile.d/cuda-base.sh
 
     # Write the same variables to /etc/environment for non-login, non-interactive
@@ -285,10 +297,8 @@ function install_nvtop() {
 
     debug "> install nvtop utils, ..."
     
-    # apt_install \
-    #     $NV_NVTOP_PACKAGES
-    
-    warn "! NV_NVTOP_PACKAGES: apt install.$NV_NVTOP_PACKAGES, skipped"
+    apt_install \
+        $NV_NVTOP_PACKAGES
 
     debug "< install nvtop utils, done."
     
@@ -299,6 +309,16 @@ function config_blas() {
     [ "$Y_NV_CUDA_BLAS" = 1 ] || return 0
 
     debug "> config blas libs, ..."
+
+    # @see: https://www.perplexity.ai/search/mamba-blas-issue-on-cuda-envir-hHtQhk9QSCSxkjQ7JRb9Ww
+
+    # in /etc/profile.d/cuda-base.sh
+
+    # export NVBLAS_CONFIG_FILE=/opt/mamba/envs/cuda-base/nvblas.conf
+    # export LD_PRELOAD=/opt/mamba/envs/cuda-base/lib/libnvblas.so    
+
+
+
     
     # reset openblas setup
     # @see: https://csantill.github.io/RPerformanceWBLAS/
@@ -358,6 +378,14 @@ NV_NVINFER_VERSION=$NV_NVINFER_VERSION
 NV_NVINFER_VER=$NV_NVINFER_VER
 NV_NVINFER_PACKAGE_NAME=$NV_NVINFER_PACKAGE_NAME
 
+MAMBA_VERSION=$MAMBA_VERSION
+MAMBA_ARCH=$MAMBA_ARCH
+MAMBA_INSTALL_URL=$MAMBA_INSTALL_URL
+MAMBA_BIN=$MAMBA_BIN
+MAMBA_ROOT=$MAMBA_ROOT
+CONDA_ENV_NAME=$CONDA_ENV_NAME
+CONDA_ENV_FILE=$CONDA_ENV_FILE
+CONDA_ENV_PREFIX=$CONDA_ENV_PREFIX
 
 --
 PATH=$PATH
@@ -403,7 +431,13 @@ EOF
 
 
 function clean_up() {
-    :
+    
+    debug "> clean mamba cache, ..."
+    
+    mamba clean --all
+
+    debug "< clean mamba cache, done."
+    
 }
 
 
@@ -415,14 +449,14 @@ function main() {
 
     env_dump $@
 
-    [ "$Y_NV_CUDA_SUPPORT" = 1 ] || return 0
+    ## [ "$Y_NV_CUDA_SUPPORT" = 1 ] || return 0
 
     [ "$Y_NV_CUDA_SETUP" = 'mamba' ] || return 0
 
     info "> script($0) -- STARTED, ..."
 
     install_mamba
-    config_mamba
+    environ_mamba
     enable_mamba
     check_mamba
     
