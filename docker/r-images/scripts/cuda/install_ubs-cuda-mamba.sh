@@ -257,53 +257,6 @@ function check_mamba() {
 
 
 
-
-function install_toolkit() {
-
-    [ "$Y_NV_CUDA_TOOLKIT" = 1 ] || return 0
-
-    debug "> install cuda toolkit, ..."
-    
-
-    debug "< install cuda toolkit, done."
-    
-}
-
-function install_cudnn() {
-
-    [ "$Y_NV_CUDA_CUDNN" = 1 ] || return 0
-
-    debug "> install cudnn libs, ..."
-    
-    debug "< install cudnn libs, done."
-    
-}
-
-function install_nvinfer() {
-
-    [ "$Y_NV_CUDA_NVINFER" = 1 ] || return 0
-
-    debug "> install tensor-rt libs, ..."
-
-    debug "< install tensor-rt libs, done."
-    
-}
-
-
-
-function install_nvtop() {
-
-    [ "$Y_NV_CUDA_NVTOP" = 1 ] || return 0
-
-    debug "> install nvtop utils, ..."
-    
-    apt_install \
-        $NV_NVTOP_PACKAGES
-
-    debug "< install nvtop utils, done."
-    
-}
-
 function config_blas() {
 
     [ "$Y_NV_CUDA_BLAS" = 1 ] || return 0
@@ -394,8 +347,9 @@ LIBRARY_PATH=$LIBRARY_PATH
 --
 
 nvidia-smi: $(which nvidia-smi)
+nvidia-smi.v: $(nvidia-smi --version || true)
 nvcc: $(which nvcc)
-nvtop: $(which nvtop)
+nvcc.v: $(nvcc --version || true)
 
 ## -------------------------------------------
 EOF
@@ -434,7 +388,7 @@ function clean_up() {
     
     debug "> clean mamba cache, ..."
     
-    mamba clean --all
+    "${MAMBA_BIN}" clean --all
 
     debug "< clean mamba cache, done."
     
@@ -458,14 +412,12 @@ function main() {
     install_mamba
     environ_mamba
     enable_mamba
+
     check_mamba
     
-    install_toolkit
-    install_cudnn
-    install_nvinfer
-    install_nvtop
-    
     config_blas
+    
+    setenv_rehash
     
     check_cuda
 

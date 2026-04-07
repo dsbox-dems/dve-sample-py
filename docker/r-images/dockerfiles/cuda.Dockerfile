@@ -127,6 +127,7 @@ ENV CONDA_ENV_PREFIX=$MAMBA_ROOT/envs/${CONDA_ENV_NAME}
 #RUN /rocker_scripts/install_ubs-cuda-11-470.sh
 #RUN /rocker_scripts/install_ubs-cuda-12-560.sh
 RUN /rocker_scripts/install_ubs-cuda-mamba.sh
+RUN /rocker_scripts/install_ubs-cuda-utils.sh
 
 
 RUN echo "# +++ #cuda(post): PATH=${PATH}"
