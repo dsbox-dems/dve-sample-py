@@ -139,7 +139,7 @@ repository    = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
 [project.scripts]
 main  = "dve.cli:main"
 demo  = "vce.cli:main"
-hello = "dve.scripts.dummy.dummy_script:main"
+hello = "dve.scripts.dummy.dummy_hello:main"
 
 
 # ============================================================
@@ -239,7 +239,10 @@ url = "https://download.pytorch.org/whl/cu130"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/*"]
+packages = [
+  "src/dve",
+  "src/vce",
+]
 
 # --- [poetry] ---------------------------------------------------
 
