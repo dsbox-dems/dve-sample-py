@@ -276,15 +276,19 @@ ifdef DISPLAY
     X_NET_OPTIONS = \
 	  -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
 	  -v ${XAUTHORITY}:/root/.Xauthority:ro
+    X_SEC_OPTIONS = \
+	  --security-opt label=type:container_runtime_t
 else
     X_NET_OPTIONS =
     X_ENV_OPTIONS =
+    X_SEC_OPTIONS =
 endif
 else
     X_NET_OPTIONS =
     X_ENV_OPTIONS =
+    X_SEC_OPTIONS =
 endif
-X_RUNTIME_OPTIONS := $(X_ENV_OPTIONS) $(X_NET_OPTIONS)
+X_RUNTIME_OPTIONS := $(X_ENV_OPTIONS) $(X_NET_OPTIONS) $(X_SEC_OPTIONS)
 
 # ---(xdg)------------------------------------------------
 
@@ -335,6 +339,15 @@ RUNTIME_BUILD_OPTS := $(BUILD_RUNTIME_OPTIONS)
 
 RUNTIME_TEST_OPTS := 'test'
 RUNTIME_CHECK_OPTS := 'check'
+
+# ---(rscript)------------------------------------------------
+
+SHELL_EXTRA_RUNTIME_OPTIONS := 
+SHELL_DEFAULT_RUNTIME_OPTIONS := $(SHELL_EXTRA_RUNTIME_OPTIONS) 
+SHELL_RUNTIME_OPTIONS := $(SHELL_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_SHELL_OPTS := $(SHELL_RUNTIME_OPTIONS)
+
 
 # ---(rscript)------------------------------------------------
 
@@ -620,7 +633,8 @@ build-image/%:
 	export X_BLD_IMAGE_NAME="$$(grep 'org.opencontainers.image.title' $$X_BLD_DOCKERFILE | cut -d\" -f2)"; \
 	: $${X_BLD_IMAGE_NAME:=$(patsubst %,${ID_USER}/${ID_PROJECT}.%,$*)}; \
 	export X_BLD_LOGFILE=${LOGB_DIR}/$$(basename $${X_BLD_IMAGE_NAME}).log; \
-	echo -e "# ${C_BWhite}#BUILD[*]:>> $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" | tee -a ${LOGB_DIR}/build-summary.log; \
+	echo -e "# ${C_BWhite}#BUILD[*]:>> $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" |\
+	tee -a ${LOGB_DIR}/build-summary.log; \
 	$(DOCKER) build \
 		-f $$X_BLD_DOCKERFILE \
 		-t $$X_BLD_IMAGE_NAME \
@@ -638,7 +652,8 @@ build-image/%:
 		$(BUILD_OPTIONS) \
 		. 2>&1 | tee -a $$X_BLD_LOGFILE; \
 		RC=$${PIPESTATUS[0]} ; \
-	echo -e "# ${C_BWhite}#BUILD($$RC):<< $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" | tee -a ${LOGB_DIR}/build-summary.log; \
+	echo -e "# ${C_BWhite}#BUILD($$RC):<< $$(date -Isec) - ${C_BYellow}$$X_BLD_IMAGE_NAME${C_BWhite} <<- $$X_BLD_DOCKERFILE ${C_OFF}" |\
+	tee -a ${LOGB_DIR}/build-summary.log; \
 	exit $$RC
 
 # . 2>&1 | tee -a $$X_BLD_LOGFILE ; \
@@ -965,7 +980,7 @@ run/term:
 		${X_ENV_OPTIONS} \
 		-ti  \
 		$(shell ${DOCKER} ps | grep ${IMG_RUNTIME} | cut -d' ' -f1 ) \
-		'/bin/bash' ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} || true
+		'/bin/bash' ${RUNTIME_SHELL_OPTS} ${RUNTIME_ARGS} || true
 
 run/xterm:
         #@echo "CLI: xterm ${RUNTIME_ARGS}"
@@ -978,7 +993,7 @@ run/xterm:
 		'/usr/bin/xterm' \
 		'-fn' '9x15' \
 		'-T'  "${IMG_RUNTIME}-$${CONTAINER_ID}" \
-		'-e' $${SHELL} ${RUNTIME_RSCRIPT_OPTS} ${RUNTIME_ARGS} &
+		'-e' ${X_PY_RUN} $${SHELL} ${RUNTIME_SHELL_OPTS} ${RUNTIME_ARGS} &
 
 
 # xterm -title "RStudio Container Terminal" \
@@ -1146,7 +1161,7 @@ run/python-repl:
 		${PYVENV_RUN} ${RUNTIME_IPYTHON_OPTS} ${RUNTIME_ARGS}
 
 run/python-run:
-	@echo "CLI: Rscript ${RUNTIME_ARGS}"
+	@echo "CLI: Python run ${RUNTIME_ARGS}"
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
