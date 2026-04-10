@@ -152,7 +152,7 @@ RUN_PORT_A_EXT ?= 8888
 RUN_PORT_B_INT ?= 8787
 RUN_PORT_B_EXT ?= 28787
 RUN_PORT_C_INT ?= 8686
-RUN_PORT_C_EXT ?= 28686
+RUN_PORT_C_EXT ?= 8686
 RUN_PORT_D_INT ?= 8080
 RUN_PORT_D_EXT ?= 28080
 RUN_USER_UID = 0
@@ -1538,7 +1538,7 @@ run/dev:
 run/antigravity:
 	@echo "ANTIGRAVITY: local ${RUNTIME_ARGS}"
 	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
-	@export _passw_=$$(cat ~/.rup/*); \
+	export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
 		--rm \
 		${DOCKER_RUNTIME_OPTIONS} \
@@ -1695,6 +1695,7 @@ run/jupyter-lab:
 		--name  \
 		${PRC_RUNTIME}.lab-$$PPID \
 		${IMG_RUNTIME} \
+		${X_PY_RUN} \
 		'jupyter' ${RUNTIME_JUPYTER_LAB_OPTS} ${RUNTIME_ARGS}
 
 
@@ -1753,7 +1754,7 @@ run/rstudio-server:
 	@echo " X2Go:      chromium-browser http://localhost:${RUN_PORT_B_EXT}"
 	@echo " nomachine: firefox          http://localhost:${RUN_PORT_B_EXT}"
 	@echo ""
-	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}   -   X_X=${X_X}"
+	@[ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}   -   X_X=${X_X}" || true
 	@echo ""
 	@export _passw_=$$(cat ~/.rup/*); \
 	$(DOCKER)  run \
