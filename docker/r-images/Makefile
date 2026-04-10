@@ -394,6 +394,44 @@ CLI_RUNTIME_OPTIONS := $(AUTO_DEFAULT_RUNTIME_OPTIONS)
 RUNTIME_CLI_OPTS := "bash" "-c" $(CLI_RUNTIME_OPTIONS)
 
 
+# ---(dev)------------------------------------------------
+
+# --accept-server-license-terms
+DEV_EXTRA_RUNTIME_OPTIONS := 
+DEV_DEFAULT_RUNTIME_OPTIONS := $(DEV_EXTRA_RUNTIME_OPTIONS) 
+DEV_RUNTIME_OPTIONS := $(DEV_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_DEV_OPTS := $(DEV_RUNTIME_OPTIONS)
+
+
+# ---(antigravity)------------------------------------------------
+
+ANTIGRAVITY_EXTRA_RUNTIME_OPTIONS :=  --disable-gpu --no-sandbox 
+ANTIGRAVITY_DEFAULT_RUNTIME_OPTIONS := $(ANTIGRAVITY_EXTRA_RUNTIME_OPTIONS) 
+ANTIGRAVITY_RUNTIME_OPTIONS := $(ANTIGRAVITY_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_ANTIGRAVITY_OPTS := $(ANTIGRAVITY_RUNTIME_OPTIONS)
+
+
+# ---(cursor)------------------------------------------------
+
+CURSOR_EXTRA_RUNTIME_OPTIONS := 
+CURSOR_DEFAULT_RUNTIME_OPTIONS := $(CURSOR_EXTRA_RUNTIME_OPTIONS) 
+CURSOR_RUNTIME_OPTIONS := $(CURSOR_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_CURSOR_OPTS := $(CURSOR_RUNTIME_OPTIONS)
+
+
+# ---(code)------------------------------------------------
+
+# --accept-server-license-terms
+CODE_EXTRA_RUNTIME_OPTIONS := 
+CODE_DEFAULT_RUNTIME_OPTIONS := $(CODE_EXTRA_RUNTIME_OPTIONS) 
+CODE_RUNTIME_OPTIONS := $(CODE_DEFAULT_RUNTIME_OPTIONS)
+
+RUNTIME_CODE_OPTS := $(CODE_RUNTIME_OPTIONS)
+
+
 # ---(code)------------------------------------------------
 
 # --accept-server-license-terms
@@ -502,7 +540,10 @@ build-upgrade: build-update
 
 # ---(run)------------------------------------------------
 
+.PHONY: runtime%
+
 .PHONY: runtime runtime-repl runtime-cli runtime-rstudio runtime-auto runtime-pyrun
+#.PHONY: runtime-shell runtime-dev runtime-antigravity runtime-cursor runtime-code
 
 runtime: init run/runtime
 
@@ -543,6 +584,12 @@ runtime-command: init run/command
 runtime-term: init run/term
 
 runtime-xterm: init run/xterm
+
+runtime-dev: init run/dev
+
+runtime-antigravity: init run/antigravity
+
+runtime-cursor: init run/cursor
 
 runtime-code: init run/code-server
 
@@ -1403,6 +1450,8 @@ run/check:
 		${X_PY_RUN} \
 		'./build.sh' ${RUNTIME_CHECK_OPTS} ${RUNTIME_ARGS}
 
+# ---(edit)------------------------------------------------
+
 run/command:
         #@echo "CLI: command ${RUNTIME_ARGS}"
 	@export _passw_=$$(cat ~/.rup/*); \
@@ -1440,6 +1489,132 @@ run/command:
 		${IMG_RUNTIME} \
 		${X_PY_RUN} \
 		${RUNTIME_ARGS} ${RUNTIME_RSCRIPT_OPTS}
+
+# ---(dev)------------------------------------------------
+
+run/dev:
+	@echo "DEV: local ${RUNTIME_ARGS}"
+	@echo "SHELL=$${SHELL}" 
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.dev \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		$$SHELL  ${RUNTIME_DEV_OPTS} ${RUNTIME_ARGS}
+
+# ---(edit)------------------------------------------------
+
+run/antigravity:
+	@echo "ANTIGRAVITY: local ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.antigravity-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		'antigravity' ${RUNTIME_ANTIGRAVITY_OPTS} ${RUNTIME_ARGS}
+
+run/cursor:
+	@echo "CURSOR: local ${RUNTIME_ARGS}"
+	@[ "${X_X}" = 1 ] && [ -n "${DISPLAY}" ] && echo "DISPLAY=${DISPLAY}" || true
+	@export _passw_=$$(cat ~/.rup/*); \
+	$(DOCKER)  run \
+		--rm \
+		${DOCKER_RUNTIME_OPTIONS} \
+		-v ${HOME_DIR}:${RUN_USER_HOME}:Z  \
+		-v ~/work:${RUN_USER_HOME}/work:Z  \
+		-v ~/data:${RUN_USER_HOME}/data:Z  \
+		-v ~/data:${HOME}/data:Z  \
+		-v ~/${WORK_DIR}/etc/R:${RUN_USER_HOME}/.R:Z  \
+		-v /usr/local:/usr/local/.import:Z,ro  \
+		-v /opt:/opt/.import:Z  \
+		-v /data/opt/local:/data/opt/local:Z  \
+		-v /store/local:/store/local:Z  \
+		-v /store/share:/store/share  \
+		-v /user:/user  \
+		-v /vol:/vol  \
+		-w ${RUN_USER_HOME}/${WORK_DIR}  \
+		-e PASSWORD=$$_passw_ \
+		-e USER=${RUN_USER_NAME} \
+		-e USERID=${RUN_USER_UID} \
+		-e GROUPID=${RUN_USER_GID} \
+		-e ROOT=true  \
+		-e X_BUILD_CONF="${X_BUILD_CONF}" \
+		-e X_CUDA_CONF="${X_CUDA_CONF}" \
+		-e X_RUNTIME_CONF="${X_RUNTIME_CONF}" \
+		-e X_DEBUG="${X_DEBUG:-0}" \
+		-e X_DEBUG_ENV="${X_DEBUG_ENV:-0}" \
+		-e PYENV_VERSION=${X_PY_PYENV_VERSION}  \
+		${XDG_RUNTIME_OPTIONS} \
+		${X_RUNTIME_OPTIONS} \
+		-ti  \
+		--name  \
+		${PRC_RUNTIME}.cursor-$$PPID \
+		${IMG_RUNTIME} \
+		${X_PY_RUN} \
+		'cursor' ${RUNTIME_CURSOR_OPTS} ${RUNTIME_ARGS}
+
 
 run/code-server:
 	@echo "CODE: server ${RUNTIME_ARGS}"
@@ -1481,6 +1656,7 @@ run/code-server:
 		${X_PY_RUN} \
 		'code-server' ${RUNTIME_CODE_OPTS} ${RUNTIME_ARGS}
 
+# ---(servers)------------------------------------------------
 
 run/jupyter-lab:
 	@echo "JUPYTER: lab ${RUNTIME_ARGS}"

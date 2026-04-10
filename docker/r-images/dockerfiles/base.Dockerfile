@@ -81,21 +81,21 @@ RUN /rocker_scripts/install_ubs-utils.sh
 
 ENV NO_AT_BRIDGE=1
 
-# cursor support
+# cursor/antigrvity support
 
 ENV CAN_LAUNCH_AS_ROOT=1
 
 # python support
 
-ENV VIRTUAL_ENV=/opt/venv
-ENV VIRTUAL_IMG=/opt/venv.img
+#ENV VIRTUAL_ENV=/opt/venv
+#ENV VIRTUAL_IMG=/opt/venv.img
 
 ENV PYENV_ROOT=/opt/pyenv
-ENV PIPX_GLOBAL_HOME=/opt/pipx
-ENV PIPX_GLOBAL_BIN_DIR=/opt/pipx/bin
-ENV POETRY_HOME=/opt/poetry
-ENV PYVENVS_ROOT=/opt/pyvenvs
-ENV GLOBAL_VENV=/opt/pyvenvs/global
+#ENV PIPX_GLOBAL_HOME=/opt/pipx
+#ENV PIPX_GLOBAL_BIN_DIR=/opt/pipx/bin
+#ENV POETRY_HOME=/opt/poetry
+#ENV PYVENVS_ROOT=/opt/pyvenvs
+#ENV GLOBAL_VENV=/opt/pyvenvs/global
 
 # uv binary location
 ENV UV_ROOT=/usr/local/bin
@@ -126,7 +126,8 @@ ENV CARGO_HOME=/opt/cargo
 
 #RUN mkdir -p ${POETRY_HOME}/bin ${PIPX_GLOBAL_HOME} ${PIPX_GLOBAL_BIN_DIR} ${PYVENVS_ROOT} ${GLOBAL_VENV}/bin ${PYENV_ROOT}/bin ${PYENV_ROOT}/shims ${PYENV_ROOT}/plugins/pyenv-virtualenv/shims
 #RUN echo "# +++ #base(123): zzz"
-ENV PATH=${POETRY_HOME}/bin:${PIPX_GLOBAL_BIN_DIR}:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${GLOBAL_VENV}/bin:${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:${PATH}
+#ENV PATH=${POETRY_HOME}/bin:${PIPX_GLOBAL_BIN_DIR}:${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PYENV_ROOT}/plugins/pyenv-virtualenv/shims:${GLOBAL_VENV}/bin:${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:${PATH}
+ENV PATH=${NODE_ROOT}/bin:${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:${PATH}
 RUN echo "# +++ #base(pre): PATH=${PATH}"
 
 RUN /rocker_scripts/install_ubs-rs_rust.sh

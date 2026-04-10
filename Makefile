@@ -257,7 +257,8 @@ build-validate:
 .PHONY: runtime-test runtime-check runtime-status
 .PHONY: runtime-environ runtime-profile
 .PHONY: runtime-build
-.PHONY: runtime-rstudio runtime-lab runtime-notebook runtime-code
+.PHONY: rruntime-dev runtime-code runtime-cursor runtime-antigravity
+.PHONY: runtime-rstudio runtime-lab runtime-notebook
 .PHONY: runtime-command runtime-term runtime-xterm runtime-help
 
 runtime-repl: # @HELP/runtime ...
@@ -348,8 +349,20 @@ runtime-notebook: # @HELP/runtime ...
 runtime-notebook:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
+runtime-dev: # @HELP/runtime ...
+runtime-dev:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
 runtime-code: # @HELP/runtime ...
 runtime-code:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-cursor: # @HELP/runtime ...
+runtime-cursor:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-antigravity: # @HELP/runtime ...
+runtime-antigravity:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-help: help/runtime

@@ -85,6 +85,7 @@ where "target" is
   jutyper          : runs jupyter lab bound on port 28888
   notebook         : runs jupyter notebook bound on port 28888
   code             : runs visual studio code server on port 28788
+  dev              : runs interactive shell in virtual environment
   repl             : runs interactive R console
   rs ...           : runs Rscript with arguments
   python           : runs interactive ipython console
@@ -111,7 +112,8 @@ Target aliases:
    rstudio  => ide, RStudio
    jupyter  => lab
    notebook => note
-   code     => edit
+   code     => vs
+   dev      => ed, edit
    repl     => r, R
    rs       => rscript, Rscript
    python   => ipython
@@ -175,7 +177,14 @@ Visual Studio Code Server
 -------------------------
 
  ./runtime.sh code
- ./runtime.sh edit
+ ./runtime.sh vs
+
+
+Dev Container Shell
+-------------------
+
+ ./runtime.sh dev
+ ./runtime.sh ed
 
 
 R Console
@@ -200,9 +209,11 @@ to run scripts from ./exec directory
 Python run
 -----------
 
- ./runtime.sh py poetry install
+ ./runtime.sh py uv pip list
+ ./runtime.sh py ruff --check
+ ./runtime.sh py pytest
  ./runtime.sh py hello --help
-
+ ./runtime.sh py python -m http.server 8000
 
 Python repl
 -----------
@@ -424,9 +435,21 @@ case "${command}" in
         export LOG_ACTIVE='OFF'  
         target=runtime-xterm
         ;;
-    edit|code)
+    dev|edit|ed)
+        shift
+        target=runtime-dev
+        ;;
+    vs|code)
         shift
         target=runtime-code
+        ;;
+    cur|cursor)
+        shift
+        target=runtime-cursor
+        ;;
+    ag|antigravity)
+        shift
+        target=runtime-antigravity
         ;;
     lab|jupyter)
         shift
