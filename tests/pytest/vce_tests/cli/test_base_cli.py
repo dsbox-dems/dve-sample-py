@@ -23,16 +23,16 @@ class BaseCliTest(unittest.TestCase):
 
     def test_runner_args(self):
         argv = ["-v", "--exec", "demo", "--cmd", "test"]
-        log.debug("+++ cli.main:" + str(argv))
+        log.debug("+++ cli.main: %s", str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
-        s = out.getvalue()
+        out.getvalue()
         assert argv[0] in out.getvalue()
 
     def test_auto_default(self):
         argv = []
-        log.debug("+++ cli.main:" + str(argv))
+        log.debug("+++ cli.main: %s", str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
@@ -43,7 +43,7 @@ class BaseCliTest(unittest.TestCase):
             X_E_AUTO="test-01",
         ):
             argv = []
-            log.debug("+++ cli.main:" + str(argv))
+            log.debug("+++ cli.main: %s", str(argv))
             out = io.StringIO()
             with redirect_stdout(out):
                 main(argv)
@@ -51,7 +51,7 @@ class BaseCliTest(unittest.TestCase):
 
     def test_auto_script(self):
         argv = ["--name", "test-02"]
-        log.debug("+++ cli.main:" + str(argv))
+        log.debug("+++ cli.main: %s", str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
@@ -59,7 +59,7 @@ class BaseCliTest(unittest.TestCase):
 
     def x_test_auto_spawn(self):
         argv = ["--name", "demo-01"]
-        log.debug("+++ cli.main:" + str(argv))
+        log.debug("+++ cli.main: %s", str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
@@ -67,11 +67,9 @@ class BaseCliTest(unittest.TestCase):
 
     def setUp(self):
         conf.AppConfigs.unload_all()
-        pass
 
     def tearDown(self):
         conf.AppConfigs.unload_all()
-        pass
 
 
 if __name__ == "__main__":

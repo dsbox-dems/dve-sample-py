@@ -90,6 +90,7 @@ class AppConfigEx(AppConfig):
 class AppConfigs(object):
     @staticmethod
     def unload_all():
+        # ruff: noqa: PLC0415
         from vce.config.conf.app_config import unload_all_configs
 
         unload_all_configs()

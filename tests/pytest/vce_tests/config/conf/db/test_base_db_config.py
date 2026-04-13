@@ -1,5 +1,6 @@
 import logging
 import sys
+import re
 import unittest
 
 from vce.config import conf
@@ -14,35 +15,35 @@ class ConfigDbTest(unittest.TestCase):
 
     def test_config_demo(self):
         actual_db_config = conf.get_config().db("demo")
-        self.assertIsNotNone(actual_db_config)
+        assert actual_db_config is not None
         actual_config = actual_db_config.config
-        self.assertIsNotNone(actual_config)
+        assert actual_config is not None
         actual_uri = actual_db_config.uri()
-        self.assertRegex(actual_uri, "://")
-        log.debug("+++ CONFIG MODEL (demo):" + actual_db_config.dump(True))
-        log.debug("+++ CONFIG URI   (demo):" + actual_db_config.dump())
+        assert re.search("://", actual_uri)
+        log.debug("+++ CONFIG MODEL (demo): %s", actual_db_config.dump(True))
+        log.debug("+++ CONFIG URI   (demo): %s", actual_db_config.dump())
 
     def test_config_demo_my(self):
         actual_db_config = conf.get_config().db("demo_my")
-        self.assertIsNotNone(actual_db_config)
+        assert actual_db_config is not None
         actual_config = actual_db_config.config
-        self.assertIsNotNone(actual_config)
+        assert actual_config is not None
         actual_uri = actual_db_config.uri()
-        self.assertRegex(actual_uri, "://")
-        self.assertRegex(actual_uri, "^mysql")
-        log.debug("+++ CONFIG MODEL (demo_my):" + actual_db_config.dump(True))
-        log.debug("+++ CONFIG URI   (demo_my):" + actual_db_config.dump())
+        assert re.search("://", actual_uri)
+        assert re.search("^mysql", actual_uri)
+        log.debug("+++ CONFIG MODEL (demo_my): %s", actual_db_config.dump(True))
+        log.debug("+++ CONFIG URI   (demo_my): %s", actual_db_config.dump())
 
     def test_config_demo_pg(self):
         actual_db_config = conf.get_config().db("demo_pg")
-        self.assertIsNotNone(actual_db_config)
+        assert actual_db_config is not None
         actual_config = actual_db_config.config
-        self.assertIsNotNone(actual_config)
+        assert actual_config is not None
         actual_uri = actual_db_config.uri()
-        self.assertRegex(actual_uri, "://")
-        self.assertRegex(actual_uri, "^postgresql")
-        log.debug("+++ CONFIG MODEL (demo_pg):" + actual_db_config.dump(True))
-        log.debug("+++ CONFIG URI   (demo_pg):" + actual_db_config.dump())
+        assert re.search("://", actual_uri)
+        assert re.search("^postgresql", actual_uri)
+        log.debug("+++ CONFIG MODEL (demo_pg): %s", actual_db_config.dump(True))
+        log.debug("+++ CONFIG URI   (demo_pg): %s", actual_db_config.dump())
 
     def setUp(self):
         pass

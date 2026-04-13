@@ -5,6 +5,7 @@ DB_TYPE_GENERIC = "generic"
 DB_TYPE_MYSQL = "mysql"
 DB_TYPE_POSTGRESQL = "postgresql"
 
+# ruff: noqa: PLW0108
 DB_REG_CLASSES = {
     DB_TYPE_MYSQL: lambda name, config: MyDbConfig.create(name, config),
     DB_TYPE_POSTGRESQL: lambda name, config: PgDbConfig.create(name, config),
@@ -17,7 +18,7 @@ class AbsDbConfig(DbConfig):
 
     def uri(self) -> str:
         cfg = self.config
-        if not "uri" in cfg:
+        if "uri" not in cfg:
             raise ValueError(f"alias not found for db source: {self.name}")
         uri = str(cfg["uri"])
         result = uri.format(**cfg)
@@ -85,7 +86,7 @@ class DbConfigFactory(object):
     @classmethod
     def get_delegate(cls, app_config: AppConfigEx, name: str) -> AbsDbConfig:
         config = app_config.db_config(name)
-        if not "alias" in config:
+        if "alias" not in config:
             raise ValueError(f"alias not found for db source: {name}")
         db_name = config["alias"]
         result = cls.get_direct(app_config, db_name)

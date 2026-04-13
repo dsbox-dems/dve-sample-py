@@ -1,7 +1,6 @@
 from dve.config.conf.db import DbConfig
-from dve.config.conf import AppConfig, AppConfigEx
+from dve.config.conf import AppConfigEx
 
-import vce.config.conf as vce_conf
 import vce.config.conf.db as vce_conf_db
 
 

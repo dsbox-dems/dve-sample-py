@@ -33,8 +33,6 @@ df.count()
 
 # COMMAND ----------
 
-import pandas as pd
-import numpy as np
 import seaborn as sns
 
 df1 = df.drop("Id").toPandas()

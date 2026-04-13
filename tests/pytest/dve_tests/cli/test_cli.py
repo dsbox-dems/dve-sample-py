@@ -21,7 +21,7 @@ class CliTest(unittest.TestCase):
 
     def test_runner_args(self):
         argv = ["-v", "--exec", "main", "--cmd", "test"]
-        log.debug("+++ cli.main:" + str(argv))
+        log.debug("+++ cli.main: %s", str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
@@ -30,7 +30,7 @@ class CliTest(unittest.TestCase):
 
     def test_auto_check(self):
         argv = ["--name", "test-01"]
-        log.debug("+++ cli.main:" + str(argv))
+        log.debug("+++ cli.main: %s", str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
@@ -39,7 +39,7 @@ class CliTest(unittest.TestCase):
 
     def test_runner_check(self):
         argv = ["-v", "--exec", "main", "--cmd", "auto", "--name", "test-01"]
-        log.debug("+++ cli.main:" + str(argv))
+        log.debug("+++ cli.main: %s", str(argv))
         out = io.StringIO()
         with redirect_stdout(out):
             main(argv)
@@ -48,8 +48,7 @@ class CliTest(unittest.TestCase):
 
     def setUp(self):
         # self.conf_dir = os.environ['CONFIG_DIR']
-        log = logging.getLogger(__name__)
-        pass
+        logging.getLogger(__name__)
 
     def tearDown(self):
         pass

@@ -9,11 +9,12 @@ import vce.config.conf.db as vce_conf_db
 import vce.config.conf.app_config as vce_conf_impl
 
 
+# ruff: noqa: PLC0415
 class AppConfigImpl(AppConfigEx):
     def __init__(self, name: str, inner: vce_conf.AppConfigEx):
         super().__init__(name)
         self.inner = inner
-        self._db_config_cache = dict()
+        self._db_config_cache = {}
 
     def db_config_cache(self) -> dict:
         return self._db_config_cache
@@ -60,9 +61,7 @@ class AppConfigImpl(AppConfigEx):
     @classmethod
     def create(cls, name: str, config: vce_conf.AppConfig) -> AppConfig:
         try:
-            from vce.config import conf
-
-            inner = cast(vce_conf.AppConfigEx, config)
+            inner = cast("vce_conf.AppConfigEx", config)
             result = AppConfigImpl(name, inner)
             return result
         except Exception as ex:
@@ -74,7 +73,7 @@ class AppConfigImpl(AppConfigEx):
 
 class AppConfigStore(object):
     def __init__(self):
-        self._config = dict()
+        self._config = {}
 
     @classmethod
     def config_name(cls, what=AppConfigConsts.CONFIG_S_DEFAULT):
@@ -99,7 +98,7 @@ class AppConfigStore(object):
         try:
             from vce.config import conf
 
-            inner = cast(vce_conf.AppConfigEx, conf.get_config())
+            inner = cast("vce_conf.AppConfigEx", conf.get_config())
             result = AppConfigImpl.create(what, inner)
             return result
         except Exception as ex:
@@ -144,15 +143,14 @@ class AppConfigStore(object):
         return result
 
 
-_store = AppConfigStore()
+class AppConfigStoreGlobals:
+    _store = AppConfigStore()
 
 
 def unload_all_configs():
-    global _store
-    _store = AppConfigStore()
+    AppConfigStoreGlobals._store = AppConfigStore()
     vce_conf_impl.unload_all_configs()
 
 
 def get_config_store() -> AppConfigStore:
-    global _store
-    return _store
+    return AppConfigStoreGlobals._store

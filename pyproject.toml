@@ -96,6 +96,7 @@ dependencies = [
   "types-pyyaml",
   "toml",
   "types-toml",
+  "piny",
   "click",
   "pathspec",
 
@@ -138,7 +139,7 @@ repository    = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
 [project.scripts]
 main  = "dve.cli:main"
 demo  = "vce.cli:main"
-hello = "dve.scripts.dummy.dummy_script:main"
+hello = "dve.scripts.dummy.dummy_hello:main"
 
 
 # ============================================================
@@ -187,6 +188,7 @@ dev = [
 
   # --- edit ---
   "pyright",
+  "basedpyright",
   
   # --- lint ---
   "ruff",
@@ -237,7 +239,10 @@ url = "https://download.pytorch.org/whl/cu130"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/*"]
+packages = [
+  "src/dve",
+  "src/vce",
+]
 
 # --- [poetry] ---------------------------------------------------
 
@@ -323,13 +328,13 @@ fix            = true
 unfixable      = []
 typing-modules = ["pandas._typing"]
 exclude = [
-    "doc/sphinxext/*.py",
-    "doc/build/*.py",
-    "doc/temp/*.py",
-    ".eggs/*.py",
-    "pandas/util/version/*",
-    "pandas/io/clipboard/__init__.py",
-    "env",
+  "notebooks/@databricks/*",
+  "doc/*",
+  ".eggs/*.py",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
 ]
 select = [
     "F","E","W","YTT","B","Q","T10","INT","PL","PT","PIE","PYI",
@@ -343,7 +348,8 @@ convention = "google"
 
 [tool.ruff.lint.isort]
 combine-as-imports       = true
-split-on-trailing-commas = false
+#split-on-trailing-comma  = false
+
 
 [tool.ruff.format]
 docstring-code-format = true

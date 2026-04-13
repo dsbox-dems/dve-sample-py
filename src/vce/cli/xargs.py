@@ -3,6 +3,8 @@ import argparse
 from typing import Optional
 from abc import ABC, abstractmethod
 
+from vce.common.util.lint import unused
+
 
 class AppArgsConsts(object):
     ARG_TYPE_GENERIC = "generic"
@@ -21,8 +23,8 @@ class AppArgsConsts(object):
 
 
 class IAppArgs(ABC):
-    def __init__(self):
-        pass
+    # def __init__(self):
+    #     pass
 
     @abstractmethod
     def get_parser(self) -> argparse.ArgumentParser:
@@ -41,8 +43,9 @@ class AppBaseArgs(IAppArgs):
     arg_type = AppArgsConsts.ARG_TYPE_GENERIC
 
     def __init__(self, parent: Optional[IAppArgs] = None, **kwargs):
+        unused(kwargs)
         self.parent = parent
-        self.xargs = dict()
+        self.xargs = {}
 
     def get_args(self) -> dict:
         return self.xargs
@@ -65,10 +68,12 @@ class AppBaseArgs(IAppArgs):
 
     def handle_unknown(self, xargs, unknown, **kwargs) -> dict:
         """Runner Script Argument Parser."""
+        unused(unknown, kwargs)
         return xargs
 
     def parse_args(self, argv=None, **kwargs) -> dict:
         """Process command line arguments."""
+        unused(kwargs)
         if not argv:
             argv = sys.argv[1:]
 
@@ -91,9 +96,7 @@ class AppMainArgs(AppBaseArgs):
     def main_parser(self) -> argparse.ArgumentParser:
         parent = self.base_parser()
         parser = argparse.ArgumentParser(parents=[parent], conflict_handler="resolve")
-        parser.add_argument(
-            "--exec", "-e", type=str, help="command to dispatch", default="_"
-        )
+        parser.add_argument("--exec", "-e", type=str, help="command to dispatch", default="_")
         return parser
 
     def get_parser(self) -> argparse.ArgumentParser:
@@ -117,9 +120,7 @@ class AppRunnerArgs(AppBaseArgs):
     def runner_parser(self) -> argparse.ArgumentParser:
         """Runner Script Argument Parser."""
         parser = self.base_parser()
-        parser.add_argument(
-            "--cmd", "-c", type=str, help="script to execute", default="_"
-        )
+        parser.add_argument("--cmd", "-c", type=str, help="script to execute", default="_")
         return parser
 
     def get_parser(self) -> argparse.ArgumentParser:
@@ -140,9 +141,7 @@ class AppAutoArgs(AppRunnerArgs):
     def auto_parser(self) -> argparse.ArgumentParser:
         """Auto Script Argument Parser."""
         parser = self.runner_parser()
-        parser.add_argument(
-            "--name", "-n", type=str, help="job params entry key", default="_"
-        )
+        parser.add_argument("--name", "-n", type=str, help="job params entry key", default="_")
         return parser
 
     def get_parser(self) -> argparse.ArgumentParser:
@@ -162,9 +161,7 @@ class AppTestArgs(AppAutoArgs):
 
     def test_parser(self) -> argparse.ArgumentParser:
         parser = self.auto_parser()
-        parser.add_argument(
-            "--demo-arg-1", "-1", type=str, help="demo script arg 1", default="A"
-        )
+        parser.add_argument("--demo-arg-1", "-1", type=str, help="demo script arg 1", default="A")
         return parser
 
     def get_parser(self) -> argparse.ArgumentParser:
@@ -184,9 +181,7 @@ class AppDemoArgs(AppAutoArgs):
 
     def demo_parser(self) -> argparse.ArgumentParser:
         parser = self.auto_parser()
-        parser.add_argument(
-            "--demo-arg-1", "-1", type=str, help="demo script arg 1", default="A"
-        )
+        parser.add_argument("--demo-arg-1", "-1", type=str, help="demo script arg 1", default="A")
         return parser
 
     def get_parser(self) -> argparse.ArgumentParser:

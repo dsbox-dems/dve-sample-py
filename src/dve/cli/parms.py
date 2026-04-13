@@ -44,21 +44,19 @@ class JobSpecs:
     auto: Optional[str] = None
 
     def as_std(self) -> std_parms.JobSpecs:
-        return std_parms.JobSpecs(
-            specs=[x.as_std() for x in self.specs], auto=self.auto
-        )
+        return std_parms.JobSpecs(specs=[x.as_std() for x in self.specs], auto=self.auto)
 
     def get_job_spec(self, job_id: str, job_ns: Optional[str] = None) -> JobSpec:
-        return cast(JobSpec, self.as_std().get_job_spec(job_id, job_ns))
+        return cast("JobSpec", self.as_std().get_job_spec(job_id, job_ns))
 
-    def get_auto_name(self) -> str:
-        return self.as_std().get_auto_name()
+    def get_auto_name(self, name: str = "") -> str:
+        return self.as_std().get_auto_name(name)
 
     def get_auto_spec(self) -> JobSpec:
-        return cast(JobSpec, self.as_std().get_auto_spec())
+        return cast("JobSpec", self.as_std().get_auto_spec())
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def parm(**kwargs) -> JobParm:
@@ -78,18 +76,18 @@ def specs(spec_list: Sequence[JobSpec], auto: Optional[str] = None) -> JobSpecs:
     return specs
 
 
-_specs: Optional[JobSpecs] = None
+class JobSpecsGlobals:
+    _specs: Optional[JobSpecs] = None
 
 
 def get_job_specs() -> JobSpecs:
-    assert _specs, "global job_specs undefined"
-    return _specs
+    assert JobSpecsGlobals._specs, "global job_specs undefined"
+    return JobSpecsGlobals._specs
 
 
 def set_job_specs(specs: JobSpecs) -> JobSpecs:
-    global _specs
-    _specs = specs
-    return _specs
+    JobSpecsGlobals._specs = specs
+    return JobSpecsGlobals._specs
 
 
 def init_specs(spec_list: Sequence[JobSpec], auto: Optional[str] = None) -> JobSpecs:
