@@ -85,25 +85,6 @@ doctype: md-report
 
 [^](#toc)
 
-
-
-
-## CONTEXT
-- project fot academic research in AI/ML statistics field.
-- linux platcorm (ubuntu 24.04)
-- mixed native/containerized (podman) environment
-- uv, ruff available in path
-- ripgrep, fd-find, exa, rust utilities
-- standard coreutils, perl, sed, ex
-- tmux, curl, sar, ssh, git in path
-- GitLab hostes with ultimate subscription
-
-## OBJECTIVE
-
-
-
-
-
 ## Role
 
 You are an expert Google "Antigravity" IDE user and Python developer,
