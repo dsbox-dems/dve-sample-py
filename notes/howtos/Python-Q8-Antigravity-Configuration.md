@@ -85,6 +85,25 @@ doctype: md-report
 
 [^](#toc)
 
+
+
+
+## CONTEXT
+- project fot academic research in AI/ML statistics field.
+- linux platcorm (ubuntu 24.04)
+- mixed native/containerized (podman) environment
+- uv, ruff available in path
+- ripgrep, fd-find, exa, rust utilities
+- standard coreutils, perl, sed, ex
+- tmux, curl, sar, ssh, git in path
+- GitLab hostes with ultimate subscription
+
+## OBJECTIVE
+
+
+
+
+
 ## Role
 
 You are an expert Google "Antigravity" IDE user and Python developer,
@@ -94,83 +113,46 @@ Your Python environment is fully managed by `uv` with `pytest` fot testing and
 
 ## Context
 
+- Free versions of Gemini and Claude models
 - Standard Python projects with PEP 621 and PEP 508 compliant `pyproject.toml`
-- Testing framework: `pytest` (primary); `behave` is under active
-  evaluation as a BDD/AI specification tool and _must_ be treated as a
-  first-class target
-- Test coverage support is desirable but not mandatory
-- Supported IDEs: Visual Studio Code, Cursor
-- Supported editors: `emacs` (configuration via `use-package`) and `vim`
-  (LazyVim with latest Neovim)
+- Testing framework: `pytest` (primary) with code under `tests/pytest`
+- Mixed language: R development is supported as a secondary environment
+- Supported IDEs: Antigravity, Visual Studio Code, Cursor
 - Language tooling: LSP protocol, `pyright` (type checking), `ruff`
   (linting and formatting)
 - `Node.js` and `npm` are available at user level via `nvm`
 - Container support: `podman` (code is shared between container and host)
 - CI/CD under evaluation: Jenkins (local), GitLab CI / GitHub Actions (remote)
 
-## Prerequisite
 
-Before proposing any changes, _fetch and carefully parse_ the current Emacs
-configuration available in `org-mode` literate programming format at:
+Common development utilities available in path:
 
-- [site-pkgs.org](https://github.com/hute37/emacs-site/blob/master/site-pkgs.org)
+- uv, uvx, ruff, pytest
+- jopyter (notebook, lab) with python and R kernels
+- npx, npm node-js installed globally in user home via nvm
+- ripgrep, fd-find, exa, rust utilities
+- standard coreutils and perl, sed, ex
+- tmux, curl, sar, ssh, git in path
 
-Use the content of that file as the authoritative baseline for all proposed
-modifications. Do not invent or assume configuration details not present in
-that file.
+
 
 ## Objective
 
-Propose a revised Emacs configuration for Python development that replaces or
-meaningfully improves on the current setup. The proposal must cover the
-following tools, each justified with explicit pros and cons against credible
-alternatives:
+Evaluate current antigravity setup for python development and refactoring
 
-- `python` (base mode and environment integration)
-- `uv` (project and virtual-environment management)
-- `pyright` (LSP-based static type checking)
-- `ruff` (linting and formatting)
-- `pytest` (test runner integration)
-- `behave` (BDD test runner integration)
+In particular:
 
-Additionally, provide a focused discussion of `treesitter` integration:
-
-- Explain the role of `tree-sitter` (via `treesit` or `treesit-auto`) alongside
-  the existing LSP architecture
-- Evaluate whether `tree-sitter` should _complement_ LSP (e.g., for syntax
-  highlighting and structural navigation) or _partially replace_ LSP features
-- State your recommendation clearly and justify it
-
-## Evaluation Criteria
-
-When selecting and justifying packages, assess each against:
-
-- Active maintenance and MELPA/ELPA availability
-- Community adoption and issue-tracker health
-- Compatibility with `emacs` 29+ built-in `treesit`
-- Integration complexity within a `use-package` configuration style
-
-## Output Format
-
-Provide all proposed configuration changes as `org-mode` literate programming
-blocks containing `emacs-lisp` source, following this structure:
-
-Structure your full reply in _GitLab Flavored Markdown (GLFM)_ with strict
-lint compliance:
-
-- Place all codeblock delimiters at line start; avoid nested codeblocks
-- Use _underscore markup_ for emphasis
-- Prefer nested headings over bold/asterisk markup
-- Use only dashes for unordered lists, with correct indentation
-- Insert blank lines after headings, lists, and codeblocks
-- Omit document-pipeline markup: `<details>`, `{=latex}` blocks,
-  `[!tip]`/`[!note]` callouts, curly-brace fold tags, and internal footnote links
-- Provide a _References_ section at the end as Markdown footnotes, prefixed
-  with `rf-`, linked to relevant points in the answer text
-- Provide an _Additional Notes_ section for any important information not
-  explicitly requested
+- check SKILL definitions
+- evaluate pluging installed
+- enance rules and workflows, with additional additions
+- enable local executables as tools
+- provide scope definitions an directories:
+  e.g. follow .gitignore, apply podman and containers only for docker directory
 
 
+
+Additionally, provide a focused discussion of python development `Antigravity`
+best prectices.
 
 
 <details>

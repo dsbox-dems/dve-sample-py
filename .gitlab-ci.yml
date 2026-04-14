@@ -1,0 +1,43 @@
+image: python:3.10
+
+variables:
+  UV_VERSION: "latest"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+
+cache:
+  paths:
+    - .cache/pip
+    - .cache/uv
+    - .venv
+
+stages:
+  - lint
+  - test
+
+before_script:
+  - curl -LsSf https://astral.sh/uv/install.sh | sh
+  - export PATH="$HOME/.cargo/bin:$PATH"
+  - uv sync --dev
+
+linting:
+  stage: lint
+  script:
+    - uv run ruff check .
+    - uv run ruff format --check .
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+
+typing:
+  stage: lint
+  script:
+    - uv run pyright
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+
+testing:
+  stage: test
+  script:
+    - uv run pytest -v
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
