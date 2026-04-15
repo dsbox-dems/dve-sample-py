@@ -1,0 +1,26 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Reproducible experiments for [Paper Title]
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: datalab
+    family-names: DEMS
+    affiliation: University of Milano-Bicocca
+identifiers:
+  - type: url
+    value: "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+    description: dve-sample-py
+  - type: doi
+    value: 10.5281/zenodo.1234
+    description: [Paper Title]
+repository-code: "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/"
+url: "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/"
+keywords:
+  - data-science
+license: Academic Free License AFL-v.3.0
+date-released: "2026-04-15"

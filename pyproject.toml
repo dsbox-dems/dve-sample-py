@@ -205,6 +205,17 @@ dev = [
   "py",
   "mypy",
 
+  # --- skills ---
+  "aiohttp",
+  "anthropic",
+  "hypothesis",
+  "line-profiler",
+  "memory-profiler",
+  "openai",
+  "pydantic",
+  "scikit-learn",
+  "sentence-transformers",
+
   # --- packaging ---
   "setuptools",
   "wheel",
