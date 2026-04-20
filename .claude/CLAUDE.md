@@ -4,6 +4,17 @@
 
 ## 🤖 Claude-Specific Instructions
 
+### Shared Skills
+
+The directory `.agents/skills/` contains skills and related executable scripts and utilities.
+
+This directory act as `.claude/skills/`, in a shared position, So, always:
+
+- Search `.agents/skills/` for relevant SKILL to apply.
+- Execute skill scripts as indicated, using the appropriate runner
+  (e.g., `uv run bash`, `uv run python`, `uv run Rscript`, or `uv run npx/node`).
+
+
 ### Context Management
 
 - When the session fills up, prioritize keeping the `src/*/scripts/`
