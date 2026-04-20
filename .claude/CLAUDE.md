@@ -4,9 +4,11 @@
 
 ## 🤖 Claude-Specific Instructions
 
-### Shared Skills
+## Available Skills
 
-The directory `.agents/skills/` contains skills and related executable scripts and utilities.
+Skills are defined under `.agents/skills/`.
+
+When relevant, load and apply them automatically.
 
 This directory act as `.claude/skills/`, in a shared position, So, always:
 

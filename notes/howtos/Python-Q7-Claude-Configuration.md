@@ -536,12 +536,6 @@ description: >
 - [^ac-7]: [Claude Code memory and CLAUDE.md system](https://code.claude.com/docs/en/memory)
 
 
-
-
-
-
-
-
 # A:1 (Gemini)
 
 [^](#toc) **_Claude Code Quick Start Guide_**
@@ -691,9 +685,322 @@ have them pre-configured so the agent can execute them immediately.
 
 # A:1 (ChatGPT)
 
-[^](#toc) **_TODO:(a1-ref-chatgpt)_**
+[^](#toc) **_Claude Code Quick Start Guide_**
 
-TODO:(a1-chatgpt) ...
+> Claude Code Quick Start Guide (Ubuntu 24.04, Academic ML Environment)
+
+## Overview
+
+This guide provides a minimal, reproducible setup for evaluating _Claude Code CLI_ in a Linux-based research environment. It assumes:
+
+- User-level Node.js via `nvm`
+- Python tooling via `uv`
+- Existing multi-agent configuration under `.agents/` and `.claude/`
+
+---
+
+## 1. Install Claude Code CLI via `nvm` + `npm`
+
+### Ensure `nvm` and Node.js are available
+
+```bash
+nvm install --lts
+nvm use --lts
+node -v
+npm -v
+```
+
+### Install Claude Code CLI globally
+
+> **Note**: Package name may evolve; verify via official docs.
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+### Verify binary is in PATH
+
+```bash
+which claude
+claude --version
+```
+
+---
+
+## 2. Authentication and Model Configuration
+
+### Available Access Modes
+
+#### A. Free Tier (Recommended for Evaluation)
+
+- Requires Anthropic account
+- Limited quota (requests/day, token caps)
+- Typically defaults to a _Sonnet-class model_
+
+```bash
+claude login
+```
+
+This opens a browser-based authentication flow.
+
+---
+
+#### B. API Key (More Control)
+
+```bash
+export ANTHROPIC_API_KEY="your_api_key_here"
+```
+
+Optional persistent setup:
+
+```bash
+echo 'export ANTHROPIC_API_KEY="your_api_key_here"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+---
+
+#### C. Zero-Cost / Unauthenticated Mode
+
+- _Not generally available_ in official CLI
+- Some environments may expose:
+
+  - Proxy endpoints
+  - Institutional gateways
+
+> **Conclusion**: For most users, the **free tier login is the only zero-cost path**.
+
+---
+
+### Model Selection
+
+Default model is usually sufficient, but can be overridden:
+
+```bash
+claude config set model claude-sonnet
+```
+
+---
+
+## 3. Verify Installation
+
+Run a simple prompt:
+
+```bash
+claude "Explain what this repository does"
+```
+
+Or inside a project:
+
+```bash
+claude
+```
+
+Expected behavior:
+
+- CLI opens interactive session
+- Context inferred from current directory
+
+---
+
+## 4. Worked Example (Python Project with `uv`)
+
+### Assumptions
+
+- Project uses:
+
+  - `uv run pytest`
+  - `uv run ruff`
+  
+- Standards defined in `.agents/AGENTS.md`
+
+---
+
+### Example Interaction
+
+```bash
+cd your-project/
+claude
+```
+
+Then prompt:
+
+```text
+Run linting and tests, summarize failures, and suggest fixes.
+```
+
+Claude Code will:
+
+- Inspect repository structure
+- Execute or simulate:
+
+  - `uv run ruff`
+  - `uv run pytest`
+  
+- Provide:
+
+  - Error summaries
+  - Suggested patches
+  - Refactoring hints
+
+---
+
+### More Targeted Prompt
+
+```text
+Fix all ruff violations and ensure pytest passes. Show diffs before applying.
+```
+
+---
+
+### Non-Interactive Mode
+
+```bash
+claude "Run uv run pytest and explain failures"
+```
+
+---
+
+## 5. Project Context Integration
+
+### `.claude/CLAUDE.md`
+
+- Entry point for Claude-specific instructions
+- Automatically loaded by Claude Code
+- Can include:
+
+```markdown
+@AGENTS.md
+```
+
+---
+
+### `.agents/AGENTS.md`
+
+- Shared, tool-agnostic instructions
+- Defines:
+
+  - Build commands (`uv run pytest`, `uv run ruff`)
+  - Coding standards
+  - Project conventions
+
+---
+
+### Interaction Model
+
+```text
+Claude Code
+  └── loads .claude/CLAUDE.md
+        └── imports .agents/AGENTS.md
+```
+
+This ensures:
+
+- _Single source of truth_
+- No duplication across tools (Claude, Gemini, Cursor)
+
+---
+
+## Secondary Objective: Skills Reuse
+
+### `.agents/skills/` Compatibility
+
+Claude Code does **not natively enforce a “skills directory” convention**, but:
+
+- It _can access any files in the repo_
+- Skills become usable if:
+
+  - Referenced in `.claude/CLAUDE.md`
+  - Or discoverable via prompting
+
+---
+
+### Recommended Pattern
+
+Inside `.claude/CLAUDE.md`:
+
+```markdown
+## Available Skills
+
+Skills are defined under `.agents/skills/`.
+
+When relevant, load and apply them automatically.
+```
+
+---
+
+### Optional Explicit Index
+
+Create:
+
+```text
+.agents/skills/index.md
+```
+
+And reference it:
+
+```markdown
+@../agents/skills/index.md
+```
+
+---
+
+### Do You Need Extra `.claude/` Configuration?
+
+- ❌ No mandatory configuration required
+- ✅ Recommended:
+
+  - Explicit references to skills
+  - Clear usage instructions
+
+---
+
+### Cross-Tool Interoperability
+
+Because:
+
+- Gemini CLI
+- Claude Code
+- Cursor
+
+_all read plain files_:
+
+➡ Skills are **fully reusable without modification**
+
+---
+
+## Additional Notes
+
+- Claude Code operates best when:
+
+  - Commands are explicitly defined (as in your `AGENTS.md`)
+  - Repository structure is clean and conventional
+
+- For CUDA/ML environments:
+
+  - Avoid implicit execution of GPU-heavy workloads
+  - Prefer prompts like:
+
+```text
+Analyze without running GPU-intensive code unless explicitly requested.
+```
+
+- For academic environments:
+
+  - Consider adding:
+
+    - Reproducibility constraints
+    - Citation or docstring requirements
+
+---
+
+## References
+
+- [at-1] Anthropic Claude Code Documentation
+- [at-2] Anthropic API Keys and Authentication
+- [at-3] Node Version Manager (nvm)
+- [at-4] uv Python Package Manager Documentation
+
 
 # A:1 (Perplexity)
 
