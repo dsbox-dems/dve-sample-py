@@ -1,19 +1,49 @@
 ---
-title: TODO:(title)
-subtitle: TODO:(subtitle)
+title: Claude Code Quick Start and Anthropic Product Offering for Academic
+  Environments
+subtitle: |
+  Installation, authentication, and product-tier comparison of Claude Code
+  and Anthropic API access options for academic statistics departments
+  operating multi-agent project templates on Ubuntu Linux
 # {{{ // %+
-
 category: LLM-Style
-keywords: [GEN, TODO:(keywords)]
+keywords: [GEN, Claude-Code, Anthropic-API, multi-agent, nvm, Ubuntu,
+  academic-deployment]
 abstract: |
-  TODO:(abstract)
-  
-  ...
+  This document addresses two related objectives concerning the deployment
+  of Anthropic tooling in an academic statistics department running a
+  shared multi-agent project template on Ubuntu 24.04.
+
+  The first part presents a practical quick-start guide for `claude-code`,
+  Anthropic's CLI coding assistant, installed via a user-level `nvm`-managed
+  `npm` environment. It covers installation, authentication and model
+  configuration for zero-cost trial use, installation verification, and a
+  worked interaction example assuming `uv`-managed Python tooling (`uv run
+  pytest`, `uv run ruff`). The role of `.claude/CLAUDE.md` as a
+  project-context entry point—importing shared agent instructions from
+  `.agents/AGENTS.md` via an `@AGENTS.md` directive—is explained, together
+  with how the `.agents/skills/` directory is surfaced to Claude Code,
+  enabling skill reuse across Claude Code, Gemini CLI, Cursor, and VS Code
+  Copilot without duplication.
+
+  The second part provides a structured comparison of Anthropic access
+  tiers—Claude.ai Free, Pro, Team, and Enterprise, the pay-as-you-go
+  Anthropic API, and Claude Code as a product layer—evaluated against
+  criteria relevant to an academic organisation: monthly cost, free-tier
+  availability, model access (Haiku / Sonnet / Opus), context window,
+  rate limits, API key requirements, team and organisation support, and
+  data-privacy policy.
+
+  A recommended proof-of-concept path for a department seeking zero-cost
+  initial evaluation prior to any paid commitment is derived from this
+  comparison. Together, the two sections constitute a self-contained
+  onboarding reference for researchers and students adopting Claude Code
+  within a pre-existing multi-agent template infrastructure.
 
 doctype: md-report
-
 # }}} // %+
 ---
+
 <!-- {{{ #TAG: TODO:(toc) // -->
 
 <!-- markdownlint-disable MD012 -->
@@ -31,19 +61,12 @@ doctype: md-report
    - see: [Claude Code Quick Start Guide (ChatGPT)](#a1-chatgpt)
    - see: [Claude Code CLI - Quick Start Guide (Perplexity)](#a1-perplexity)
    - see: [Claude Code Quick Start Guide (DeepSeek)](#a1-deepseek)
-2. [Q:2 - TODO:(q2-ref)](#q2)
-   - see: [TODO:(a2-ref-claude) (Claude)](#a2-claude)
-   - see: [TODO:(a2-ref-gemini) (Gemini)](#a2-gemini)
-   - see: [TODO:(a2-ref-chatgpt) (ChatGPT)](#a2-chatgpt)
-   - see: [TODO:(a2-ref-perplexity) (Perplexity)](#a2-perplexity)
-   - see: [TODO:(a2-ref-deepseek) (DeepSeek)](#a2-deepseek)
-3. [A:a - TODO:(appendix-a)](#aa)
-4. [A:b - Q1: Prompt distiller](#ab)
-   - see: [Q1: Prompt distiller (Claude)](#ab-claude)
-   - see: [Q1: Prompt distiller (Gemini)](#ab-gemini)
-   - see: [Q1: Prompt distiller (ChatGPT)](#ab-chatgpt)
-   - see: [Q1: Prompt distiller (Perplexity)](#ab-perplexity)
-   - see: [Q1: Prompt distiller (DeepSeek)](#ab-deepseek)
+2. [Q:2 - Anthropic Product Offering Comparison academic Use](#q2)
+   - see: [Anthropic Product Offering Comparison (Claude)](#a2-claude)
+   - see: [Anthropic Product Offering Comparison (Gemini)](#a2-gemini)
+   - see: [Anthropic Product Offering Comparison for Academic Environments (ChatGPT)](#a2-chatgpt)
+   - see: [Anthropic product offering comparison for academic use (Perplexity)](#a2-perplexity)
+   - see: [Anthropic Product Offering Comparison for Academic Statistics Department (DeepSeek)](#a2-deepseek)
 
 <details>
 <summary></summary>
@@ -565,7 +588,7 @@ web-based Claude.ai, it does not currently offer a strictly
   receive a small amount of *free trial credits* (often $5) upon phone
   verification. This is the standard "zero-cost" entry point for
   researchers testing the tool. [ag-1]
-  
+
 - **Trial Limits:** Anthropic occasionally offers limited-time "Free
   Tier" access for Claude Code during its beta/early-access phases,
   though this is subject to strict rate limits and may be revoked in
@@ -634,7 +657,7 @@ You simply need to inform Claude of their existence and purpose within the `.cla
 
 ```markdown
 ### Shared Skills
-The directory `.agents/skills/` contains executable scripts and utilities. 
+The directory `.agents/skills/` contains executable scripts and utilities.
 When tasked with complex data transformations or ML tasks:
 - Search `.agents/skills/` for relevant logic before authoring new scripts.
 - Execute scripts using the appropriate runner (e.g., `python`, `Rscript`, or `julia`).
@@ -811,7 +834,7 @@ Expected behavior:
 
   - `uv run pytest`
   - `uv run ruff`
-  
+
 - Standards defined in `.agents/AGENTS.md`
 
 ---
@@ -836,7 +859,7 @@ Claude Code will:
 
   - `uv run ruff`
   - `uv run pytest`
-  
+
 - Provide:
 
   - Error summaries
@@ -1034,7 +1057,7 @@ source ~/.zshrc
 
 ## 2. Authentication and model configuration for zero‑cost trial use
 
-Claude Code currently always requires at least an API key or OAuth‑based login to the Anthropic platform, 
+Claude Code currently always requires at least an API key or OAuth‑based login to the Anthropic platform,
 even in free‑tier usage; there is no fully unauthenticated “anonymous” Sonnet endpoint. [github](https://github.com/dvcrn/anthropic-cli/blob/main/README.md)
 
 To target zero‑cost or trial‑eligible usage:
@@ -1103,7 +1126,7 @@ Then paste a sample interaction sequence (typed into the chat prompt):
   ```
 
 Claude Code will emit the relevant commands and suggested edits;
-you can then run them in a separate shell or allow execution 
+you can then run them in a separate shell or allow execution
 if your project’s `.claude/CLAUDE.md` explicitly pre‑approves `uv run ruff` and `uv run pytest`. [ssdnodes](https://www.ssdnodes.com/blog/install-claude-code-on-ubuntu-linux/)
 
 
@@ -1276,7 +1299,7 @@ Run a simple command to confirm authentication and API connectivity:
 claude evaluate "What is the current working directory?" --print
 ```
 
-If successful, you will see a text response (e.g., the absolute path of your project). 
+If successful, you will see a text response (e.g., the absolute path of your project).
 Any authentication error indicates an invalid or expired API key.
 
 ---
@@ -1354,7 +1377,7 @@ Claude Code will see that table and understand when to load a skill. The table i
 
 Claude Code reads this and, when a user prompt matches a trigger (e.g., “where should I put new R scripts?”),
 it will follow the guidance described in the corresponding `SKILL.md` file –
-provided that `SKILL.md` is mentioned elsewhere or the assistant infers its location. 
+provided that `SKILL.md` is mentioned elsewhere or the assistant infers its location.
 For maximum clarity, you can add explicit instructions in `AGENTS.md`:
 
 ```markdown
@@ -1393,7 +1416,7 @@ For detailed instructions on a skill, read `.agents/skills/<skill-name>/SKILL.md
 
 # Q:2
 
-## Q:2 - **Anthropic Product Offering Comparison**
+## Q:2 - **Anthropic Product Offering Comparison for Academic Uses**
 
 [^](#toc)
 
@@ -1700,170 +1723,525 @@ access that could cover the entire PoC period and beyond.
 
 # A:2 (Gemini)
 
-[^](#toc) **_TODO:(a2-ref-gemini)_**
+[^](#toc) **_Anthropic Product Offering Comparison_**
 
-TODO:(a2-gemini) ...
+
+## Anthropic Product Offering Comparison
+
+_Chain-of-Thought:_
+
+The comparison must address the distinct needs of a statistics
+department: large datasets (context window), reproducibility
+(API/CLI), and data sensitivity (privacy). In 2026, the
+differentiation between "subscription-based usage" (Claude.ai) and
+"consumption-based usage" (API) is the primary pivot for
+organizational planning.
+
+| Criteria           | Claude Free             | Claude Pro            | Claude Team            | Claude Enterprise     | Anthropic API             |
+|:-------------------|:------------------------|:----------------------|:-----------------------|:----------------------|:--------------------------|
+| **Cost / Month**   | $0                      | $20 / user            | $30 / user (min 5)     | Custom / Volume       | Pay-as-you-go             |
+| **Free Tier**      | Permanent               | No                    | No                     | No                    | ~$5 initial credit [bg-1] |
+| **Model Access**   | Sonnet 4.5              | Opus 4.6 / Sonnet 4.6 | Opus 4.6 / Sonnet 4.6  | Opus 4.6 / Sonnet 4.6 | Full Suite [bg-2]         |
+| **Context Window** | 200K tokens             | 1M tokens (beta)      | 1M tokens              | 1M+ tokens            | 1M tokens [bg-3]          |
+| **Rate Limits**    | Low (~15-40/5h)         | High (5x Free)        | Maximum Pooled         | Custom                | Tier-based (TPM/RPM)      |
+| **API Key Req.**   | No                      | No                    | No                     | No                    | **Yes**                   |
+| **Team Support**   | None                    | Individual            | Admin Dashboard        | SSO / Audit Logs      | Org-level Billing         |
+| **Data Privacy**   | Opt-out training [bg-4] | Opt-out training      | **No training** [bg-5] | **No training**       | **No training** (default) |
+
+---
+
+## The Claude Code Layer
+
+_Chain-of-Thought:_
+
+Claude Code is not a separate subscription tier but a specialized CLI
+delivery agent. Its cost and availability depend entirely on the
+underlying authentication method chosen by the user.
+
+### Authentication and Billing Models
+
+Claude Code operates as a terminal-based agent that orchestrates
+complex file-system tasks. Within the department's Linux environment,
+it can be configured in two ways:
+
+- **Subscription-linked**: Users with a _Pro_ or _Team_ account can
+  authenticate the CLI directly. Usage is "included" in their monthly
+  subscription quota, making it ideal for students who prefer a fixed
+  cost.
+- **API-linked**: Users (or the department) provide an
+  `ANTHROPIC_API_KEY`. Billing is strictly consumption-based
+  (tokens). This is preferred for high-volume research automation or
+  "agentic" workflows that would exceed subscription caps [bg-6].
+
+### Tool Compatibility
+
+In a multi-agent template, Claude Code serves as the "heavy lifter"
+for repository-wide refactoring, while _Cursor_ and _Copilot_ handle
+real-time IDE completion. Because Claude Code supports the Model
+Context Protocol (MCP), it can directly query the department's local
+SQL databases or R/Python documentation without manual copy-pasting.
+
+---
+
+## Recommended Zero-Cost Proof-of-Concept (POC)
+
+_Chain-of-Thought:_
+
+For an academic department, a POC must prove value without
+administrative friction or budget approval. I will leverage the 2026
+"New User" incentives.
+
+### Phase 1: Individual Research Evaluation
+
+Invite researchers to utilize the **Claude.ai Free Tier**.
+
+- **Goal**: Test Sonnet 4.5 for summarizing statistical papers and drafting R/LaTeX code.
+- **Action**: Use the "Projects" feature (limited on Free) to upload
+  specific LaTeX templates for consistency.
+
+### Phase 2: CLI and Agentic Testing
+
+Utilize the **Anthropic API Free Credits**.
+
+- **Goal**: Deploy _Claude Code_ in the department's Linux cluster.
+- **Action**: New users claim the ~$5 credit at the Anthropic
+  Console. This is sufficient to run 10–20 deep sessions of Claude
+  Code to evaluate its ability to fix broken data pipelines or debug
+  complex Stan/JAGS models [bg-1].
+
+### Phase 3: Academic Discount Verification
+
+Check for the **Anthropic Academic Program**.
+
+- **Goal**: Secure long-term reduced rates.
+- **Action**: Verify if the department's `.edu` domain qualifies for
+  the 3-month Claude Pro trial or the "Claude for Open Source" grant
+  (available to researchers maintaining public statistical libraries)
+  [bg-7].
+
+---
+
+## References
+
+- [bg-1] _Verdent Guides: How to Use Claude AI for Free (2026)_
+- [bg-2] _Finout: Claude Pricing in 2026 for Organizations_
+- [bg-3] _MindStudio: Flat-Rate Long-Context Pricing and 1M Windows_
+- [bg-4] _Anthropic Privacy Center: Data Retention Policy (September 2025 Update)_
+- [bg-5] _Anthropic Commercial Terms: Enterprise Data Protections_
+- [bg-6] _Claude Code Docs: Managing Costs for Teams and API Users_
+- [bg-7] _DataStudios: Claude Pricing and Plan Limits Guide (Academic Offers)_
+
+---
+
+## Additional Notes
+
+### GitLab Duo Synergy
+
+Since the organization is on the **Ultimate tier**, GitLab Duo will
+provide a "base layer" of AI for all students at no additional cost
+once deployed. Anthropic tools should be reserved for "Power Users"
+(PhD students/Faculty) who require the superior reasoning capabilities
+of Opus 4.6 for novel statistical proofs.
+
+### Hardware Considerations
+
+Claude Code and Gemini CLI are lightweight but require active network
+egress from your Linux nodes. Ensure the department's firewall allows
+HTTPS traffic to `api.anthropic.com` and
+`generativelanguage.googleapis.com`.
+
+### Data Privacy Alert
+
+In a Statistics Department handling sensitive dataset samples,
+strictly enforce the **opt-out of model training** in the `Settings >
+Privacy` menu for any users on Free/Pro tiers, as these default to
+training-enabled in the 2026 policy update.
+
+
 
 # A:2 (ChatGPT)
 
-[^](#toc) **_TODO:(a2-ref-chatgpt)_**
+[^](#toc) **_Anthropic Product Offering Comparison for Academic Environments_**
 
-TODO:(a2-chatgpt) ...
+
+## 1. Evaluation Framework
+
+### Internal reasoning (condensed)
+
+- Academic environments prioritize _cost control_, _data governance_, and _flexibility_.
+- Mixed user profiles (students vs researchers) require _tiered access_.
+- CLI tooling (Claude Code) introduces an additional abstraction layer over base access models.
+- API vs SaaS trade-offs hinge on _integration depth_ vs _operational overhead_.
+
+### Final output
+
+The following criteria are used to evaluate each offering:
+
+- _Cost per month_
+- _Free tier availability_
+- _Model access_ (Haiku / Sonnet / Opus)
+- _Context window_
+- _Rate limits_
+- _API key required_
+- _Team/organisation support_
+- _Data privacy policy_
+
+---
+
+## 2. Comparison Table
+
+### Internal reasoning (condensed)
+
+- Claude.ai tiers differ mainly in _usage limits_, _collaboration_, and _governance_.
+- API access is the most flexible but requires engineering effort.
+- Claude Code is not a standalone subscription; it depends on underlying access.
+- Enterprise tiers primarily add _security_, _SSO_, and _compliance guarantees_.
+
+### Final output
+
+| Option                 | Cost / Month       | Free Tier | Model Access                      | Context Window                | Rate Limits             | API Key Required                 | Team Support         | Data Privacy                                |
+|------------------------|--------------------|-----------|-----------------------------------|-------------------------------|-------------------------|----------------------------------|----------------------|---------------------------------------------|
+| _Claude.ai Free_       | €0                 | Yes       | Haiku, limited Sonnet             | Medium (~200K tokens typical) | Strict                  | No                               | No                   | Standard (data may be used for improvement) |
+| _Claude.ai Pro_        | ~€20               | No        | Sonnet, limited Opus              | Large (~200K+)                | Higher than Free        | No                               | No                   | Improved controls, limited training usage   |
+| _Claude.ai Team_       | ~€25–30/user       | No        | Sonnet, Opus                      | Large                         | Shared pooled limits    | No                               | Yes                  | No training on customer data                |
+| _Claude.ai Enterprise_ | Custom pricing     | No        | Full access (Haiku, Sonnet, Opus) | მაქ (highest available)       | მაღალი (enterprise SLA) | No                               | Advanced (SSO, RBAC) | मजबूत compliance, zero training              |
+| _Anthropic API (PAYG)_ | Usage-based        | No        | All models                        | მაქ (model-dependent)         | მოქნილი (quota-based)   | Yes                              | Via org account      | No training by default                      |
+| _Claude Code_          | Depends on backend | N/A       | Inherits from API / Claude.ai     | Inherits                      | Inherits                | Yes (API) / No (Claude.ai login) | Depends on backend   | Depends on backend                          |
+
+---
+
+## 3. Claude Code as a Product Layer
+
+### Internal reasoning (condensed)
+
+- Claude Code is a _developer interface_, not a billing unit.
+- It can authenticate via:
+
+  - Claude.ai session
+  - API key (preferred in automation contexts)
+
+- Academic deployment depends heavily on _reproducibility_ and _CLI automation_.
+
+### Final output
+
+_Claude Code_ should be understood as a **CLI orchestration layer** that:
+
+- Wraps Anthropic models into developer workflows
+- Enables:
+
+  - Codebase-aware prompting
+  - Multi-file editing
+  - Automation via scripts
+
+- Integrates with:
+
+  - Local dev environments (e.g., Ubuntu + `nvm` + `uv`)
+  - CI/CD pipelines (when API-backed)
+
+Its capabilities depend entirely on the underlying access method:
+
+- _Claude.ai-backed_: simpler onboarding, limited automation
+- _API-backed_: full programmability, reproducibility, and scaling
+
+---
+
+## 4. Recommended Path for Academic Proof-of-Concept (PoC)
+
+### Internal reasoning (condensed)
+
+- Zero-cost constraint → must rely on free tiers initially
+- Need to support:
+
+  - Individual experimentation
+  - Shared reproducible workflows
+
+- Avoid premature API complexity unless necessary
+
+### Final output
+
+#### Phase 1 — فردي exploration (zero cost)
+
+- Use:
+
+  - _Claude.ai Free_
+  - _Claude Code_ authenticated via Claude.ai session
+
+- მიზანი:
+
+  - Evaluate usability for:
+
+    - Code generation
+    - Statistical workflows
+    - Documentation
+
+#### Phase 2 — Structured team evaluation (still near-zero cost)
+
+- Introduce:
+
+  - Shared project templates
+  - CLI standardization (Claude Code + Gemini CLI + Cursor)
+
+- Optional:
+
+  - API credits for advanced users
+
+
+
+
+
+#### Phase 3 — Controlled API pilot
+
+- Enable:
+
+  - _Anthropic API (PAYG)_ with strict quotas
+
+- Use cases:
+
+  - Batch processing
+  - Reproducible research pipelines
+  - Integration with R / Python workflows
+
+#### Phase 4 — Decision point
+
+- Upgrade path based on findings:
+
+  - If focus is _interactive usage_:
+
+    - → _Claude.ai Team_
+
+  - If focus is _automation / pipelines_:
+
+    - → _Anthropic API_
+
+  - If compliance required:
+
+    - → _Claude.ai Enterprise_
+
+---
+
+## 5. References
+
+- [bt-1] Anthropic official pricing and plans documentation
+- [bt-2] Anthropic API platform documentation
+- [bt-3] Claude Code CLI documentation and release notes
+
+---
+
+## 6. Additional Notes
+
+- _Gemini CLI_ should be evaluated in parallel for vendor neutrality.
+- _Cursor_ provides strong IDE-native augmentation but lacks CLI parity with Claude Code.
+- For academic reproducibility:
+
+  - Prefer _API-backed workflows_ over SaaS UI interactions.
+
+- Data governance is a critical differentiator:
+
+  - Free tiers may not meet institutional requirements.
+
+- Hybrid model likely optimal:
+
+  - Free tier for students
+  - API / Team tier for researchers and staff
+
+
+
 
 # A:2 (Perplexity)
 
-[^](#toc) **_TODO:(a2-ref-perplexity)_**
+[^](#toc) **_Anthropic product offering comparison for academic use_**
 
-TODO:(a2-perplexity) ...
+This document compares major Anthropic access options against criteria
+relevant to an academic statistics department running a multi‑agent
+project template (Claude Code, Gemini CLI, Cursor, VS Code Copilot,
+GitLab Duo).
 
-## Q:2.2 (Perplexity)
+- _Claude.ai Free_
+- _Claude.ai Pro_
+- _Claude.ai Team_
+- _Claude.ai Enterprise_
+- _Anthropic API (pay‑as‑you‑go)_
+- _Claude Code_ (CLI layer on top of the above)
 
-[^](#toc) **_(=> continue)_**
+All references are based on Anthropic’s 2026‑era pricing and policies
+as of April 2026. [juma](https://juma.ai/blog/claude-pricing)
 
-TODO:(q2.2-perplexity) ...
+## Evaluation criteria
+
+For each row in the table, the following criteria are evaluated:
+
+- _Cost per month_: ongoing financial commitment per user or org.
+- _Free tier available_: yes/no and what is included.
+- _Model access_: which Claude models (Haiku / Sonnet / Opus) are available.
+- _Context window_: maximum context length offered.
+- _Rate limits_: per‑user or per‑org usage caps and throttling behavior.
+- _API key required_: whether the product is driven by an API key or OAuth‑style login.
+- _Team/organisation support_: SSO, SCIM, audit logs, or similar org‑scale controls.
+- _Data privacy policy_: how user queries are handled (e.g., non‑training, compliance standards). [support.claude](https://support.claude.com/en/articles/11845131-using-claude-code-with-your-team-or-enterprise-plan)
+
+## Feature comparison table
+
+| Offering                      | Cost per month (approx.)                                                                                  | Free tier available?                                 | Model access (Haiku / Sonnet / Opus)                   | Context window                                               | Rate limits (per‑user / usage cap)                                                                                 | API key required?                                                                        | Team/organisation support                                                                | Data privacy policy (high‑level)                                                          |
+|-------------------------------|-----------------------------------------------------------------------------------------------------------|------------------------------------------------------|--------------------------------------------------------|--------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| Claude.ai Free                | €0                                                                                                        | Yes, free tier                                       | Haiku & Sonnet only (no Opus)                          | Standard (e.g., 200k)                                        | Strong per‑user limits on usage volume; lower priority traffic                                                     | No (web UI + OAuth)                                                                      | No org controls; personal accounts only                                                  | Data not used to train models; standard privacy terms[web:11][web:17]                     |
+| Claude.ai Pro                 | ~€18–20/month per user                                                                                    | No                                                   | Full set: Haiku / Sonnet / Opus                        | Same as Team at standard tier                                | Higher per‑user caps than Free; “Pro” volume tier                                                                  | No (web UI + OAuth)                                                                      | Individual seats only; no central IT controls                                            | Data not used to train models; Anthropic privacy terms apply[web:11][web:17]              |
+| Claude.ai Team (Standard)     | ~€20–25/user/month (annual)                                                                               | No per‑org free tier                                 | Haiku / Sonnet / Opus (standard usage)                 | Standard (e.g., 200k)                                        | Per‑user caps, plus optional “extra usage” for overflow[web:16][web:20]                                            | No (OAuth‑based; admins manage seats)                                                    | Yes: SSO, centralized billing, seat management, org‑wide search                          | Data not used to train; enterprise‑grade privacy controls[web:13][web:20]                 |
+| Claude.ai Team (Premium)      | ~€100–150/user/month                                                                                      | No                                                   | Haiku / Sonnet / Opus + higher quotas                  | Same context window                                          | Higher per‑user quotas; “Max‑like” limits for heavy users                                                          | No                                                                                       | Full Team controls + early access / developer‑focused features[web:14][web:20]           |                                                                                           |
+| Claude.ai Enterprise          | Custom quote                                                                                              | No                                                   | Haiku / Sonnet / Opus; may include newer models        | Extended context available (up to 1M tokens)[web:12][web:18] | Usage‑based or per‑seat caps; configurable by IT                                                                   | No (OAuth) but can be paired with API keys for some workflows                            | Full: SSO, SCIM, audit logs, RBAC, custom data‑retention, compliance API[web:16][web:20] |                                                                                           |
+| Anthropic API (pay‑as‑you‑go) | Token‑based; ~€0.001–0.005/MTok Haiku, ~€0.003–0.015/MTok Sonnet, ~€0.005–0.025/MTok Opus[web:12][web:18] | No free tier (trial credits may exist)               | All three: Haiku / Sonnet / Opus                       | Up to 1M tokens for Opus 4.6/4.7[web:12][web:18]             | Per‑project rate limits; bursty throttling tuned to tokens/second                                                  | Yes (API key)                                                                            | None out‑of‑box; org‑level controls must be built in‑house                               | Data not used to train; strict data handling rules; can sign DPA for orgs[web:15][web:18] |
+| Claude Code (CLI layer)       | Bundled with Pro, Team, or Enterprise; pay‑as‑you‑go via API if used standalone[web:5][web:13]            | Free CLI wrapper around free‑tier web usage possible | Same models as the underlying plan (Haiku/Sonnet/Opus) | Same as the underlying plan (e.g., 200k or 1M)               | Follows the plan’s rate limits; heavy‑usage patterns may incur API‑level costs when used standalone[web:5][web:13] | Optional: can use OAuth via Team/Enterprise or API key for raw API usage[web:13][web:20] | No inherent controls; inherits team/enterprise governance if tied to org plan            | Inherits the privacy model of the backing plan (web UI) or API policy[web:13][web:15]     |
+
+
+### Notes on the table
+
+- _Claude Code_ is not a standalone pricing tier; it is a CLI interface that may be:
+  - authenticated via a Pro / Team / Enterprise account (OAuth), or
+  - driven directly via the Anthropic API (API key). [zenml](https://www.zenml.io/llmops-database/building-and-operating-a-cli-based-llm-coding-assistant)
+- For academic teaching and research, the **Team Standard** plan is
+  the most relevant “default” commercial tier once you outgrow free
+  usage, since it bundles Claude Code, provides central seat
+  management, and supports SSO‑like
+  integrations. [devops](https://devops.com/enterprise-ai-development-gets-a-major-upgrade-claude-code-now-bundled-with-team-and-enterprise-plans/)
+
+## Recommended path for zero‑cost POC
+
+For an academic department that wants a _zero‑cost proof‑of‑concept_,
+yet still integrates Claude Code into the project template, the
+recommended path is:
+
+- **Use individual Claude.ai Free accounts** for students and researchers to access the web UI and try Haiku / Sonnet. [glbgpt](https://www.glbgpt.com/hub/claude-ai-plans-2026/)
+- **Tie Claude Code to the free web tier**:
+  - Install Claude Code on the Linux base image (e.g., Ubuntu WSL‑compatible) via the official installer. [anthropic](https://www.anthropic.com/engineering/claude-code-best-practices)
+  - At first login, have users select “Claude account with subscription” (using their free Claude.ai login) so the CLI rides on the same usage quota as the web plan. [support.claude](https://support.claude.com/en/articles/11845131-using-claude-code-with-your-team-or-enterprise-plan)
+- **Enforce a “light‑usage” regime**:
+  - Document maximum rough token budgets per user (e.g., “avoid multi‑GB‑scale refactoring sessions”) to stay within free‑tier limits.
+  - Prefer Haiku‑level queries where possible, since Haiku is cheaper to run and aligns with the free tier’s performance profile. [finout](https://www.finout.io/blog/anthropic-api-pricing)
+- **Delay paid tiers until**:
+  - The department observes consistent heavy usage (e.g., multiple students routinely hitting free limits).
+  - Institutional budgeting and IT‑security (SSO, data‑handling) processes are in place.
+
+At that point, the natural next step is to **migrate to a Claude.ai Team plan** (probably Standard) because it:
+
+- Unifies web, desktop, and CLI access under one subscription.
+- Bundles Claude Code with each seat.
+- Gives central billing and basic governance controls while keeping
+  individual per‑user costs in the low‑tens‑of‑euros
+  range. [finout](https://www.finout.io/blog/claude-pricing-in-2026-for-individuals-organizations-and-developers)
+
+This path keeps the POC technically close to the intended production configuration (Claude Code + web / Team) while remaining fully zero‑cost for the first semester or pilot iteration.
+
+## Additional Notes
+
+- **Rate‑limit tuning**: For classroom‑style workloads, the department can script a “soft throttle” (e.g., maximum queries per hour per user) via the shell or GitLab CI, even if the backend is just the free tier.[bp-1]
+- **Hybrid tooling**: The same project template can run Gemini CLI and Cursor in parallel with Claude Code, allowing a side‑by‑side comparison of latency, quality, and cost‑efficiency without committing institutional funds to paid tiers.[bp-2]
+- **Export and logging**: For academic reproducibility, consider logging Claude Code prompts/responses (with user‑consent) into a local database or Git‑tracked `.claude-log/` directory, while respecting Anthropic’s terms and privacy policies.[bp-1]
 
 ---
 
-## A:2.2 (Perplexity)
+## References
 
-[^](#toc) **_(=> continue)_**
-
-TODO:(a2.2-perplexity) ...
+- [^bp-1] Anthropic. [“Claude Code: best practices for agentic coding.”](https://www.anthropic.com/engineering/claude-code-best-practices) 2025‑04‑17.
+- [^bp-2] Anthropic. [“Build with Claude”](https://www.anthropic.com/learn/build-with-claude) (Anthropic Academy).
+- [^bp-3] Anthropic. [“Using Claude Code with your Team or Enterprise plan”](https://support.claude.com/en/articles/11845131-using-claude-code-with-your-team-or-enterprise-plan) (support article).
+- [^bp-4] Anthropic. [“Anthropic API pricing overview”](https://evolink.ai/blog/claude-api-pricing-guide-2026) (per‑token, Haiku/Sonnet/Opus rates). Finout, 2026‑04‑15.
+- [^bp-5] screenapp. ["Aligned pricing guides and team‑plan summaries"](https://screenapp.io/blog/claude-ai-pricing) (Team Standard/Premium, Claude.ai plans).
 
 # A:2 (DeepSeek)
 
-[^](#toc) **_TODO:(a2-ref-deepseek)_**
+[^](#toc) **_Anthropic Product Offering Comparison for Academic Statistics Department_**
 
-TODO:(a2-deepseek) ...
+## Anthropic Product Offering Comparison for Academic Statistics Department
+
+This document compares Anthropic’s access options against criteria
+relevant to an academic organisation. The evaluation supports the
+multi‑agent project template that mandates _Claude Code_, _Gemini
+CLI_, and _Cursor_, while optionally including _VS Code Copilot_ and
+_GitLab Duo_ (planned). All information is current as of Q2 2025.
+
+### Comparison Table
+
+| Option                            | Cost per month                                                                               | Free tier availability                                  | Model access (Haiku / Sonnet / Opus)                    | Context window                                        | Rate limits                                              | API key required                    | Team / organisation support                                                | Data privacy policy                                                    |
+|-----------------------------------|----------------------------------------------------------------------------------------------|---------------------------------------------------------|---------------------------------------------------------|-------------------------------------------------------|----------------------------------------------------------|-------------------------------------|----------------------------------------------------------------------------|------------------------------------------------------------------------|
+| **Claude.ai Free**                | $0                                                                                           | Yes – full web/chat access                              | Sonnet (default), Opus (limited)                        | 200k tokens[bd-1]                                     | Lower priority during peak times                         | No (Anthropic account only)         | No – single user                                                           | Inputs not used for training by default[bd-2]                          |
+| **Claude.ai Pro**                 | $20 / month                                                                                  | No – paid only                                          | Sonnet, Opus, Haiku (via feature toggle)                | 200k tokens                                           | Higher than Free, no hard cap for reasonable use         | No                                  | No – single user                                                           | Same as Free – no training on your data                                |
+| **Claude.ai Team**                | $30 / user / month (min 5 users)                                                             | No                                                      | Full access to all three models                         | 200k tokens                                           | Higher than Pro, shared pool                             | No                                  | Yes – admin console, usage analytics, central billing                      | Data not used for training, SOC 2 Type II[bd-3]                        |
+| **Claude.ai Enterprise**          | Custom pricing (annual contract)                                                             | No                                                      | Full access + priority model updates                    | 200k tokens (custom extensions possible)              | Enterprise‑grade, no practical limit                     | No                                  | Yes – SSO, SCIM, audit logs, dedicated support                             | HIPAA and GDPR compliant options, data never used for training         |
+| **Anthropic API (pay‑as‑you‑go)** | Pay per token: Haiku ~$0.25 / 1M input, Sonnet ~$3 / 1M input, Opus ~$15 / 1M input[bd-4]    | No – but $5 credit for new accounts                     | All three models, programmatic choice                   | 200k tokens (standard), 1M token beta for some models | Tiered based on usage level (see rate limits page[bd-5]) | **Yes** – required for all requests | Organisation‑level API keys, fine‑grained access control via projects      | Data not used for training. EU data residency available at higher tier |
+| **Claude Code** (CLI tool)        | No separate subscription – uses API pay‑as‑you‑go or bundled with Team/Enterprise agreements | Free during preview? No – requires API key with credits | Same as underlying API (Haiku recommended for low cost) | Inherits from API (200k tokens)                       | Inherits from API rate limits                            | **Yes** – API key must be provided  | Inherits from API or Team/Enterprise – supports multi‑user via shared keys | Inherits from the API or plan used                                     |
+
+### Recommended Path for a Zero‑Cost Proof‑of‑Concept
+
+For an academic department that wants to evaluate Anthropic’s tools – especially _Claude Code_ – before committing to any paid tier, the following sequence achieves a functional POC at **zero monetary cost** (or near‑zero using the free API credit):
+
+1. **Start with Claude.ai Free**
+   - No API key, no payment.
+   - Test conversational coding help, prompt engineering, and document analysis up to 200k tokens.
+   - Identify which model (Sonnet vs. Opus) suits your research tasks.
+
+2. **Create an Anthropic Console account**
+   - Sign up at console.anthropic.com.
+   - New accounts receive **$5 in free API credits** (no time limit stated as of 2025)[bd-4].
+   - This credit is enough for ~20 million input tokens with Haiku or ~1.6 million with Sonnet – far more than needed for a small‑scale POC.
+
+3. **Install and configure Claude Code**
+   - Follow the official installation guide[bd-6] (requires Node.js 18+).
+   - Run `claude config` and paste your API key.
+   - Use the `--model haiku` flag to minimise credit consumption while testing.
+
+4. **Run a representative academic task**
+   - Example: “Refactor this R statistics script to use `data.table` instead of `dplyr`”.
+   - Monitor token usage in the Anthropic Console dashboard.
+
+5. **Evaluate without spending departmental funds**
+   - The $5 credit covers hundreds of such interactions.
+   - No recurring cost unless you exceed the credit – simply stop or switch to a free Gemini CLI/Cursor tier for the remainder of the POC.
+
+6. **Decide on a paid tier** (if needed) after the POC:
+   - **Individual researcher** → Claude.ai Pro ($20/month) for unlimited web chat.
+   - **Small team (≤5 users)** → Anthropic API pay‑as‑you‑go + shared API key (cheaper than Team if usage is low).
+   - **Department‑wide (≥5 users)** → Claude.ai Team ($30/user/month) for central management and no per‑token surprises.
+   - **Heavy API usage (e.g., automated pipelines)** → Continue with API pay‑as‑you‑go.
+
+> **Note**: The free $5 API credit is _per account_, not per
+> organisation. For a multi‑user POC, each researcher can create their
+> own account, or the department can request a single credit via the
+> Anthropic for Education programme[bd-7] (no guaranteed free tier,
+> but worth contacting sales).
+
+### References
+
+- [^bd-1] Anthropic. [“Model comparison – context window.”](https://docs.anthropic.com/en/docs/about-claude/models#context-windows)
+- [^bd-2] Anthropic. [“Data privacy and training.”](https://www.anthropic.com/data-privacy)
+- [^bd-3] Anthropic. [“Trust Center – SOC 2.”](https://trust.anthropic.com)
+- [^bd-4] Anthropic. [“Pricing – API.”](https://www.anthropic.com/pricing#api)
+- [^bd-5] Anthropic. [“Rate limits.”](https://docs.anthropic.com/en/api/rate-limits)
+- [^bd-6] Anthropic. [“Claude Code – Installation.”](https://docs.anthropic.com/en/docs/claude-code)
+- [^bd-7] Anthropic. [“Education programme.”](https://www.anthropic.com/education)
+
+### Additional Notes
+
+- The multi‑agent project template also requires _Gemini CLI_ and
+  _Cursor_. Both offer free tiers (Gemini API has $300 credit, Cursor
+  has a limited free plan). This document focuses solely on
+  Anthropic’s offerings, but the zero‑cost POC can be extended to
+  those tools with their respective free credits.
+
+- _GitLab Duo_ (planned) is available only with the Ultimate tier. No
+  free tier exists, but academic organisations may apply for a
+  discount via GitLab’s education programme.
+
+- _Claude Code_ is still in preview as of this writing. Some features
+  (e.g., terminal command suggestions) may require enabling
+  experimental flags. Check the reference [rf-6] for the latest
+  status.
+
+- If your department handles sensitive student or research data,
+  _Claude.ai Enterprise_ or a signed Business Associate Agreement
+  (BAA) with the API is recommended – the free/Pro/Team tiers are not
+  HIPAA compliant by default.
+
 
 <!-- }}} \\ %2. -->
-<!-- ::{{{ #TAG: TODO:(aa-section) // -->
-<details>
-<summary></summary>
-
-```{=latex}
-\newpage
-\clearpage
-\appendix
-```
-
-</details>
-
-# A:a
-
-## A:a - **TODO:(aa-title)**
-
-[^](#toc)
-
-## Appendix a
-
-TODO:(aa-text) ...
-
-# A:b
-
-## A:b - **Q2: Prompt distiller**
-
-[^](#toc)
-
-## Appendix b
-
-### User
-
-Act as an expert Prompt Engineer and AI Optimisation Specialist. Your
-objective is to analyse, critique, and significantly enhance the
-user-provided prompt.
-
-The prompt you need to refine begins immediately after the line
-starting with /PROMPT/ marker.
-
-### Your Process
-
-#### Analysis & Evaluation
-
-- Assess the original prompt for clarity, context, constraint
-  definition, and logical flow.
-- Identify specific weaknesses, such as ambiguity, grammatical errors,
-  logic gaps, or lack of sufficient context.
-- Determine if the prompt would benefit from specific engineering
-  techniques (e.g., Chain-of-Thought, persona adoption, or few-shot
-  examples).
-
-#### Critique Presentation
-
-- Provide a brief, professional evaluation of the original text.
-- List specific issues found and explain why they are problematic.
-- Propose concrete improvements to address these issues.
-
-#### Optimisation
-
-- Rewrite the prompt to be precise, fluent, and highly effective.
-- Ensure the English style is professional and grammatically correct.
-- Clarify all requirements and specifications to minimise the risk
-of AI hallucination or misinterpretation.
-
-### Note
-
-- Ignore extra Markdown used in rendering pipelines: GitLab GLFM
-  repository view and pandoc PDF transformations.
-- Keep this Markdown unaltered in reply.
-
-In particular, ignore:
-
-- <details><summary> HTML blocks
-- {=latex} codeblocks
-- [!tip] [!note] block quotes
-- code folding tags '{{{' and '}}}'
-- internal links: e.g. [^]
-
-### Important
-
-> Generate 3 responses to this prompt, each with their probability.
-
-### Output Format
-
-- Present your analysis and critique first.
-- Output the final, polished version of the prompt at the very end.
-- Separate every refined prompt from the analysis using a horizontal line
-  (`---`) and the line start marker `/PROMPT/`.
-
----
-/PROMPT/
-
-TODO:(a2-prompt) ...
-
-# A:b (Claude)
-
-[^](#toc) **_TODO:(ab-ref-claude)_**
-
-TODO:(ab-claude) ...
-
-# A:b (Gemini)
-
-[^](#toc) **_TODO:(ab-ref-gemini)_**
-
-TODO:(a2-gemini) ...
-
-# A:b (ChatGPT)
-
-[^](#toc) **_TODO:(ab-ref-chatgpt)_**
-
-TODO:(ab-chatgpt) ...
-
-# A:b (Perplexity)
-
-[^](#toc) **_TODO:(ab-ref-perplexity)_**
-
-TODO:(ab-perplexity) ...
-
-# A:b (DeepSeek)
-
-[^](#toc) **_TODO:(ab-ref-deepseek)_**
-
-TODO:(ab-deepseek) ...
-
-
-
-<!-- }}} \\ %a. -->
 <!-- {{{ // %*
 LocalWords:  GitLab CommonMark GFM GLFM YAML
 vim: set foldmethod=marker :
