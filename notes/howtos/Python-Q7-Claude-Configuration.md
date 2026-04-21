@@ -25,12 +25,12 @@ doctype: md-report
 
 # TOC
 
-1. [Q:1 - TODO:(q1-ref)](#q1)
-   - see: [TODO:(a1-ref-claude) (Claude)](#a1-claude)
-   - see: [TODO:(a1-ref-gemini) (Gemini)](#a1-gemini)
-   - see: [TODO:(a1-ref-chatgpt) (ChatGPT)](#a1-chatgpt)
-   - see: [TODO:(a1-ref-perplexity) (Perplexity)](#a1-perplexity)
-   - see: [TODO:(a1-ref-deepseek) (DeepSeek)](#a1-deepseek)
+1. [Q:1 - Claude Code - Quick Start Guide](#q1)
+   - see: [Claude Code Quick Start Guide (Claude)](#a1-claude)
+   - see: [Claude Code Quick Start Guide (Gemini)](#a1-gemini)
+   - see: [Claude Code Quick Start Guide (ChatGPT)](#a1-chatgpt)
+   - see: [Claude Code CLI - Quick Start Guide (Perplexity)](#a1-perplexity)
+   - see: [Claude Code Quick Start Guide (DeepSeek)](#a1-deepseek)
 2. [Q:2 - TODO:(q2-ref)](#q2)
    - see: [TODO:(a2-ref-claude) (Claude)](#a2-claude)
    - see: [TODO:(a2-ref-gemini) (Gemini)](#a2-gemini)
@@ -1393,7 +1393,7 @@ For detailed instructions on a skill, read `.agents/skills/<skill-name>/SKILL.md
 
 # Q:2
 
-## Q:2 - **TODO:(q2-title)**
+## Q:2 - **Anthropic Product Offering Comparison**
 
 [^](#toc)
 
@@ -1469,21 +1469,234 @@ Add an _Additional Notes_ section at the end for supplementary
 information not explicitly requested.
 
 
-
-
-
-
-
-## Question Prompt 2
-
-TODO:(q1-prompt) ...
-
-
 # A:2 (Claude)
 
-[^](#toc) **_TODO:(a1-ref-claude)_**
+[^](#toc) **_Anthropic Product Offering Comparison_**
 
-TODO:(a2-claude) ...
+_Prepared for: Academic Statistics Department — Multi-Agent Project Template_
+_Date: 2026-04-21_
+
+---
+
+## Table of Contents
+
+- [Comparison Table](#comparison-table)
+- [Claude Code as a Product Layer](#claude-code-as-a-product-layer)
+- [Recommended Path for a Zero-Cost Proof of Concept](#recommended-path-for-a-zero-cost-proof-of-concept)
+- [References](#references)
+- [Additional Notes](#additional-notes)
+
+---
+
+## Comparison Table
+
+The table below evaluates each Anthropic access option against the criteria relevant to an academic statistics department.[^bc-1][^bc-2][^bc-3][^bc-4]
+
+Abbreviations used: _n/a_ = not applicable; _TBC_ = to be confirmed with Anthropic sales; _MTok_ = million tokens.
+
+| Criterion                          | Claude.ai Free                                                     | Claude.ai Pro                                                                                   | Claude.ai Team                                                              | Claude.ai Enterprise                                                                                  | Anthropic API (PAYG)                                                                                     |
+|------------------------------------|--------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| **Cost / month**                   | $0                                                                 | $20 (or ~$17 billed annually)                                                                   | $30/seat monthly ($25 billed annually; min. 5 seats)                        | Custom — community reports ~$60/seat, 70-seat minimum, annual contract[^bc-4]                         | $0 base; usage billed per token (see below)                                                              |
+| **Free tier**                      | Yes — permanent, no credit card required[^bc-2]                    | No                                                                                              | No                                                                          | No                                                                                                    | ~$5 free credits for new API accounts[^bc-3]                                                             |
+| **Model access — Haiku**           | Limited / throttled                                                | Yes (Haiku 4.5: $1/MTok input)                                                                  | Yes                                                                         | Yes                                                                                                   | Yes — Haiku 4.5 at $1/$5 MTok in/out[^bc-1]                                                              |
+| **Model access — Sonnet**          | Yes (throttled; Sonnet 4.6 available in chat)                      | Yes                                                                                             | Yes                                                                         | Yes                                                                                                   | Yes — Sonnet 4.6 at $3/$15 MTok in/out[^bc-1]                                                            |
+| **Model access — Opus**            | No                                                                 | Yes (Opus 4.6/4.7)                                                                              | Yes                                                                         | Yes                                                                                                   | Yes — Opus 4.7 at $5/$25 MTok in/out[^bc-1]                                                              |
+| **Context window**                 | 200K tokens (standard)                                             | 200K tokens                                                                                     | 200K tokens                                                                 | 500K tokens (Enterprise-tier)[^bc-4]                                                                  | 200K standard; up to 1M tokens (beta, Tier 4+ orgs)[^bc-5]                                               |
+| **Rate limits**                    | Low; throttled during peak; rolling reset every few hours[^bc-2]   | Moderate (~45 prompts/session before throttling, ~5-hour reset; user-reported)[^bc-6]           | Higher than Pro; 100K–150K TPM per user recommended for 5–20 users[^bc-3]   | Negotiable; organisation-level controls                                                               | Tiered by usage level; raises with spend; custom limits via sales[^bc-1]                                 |
+| **API key required**               | No                                                                 | No                                                                                              | No                                                                          | No                                                                                                    | Yes — mandatory[^bc-1]                                                                                   |
+| **Team / org support**             | No                                                                 | No                                                                                              | Yes — centralised billing, shared Projects, admin dashboard, domain capture | Yes — SSO, SCIM, RBAC, audit logs, IP allowlisting, HIPAA-ready option[^bc-4]                         | Partial — via Console organisation features; no built-in team UI                                         |
+| **Data privacy policy**            | Standard; users may opt out of training in Privacy Settings[^bc-7] | Standard; opt-out available[^bc-7]                                                              | No training on data by default (contractual)[^bc-7]                         | No training by default; custom retention; compliance API; data residency options[^bc-7]               | No training on API data by default; data residency at 1.1× price on AWS/Vertex regional endpoints[^bc-1] |
+| **Academic / education programme** | Available to all individuals, no institution required[^bc-8]       | No dedicated student discount; institution partnerships grant free Pro to enrolled users[^bc-8] | Applicable if department has ≥5 seats                                       | University-wide Education Plan available via Anthropic sales (covers students, faculty, staff)[^bc-8] | Research Credit programme available for academic projects (apply via institution IT)[^bc-8]              |
+
+---
+
+## Claude Code as a Product Layer
+
+Claude Code is _not_ a standalone subscription. It is a CLI tool that
+runs in your terminal, connects to Anthropic's model APIs, and is
+billed through your existing Claude plan or API account. The
+implications for the multi-agent project template are as follows.
+
+### Availability by underlying plan
+
+Claude Code is included with Claude Pro ($20/month), Max (from
+$100/month), Team, and Enterprise paid plans.
+
+The free Claude plan only gives you access to chat on web, iOS,
+Android, and desktop — the terminal-based Claude Code environment is
+not included. However, new API users receive approximately $5 in free
+credits to test the service, which is enough for a few hours of Claude
+Code usage with the Sonnet model.
+
+### Cost model
+
+Claude Code's official documentation reports that enterprise and API
+deployments vary widely, with average spend around $13 per developer
+per active day and $150–250 per developer per month, while 90% of
+users remain below $30 per active day.
+
+### Team-specific considerations
+
+For rate limit planning, Anthropic's official documentation provides
+token-per-minute (TPM) recommendations by team size. A team of 5 to 20
+users should plan for 100,000 to 150,000 TPM per user, while larger
+teams of 50 to 100 users need only 25,000 to 35,000 TPM per user
+because concurrent usage drops as team size grows. For an academic
+department with variable, non-simultaneous usage patterns (researchers
+and students working at different hours), effective per-user
+consumption is typically lower than peak numbers suggest.
+
+### Token cost reference (API route, as of April 2026)[^bc-1]
+
+The following prices apply when running Claude Code via the Anthropic API (pay-as-you-go):
+
+| Model             | Input ($/MTok) | Output ($/MTok) | Notes                                                                       |
+|-------------------|----------------|-----------------|-----------------------------------------------------------------------------|
+| Claude Haiku 4.5  | $1.00          | $5.00           | Fastest; suitable for lightweight agentic steps                             |
+| Claude Sonnet 4.6 | $3.00          | $15.00          | Default cost-performance choice for Claude Code                             |
+| Claude Opus 4.7   | $5.00          | $25.00          | Highest reasoning; uses new tokenizer (up to 35% more tokens for same text) |
+
+Prompt caching reduces effective input cost to 10% of the standard
+rate for cached content. Batch API processing offers a 50% discount
+over standard pricing. Both discounts may be combined.[^bc-1]
+
+---
+
+## Recommended Path for a Zero-Cost Proof of Concept
+
+The following phased approach allows the department to validate the
+multi-agent template against real workloads before committing to any
+paid tier. All steps are zero-cost or near-zero-cost.
+
+### Phase 0 — Individual baseline (week 1–2)
+
+Each participating researcher or student creates a personal _Claude.ai
+Free_ account. This grants access to Claude Sonnet 4.6 in the browser
+interface with rolling usage limits. In February 2026, Anthropic
+significantly expanded the free tier's offerings — Projects,
+Artifacts, and app connectors are now available to free users, which
+has blurred the line between Free and Pro more than ever. Use this
+phase to validate prompt strategies, context sizes, and task
+suitability.
+
+_Limitation:_ Claude Code (terminal agent) is not available on the Free plan. Browser chat only.
+
+### Phase 1 — API free credits for Claude Code (week 2–3)
+
+Each developer on the template team creates an Anthropic Console
+account and uses the ~$5 in free API credits to run short Claude Code
+sessions in the terminal. Use Sonnet 4.6 as the default model to
+maximise credit duration. Enable prompt caching from the first session
+to extend the credit further.
+
+_Scope:_ Enough to complete several hours of agentic coding across the multi-agent project structure.
+
+### Phase 2 — Education programme enquiry (parallel to Phase 1)
+
+Contact Anthropic via the Education sales channel to enquire about the
+_Claude for Education_ university-wide plan. Verified partner
+institutions provide students with managed accounts featuring higher
+limits and enhanced privacy. If the department's institution is not
+yet a partner, the Student Research Credit programme is an alternative
+route for individual academic projects. Known partner universities
+include Northeastern University, London School of Economics (LSE),
+Champlain College, University of San Francisco School of Law, and
+Northumbria University. The list has been expanding throughout 2025
+and 2026, according to Anthropic's education announcements.
+
+### Phase 3 — Decision gate
+
+After Phases 0–2, the department has enough empirical data to make one of the following choices:
+
+- _Low-volume use:_ Remain on the API (pay-as-you-go) with Sonnet 4.6
+  and prompt caching. At typical academic workloads (non-daily,
+  variable), this is often cheaper than a flat subscription.
+- _Regular individual use:_ Upgrade selected researchers to _Claude.ai
+  Pro_ ($20/month) for included Claude Code access without token
+  metering.
+- _Team deployment:_ Adopt _Claude.ai Team_ (≥5 seats, $25/seat/month
+  billed annually) for shared Projects, admin controls, and
+  no-training-by-default data policy — important for research data.
+- _Institution-wide:_ Pursue the _Claude for Education_ enterprise
+  agreement to cover the whole department or institution under a
+  single negotiated contract.
+
+---
+
+## References
+
+[^bc-1]: [Anthropic API Pricing Documentation](https://platform.claude.com/docs/en/about-claude/pricing) (verified April 2026)
+[^bc-2]: [Claude.ai Free tier details](https://claude.com/pricing) (verified April 2026)
+[^bc-3]: [Claude Code Pricing Guide (LaoZhang AI Blog)](https://blog.laozhang.ai/en/posts/claude-code-pricing-guide) (April 2026)
+[^bc-4]: [Claude Enterprise / Team plan details (Juma / Team-GPT)](https://juma.ai/blog/claude-pricing)
+[^bc-5]: [Extended context window (1M token beta) — Anthropic API docs, rate limits section](https://platform.claude.com/docs/en/about-claude/pricing)
+[^bc-6]: [Claude Free vs Pro usage limits (user-reported figures)](https://mem0.ai/blog/anthropic-claude-pricing) (February 2026)
+[^bc-7]: [Anthropic data privacy and training policy](https://checkthat.ai/brands/anthropic/pricing) (April 2026); [_official policy_](https://www.anthropic.com/legal/privacy)
+[^bc-8]: [Claude for Education and academic access](https://www.verdent.ai/guides/how-to-use-claude-ai-for-free-2026) [_Claude student discount_](https://k-antenna.com/claude-student-discount/)
+
+---
+
+## Additional Notes
+
+### On the _Max_ plan family
+
+Anthropic now offers _Claude Max_ as a tier above Pro for individual
+power users — Max 5× at $100/month and Max 20× at $200/month. Claude
+Max is not about adding new features. It is for users who rely on
+Claude heavily and use it for long periods of time. For the academic
+use case, Max is unlikely to be the right entry point: the Team plan
+at $25/seat/month (annual) provides more organisational value for the
+same or lower per-seat cost once five or more users are involved.
+
+### On the tokenizer change for Opus 4.7
+
+Opus 4.7 uses a new tokenizer compared to previous models. This new
+tokenizer may use up to 35% more tokens for the same fixed
+text. Budget calculations for agentic statistical workloads (long R or
+Python scripts, large data dictionaries) should account for this when
+selecting Opus 4.7 over Sonnet 4.6.
+
+### On long-context pricing simplification
+
+Anthropic eliminated long-context surcharges as of March 13, 2026. A
+900K-token request now costs the same per-token rate as a 9K-token
+request on Opus 4.7 and Sonnet 4.6. This is a material benefit for
+statistical research workloads that involve large codebases,
+simulation outputs, or lengthy document corpora.
+
+### On data residency for EU/Italian compliance
+
+The department is located in Italy and may be subject to GDPR
+data-residency requirements. Regional endpoints on AWS Bedrock and
+Google Vertex AI include a 10% premium over global endpoints for data
+residency guarantees. EU-based teams evaluating the API route should
+factor this overhead into cost projections, or confirm that
+Anthropic's standard data processing agreements satisfy their DPO
+requirements before proceeding.
+
+### On Gemini CLI as a zero-cost Claude Code alternative for PoC
+
+The closest free alternative to Claude Code is Google's Gemini CLI,
+which offers 1,000 requests per day at no cost. Since the multi-agent
+project template mandates Gemini CLI as a parallel tool, departments
+can use the Gemini CLI allowance to complete initial agentic workflow
+design and validation while deferring Claude Code costs until Phase 1
+API credits are obtained. This extends the zero-cost window before any
+spend is required.
+
+### On Anthropic's open-source and startup programmes
+
+Anthropic launched the Claude for Open Source programme in late
+February 2026. The programme gives qualifying open source maintainers
+six months of Claude Max 20× ($200/month value) completely free, with
+up to 10,000 spots available and applications closing June
+30, 2026. If the department maintains open-source statistical software
+repositories on GitHub meeting the eligibility criteria (5,000+ stars
+or 1M+ monthly NPM downloads), this programme offers substantial free
+access that could cover the entire PoC period and beyond.
+
+
+
 
 # A:2 (Gemini)
 
