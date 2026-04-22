@@ -1,11 +1,10 @@
 ---
 name: citation-management
-description: "Manage citations systematically throughout the research and writing process."
+description: Comprehensive citation management for academic research. Search Google Scholar and PubMed for papers, extract accurate metadata, validate citations, and generate properly formatted BibTeX entries. This skill should be used when you need to find papers, verify citation information, convert DOIs to BibTeX, or ensure reference accuracy in scientific writing.
+allowed-tools: Read Write Edit Bash
 license: MIT License
 metadata:
     skill-author: K-Dense Inc.
-risk: unknown
-source: community
 ---
 
 # Citation Management
@@ -1110,4 +1109,5 @@ The citation-management skill provides:
 7. **Reproducibility** through documented search and extraction methods
 
 Use this skill to maintain accurate, complete citations throughout your research and ensure publication-ready bibliographies.
+
 
