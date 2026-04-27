@@ -205,6 +205,17 @@ dev = [
   "py",
   "mypy",
 
+  # --- skills ---
+  "aiohttp",
+  "anthropic",
+  "hypothesis",
+  "line-profiler",
+  "memory-profiler",
+  "openai",
+  "pydantic",
+  "scikit-learn",
+  "sentence-transformers",
+
   # --- packaging ---
   "setuptools",
   "wheel",
@@ -335,6 +346,7 @@ exclude = [
   "notes/*",
   "renv/*",
   ".venv/*",
+  ".agents/*",
 ]
 select = [
     "F","E","W","YTT","B","Q","T10","INT","PL","PT","PIE","PYI",
