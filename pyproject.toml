@@ -307,6 +307,14 @@ ignore_missing_imports = true
 [tool.pyright]
 include = ["src", "tests/pytest", "notebooks"]
 exclude = [
+  "notebooks/@databricks/*",
+  "doc/*",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
+  ".agents/*",
+  ".eggs/*.py",
   "**/node_modules",
   "**/__pycache__",
   "docker",
