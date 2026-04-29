@@ -30,9 +30,7 @@ readme = "README.md"
 # ]
 requires-python = ">=3.10,<3.15"
 
-authors = [
-    {name = "Datalab DEMS", email = "datalab@unimib.it"},
-]
+authors = [{ name = "Datalab DEMS", email = "datalab@unimib.it" }]
 
 # }}} //
 # {{{ ////////////////////////////////////////////////////////////////
@@ -129,16 +127,16 @@ gpumon = [
 
 [project.urls]
 documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
-homepage      = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
-repository    = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
 
 # ============================================================
 # Script commands
 # ============================================================
 
 [project.scripts]
-main  = "dve.cli:main"
-demo  = "vce.cli:main"
+main = "dve.cli:main"
+demo = "vce.cli:main"
 hello = "dve.scripts.dummy.dummy_hello:main"
 
 
@@ -189,7 +187,7 @@ dev = [
   # --- edit ---
   "pyright",
   "basedpyright",
-  
+
   # --- lint ---
   "ruff",
   # "yapf",
@@ -220,7 +218,7 @@ dev = [
   "setuptools",
   "wheel",
   "bumpversion",
-  "twine"
+  "twine",
 ]
 
 
@@ -250,10 +248,7 @@ url = "https://download.pytorch.org/whl/cu130"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = [
-  "src/dve",
-  "src/vce",
-]
+packages = ["src/dve", "src/vce"]
 
 # --- [poetry] ---------------------------------------------------
 
@@ -267,13 +262,12 @@ url = "https://download.pytorch.org/whl/cu130"
 priority = "explicit"
 
 [tool.poetry.dependencies]
-torch = {source = "torch130"}
-torchvision = {source = "torch130"}
+torch = { source = "torch130" }
+torchvision = { source = "torch130" }
 
 [tool.poetry.dependencies.rootpath]
 git = "https://github.com/hute37/python-rootpath"
 branch = "stable"
-
 
 
 # --- [setuptools] ---------------------------------------------------
@@ -292,13 +286,12 @@ branch = "stable"
 # --- [pytest] ---------------------------------------------------
 
 [tool.pytest.ini_options]
-pythonpath   = ["src", "tests/pytest"]
-testpaths    = ["tests/pytest"]
+pythonpath = ["src", "tests/pytest"]
+testpaths = ["tests/pytest"]
 python_files = ["test_*.py"]
-python_classes  = ["Test*"]
+python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts      = "-v --tb=short"
-
+addopts = "-v --tb=short"
 
 
 # --- [mypy] ---------------------------------------------------
@@ -314,17 +307,17 @@ ignore_missing_imports = true
 [tool.pyright]
 include = ["src", "tests/pytest", "notebooks"]
 exclude = [
-    "**/node_modules",
-    "**/__pycache__",
-    "docker",
-    "notes",
-    "data",
-    "logs",
-    "temp",
+  "**/node_modules",
+  "**/__pycache__",
+  "docker",
+  "notes",
+  "data",
+  "logs",
+  "temp",
 ]
-ignore              = ["build"]
-defineConstant      = {DEBUG = true}
-typeCheckingMode    = "basic"
+ignore = ["build"]
+defineConstant = { DEBUG = true }
+typeCheckingMode = "basic"
 reportMissingImports = true
 
 
@@ -333,10 +326,10 @@ reportMissingImports = true
 [tool.ruff]
 line-length = 100
 target-version = "py310"
-fix            = true
+fix = true
 
 [tool.ruff.lint]
-unfixable      = []
+unfixable = []
 typing-modules = ["pandas._typing"]
 exclude = [
   "notebooks/@databricks/*",
@@ -349,9 +342,33 @@ exclude = [
   ".agents/*",
 ]
 select = [
-    "F","E","W","YTT","B","Q","T10","INT","PL","PT","PIE","PYI",
-    "TID","ISC","TCH","C4","PGH","RUF","S102","NPY002","PERF",
-    "FLY","G","FA","ICN001","SLOT","RSE",
+  "F",
+  "E",
+  "W",
+  "YTT",
+  "B",
+  "Q",
+  "T10",
+  "INT",
+  "PL",
+  "PT",
+  "PIE",
+  "PYI",
+  "TID",
+  "ISC",
+  "TCH",
+  "C4",
+  "PGH",
+  "RUF",
+  "S102",
+  "NPY002",
+  "PERF",
+  "FLY",
+  "G",
+  "FA",
+  "ICN001",
+  "SLOT",
+  "RSE",
 ]
 ignore = []
 
@@ -359,12 +376,22 @@ ignore = []
 convention = "google"
 
 [tool.ruff.lint.isort]
-combine-as-imports       = true
+combine-as-imports = true
 #split-on-trailing-comma  = false
 
 
 [tool.ruff.format]
 docstring-code-format = true
+exclude = [
+  "notebooks/@databricks/*",
+  "doc/*",
+  ".eggs/*.py",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
+  ".agents/*",
+]
 
 # }}} //
 # {{{ ////////////////////////////////////////////////////////////////
