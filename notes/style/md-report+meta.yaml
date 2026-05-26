@@ -8,8 +8,9 @@ date: \today
 lang: en-US
 
 category: Misc
-baseurl: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-r
-project: dve-sample-r
+baseurl: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py
+#citeurl: https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py
+project: dve-sample-py
 orgname: "University of Milano-Bicocca"
 orgsite: "www.datalab.it"
 ---

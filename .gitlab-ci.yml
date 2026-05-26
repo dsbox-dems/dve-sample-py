@@ -1,4 +1,5 @@
-image: python:3.10
+---
+image: python:3.14
 
 variables:
   UV_VERSION: "latest"
@@ -16,9 +17,15 @@ stages:
   - test
 
 before_script:
+  - echo "+++ sys.df[env-pre]"
+  - df -h
   - curl -LsSf https://astral.sh/uv/install.sh | sh
   - export PATH="$HOME/.local/bin:$PATH"
+  - echo "uv.full:uv sync --all-extras --all-groups"
+  - echo "uv.dev:uv sync --dev"
   - uv sync --dev
+  - echo "+++ sys.df[env-post]"
+  - df -h
 
 linting:
   stage: lint
