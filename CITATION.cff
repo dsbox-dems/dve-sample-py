@@ -14,22 +14,23 @@ cff-version: "1.2.0"
 
 # ── Mandatory fields ────────────────────────────────────────────────
 
-title: "TITLE OF THE RESEARCH WORK / TITOLO DEL LAVORO DI RICERCA"
+title: "TODO(title): TITLE OF THE RESEARCH WORK / TITOLO DEL LAVORO DI RICERCA"
 
 # One entry per author. Use ORCID where available.
 authors:
-  - family-names: "Surname"
-    given-names: "FirstName"
-    orcid: "https://orcid.org/0000-0000-0000-0000"
+  - family-names: "DEMS/datalab"
+    given-names: "Data Science Lab"
+    orcid: "https://orcid.org/0009-0005-1409-4209"
     affiliation: "Department of Economics, Management and Statistics DEMS, University of Milano-Bicocca"
-    email: "firstname.surname@unimib.it"
+    email: "datalab@unimib.it"
   # Add further authors below using the same structure / Aggiungere altri autori con la stessa struttura
 
 type: software          # or: dataset | article | thesis — select the most appropriate / scegliere il più appropriato
 version: "0.1.0"        # Semantic versioning / Versionamento semantico
-date-released: "YYYY-MM-DD"   # ISO 8601 date / Data ISO 8601
+date-released: "2026-05-26"   # ISO 8601 date / Data ISO 8601
 
 abstract: >
+  TODO(abstract):
   Short abstract (2–5 sentences) describing the research question,
   methods, and expected outputs. / Breve abstract (2-5 frasi) che descrive
   la domanda di ricerca, i metodi e gli output attesi.
@@ -37,7 +38,7 @@ abstract: >
 # ── Repository and identifiers ───────────────────────────────────────
 # Private GitLab repository (ub-dems group) — required
 # Repository GitLab privato (gruppo ub-dems) — obbligatorio
-repository-code: "https://gitlab.com/ub-dems/YOUR-PROJECT-REPO"
+repository-code: "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
 
 # ── Publications ─────────────────────────────────────────────────────────
 # reference to publications
