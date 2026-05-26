@@ -61,9 +61,9 @@ dependencies = [
 
   # --- sql ---
   "SQLAlchemy",
+  "psycopg2-binary",
   "mysql-connector-python",
   # "mysqlclient",
-  "psycopg2-binary",
 
   # --- stats ---
   "scipy",
@@ -99,7 +99,7 @@ dependencies = [
   "pathspec",
 
   "icecream",
-  "radian",
+  #"radian",
   "tqdm",
 
   "pip",
@@ -145,6 +145,22 @@ hello = "dve.scripts.dummy.dummy_hello:main"
 # ============================================================
 [dependency-groups]
 
+agents = [
+
+  # --- skills ---
+  "aiohttp",
+  "anthropic",
+  "graphifyy",
+  "hypothesis",
+  "line-profiler",
+  "memory-profiler",
+  "openai",
+  "pydantic",
+  "scikit-learn",
+  "sentence-transformers",
+  
+]
+
 jupyter = [
 
   # --- jupyter ---
@@ -173,6 +189,10 @@ jupyter = [
   "ipywidgets",
   "ipython",
   "ipython-bg",
+
+  # --- marimo ---
+  
+  "marimo",
 ]
 
 dev = [
@@ -187,6 +207,7 @@ dev = [
   # --- edit ---
   "pyright",
   "basedpyright",
+  "tree-sitter",
 
   # --- lint ---
   "ruff",
@@ -202,17 +223,6 @@ dev = [
   "colorama",
   "py",
   "mypy",
-
-  # --- skills ---
-  "aiohttp",
-  "anthropic",
-  "hypothesis",
-  "line-profiler",
-  "memory-profiler",
-  "openai",
-  "pydantic",
-  "scikit-learn",
-  "sentence-transformers",
 
   # --- packaging ---
   "setuptools",
