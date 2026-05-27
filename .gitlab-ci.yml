@@ -33,18 +33,18 @@ linting:
     - uv run ruff check .
     - uv run ruff format --check .
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
 
 typing:
   stage: lint
   script:
     - uv run pyright
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
 
 testing:
   stage: test
   script:
     - uv run pytest -v
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
