@@ -207,7 +207,7 @@ dev = [
   # --- edit ---
   "pyright",
   "basedpyright",
-  "tree-sitter",
+  # "tree-sitter",
 
   # --- lint ---
   "ruff",

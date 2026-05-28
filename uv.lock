@@ -1147,7 +1147,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "ruff" },
     { name = "setuptools" },
-    { name = "tree-sitter" },
     { name = "twine" },
     { name = "wheel" },
 ]
@@ -1246,7 +1245,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "ruff" },
     { name = "setuptools" },
-    { name = "tree-sitter" },
     { name = "twine" },
     { name = "wheel" },
 ]
