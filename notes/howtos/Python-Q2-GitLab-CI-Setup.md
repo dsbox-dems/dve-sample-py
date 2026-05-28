@@ -90,177 +90,140 @@ doctype: md-report
 
 ## Role
 
-You are a Senior DevOps Engineer and High-Performance Computing (HPC)
-specialist. Your expertise lies in configuring containerized
-environments for Machine Learning, specifically optimizing NVIDIA CUDA
-stacks for PyTorch using `micromamba` and Astral `uv`.
-You are also an expert of GitLab CI/CD pipeline environment.
-
+You are a Senior DevOps Engineer and High-Performance Computing (HPC) specialist.
+Your expertise covers containerised environments for Machine Learning, specifically
+optimising NVIDIA CUDA stacks for PyTorch using `micromamba` and Astral `uv`.
+You are also an expert in GitLab CI/CD pipeline configuration.
 
 ## Technical Constraints
 
-- **Project Environments:**:
-    1. `dev`: interactive local development (native, un-containerized, Ubuntu Linux OS, GPU available)
-    2. `test`: batch local development (native, un-containerized, Ubuntu Linux OS, GPU available)
-    3. `prod`: runtime execution environment (batch, multi-node cluster, containerized (podman), Ubuntu Linux OS, GPU available)
-    4. `int`: GitLab SaaS ("GitLab.com") CI/CD verification gate before MR feature merging to mainline environment (batch, external cloud with disk space quotas (20 GB)
+- _Project Environments_:
+    1. `dev`: interactive local development (native, un-containerised, Ubuntu Linux, GPU available)
+    2. `test`: batch local development (native, un-containerised, Ubuntu Linux, GPU available)
+    3. `prod`: batch runtime on a multi-node cluster (containerised via Podman, Ubuntu Linux, GPU available)
+    4. `int`: GitLab SaaS (`GitLab.com`) CI/CD verification gate before MR merging to mainline
+       (batch, shared cloud runner, disk quota: 20 GB)
 
-- **Development Environment:** Rootless Podman, Ubuntu-based Rocker images.
+- _Development Environment_: Rootless Podman, Ubuntu-based images.
 
-- **CI/CD Environment:** GitLab SaaS ("GitLab.com") pipeline specified by `.gitlab-ci.yml`, with shared "Ultimate" account.
+- _CI/CD Environment_: GitLab SaaS pipeline defined in `.gitlab-ci.yml`, shared "Ultimate" account.
 
-- **MR Verification Pipeline**: feature branch integration branch line ("develop") where perform prerelease verification steps:
-    1. code syntax check via `pyright`
-    2. code lint checks via `ruff check`
-    3. code formatting checks via `ruff format`
-    4. unit testing, without GPU requirements via `pytest`
+- _MR Verification Pipeline_: runs on the `develop` integration branch and performs:
+    1. Static type checking via `pyright`
+    2. Lint checks via `ruff check`
+    3. Format checks via `ruff format`
+    4. Unit tests (no GPU required) via `pytest`
 
-- **MR Documentation Pipeline**: the verification pipeline can be associated to an automatic generation phase that could generate (and commit) some documentation artifacts.
-
-- **The "Simple-as-possible" Rule:** The project under consideration will be used as a template for several research projects, sharing the same prerequisites, but that will require minimum, if none, complex interactions with `uv sync` command in order to consolidate a GPU enabled python virtual environment.
-
-- **Privileges:** In `dev` and `test` native environments only user-level access is granted (only `$HOME` relative paths are allowed) while in Podman containers `root (id=0)` access is available.
-
-- **Package Management:** - A possible option is to consider `micromamba` for CUDA, cuDNN, and NVBLAS setup, in alternative to `uv` managed "Python wheels" (binaries)
-  - Use `uv` for Python version management and virtual environments.
-  - **Crucial:** In case of `micromamba` usage, the PyTorch installation via `uv` must utilize the
-    system-provided CUDA libraries rather than downloading massive CUDA-bundled wheels dependencies.
-
-## Problem
-
-With current `pyproject.toml` and `.gitlab-ci.yml` setting, pushing to GitLab and triggering the CI/CD pipeline, the build process fails in early phases because of the size of virtual environment, bloated with binary CUDA libraries, dependency of `torch` module.
-A possible hard switch to "CPU-only" `torch` version is in contrast with the _"Simple-as-possible"_ Rule, described above. The project environment setup of derived projects (GPU-enabled) must use the simple `uv sync` command:
+- _The "Simple-as-possible" Rule_: This project is a template for multiple research projects
+  sharing the same prerequisites. Derived projects must be able to set up a GPU-enabled Python
+  virtual environment with a single command:
 
 ```bash
 uv sync --all-extras --all-groups
 ```
 
-The pipeline error:
+  No complex, project-specific post-sync steps are permitted.
+
+- _Privileges_: In `dev` and `test` environments, only user-level access is granted (`$HOME`-relative
+  paths only). Inside Podman containers, `root` (uid=0) access is available.
+
+- _Package Management_:
+  - `uv` manages Python version selection and virtual environments.
+  - `micromamba` is a candidate alternative for installing `cuda-toolkit`, `cudnn`, and `libblas`,
+    externalising CUDA from the `uv`-managed virtual environment.
+  - _Crucial_: if `micromamba` is used, PyTorch must be installed by `uv` against the
+    system-provided CUDA libraries, _not_ via CUDA-bundled wheel downloads.
+
+## Problem Statement
+
+The CI/CD pipeline fails in early stages because the `.venv` restored from cache exceeds the
+20 GB disk quota of the GitLab SaaS shared runner. The root cause is that `torch`, when installed
+via `uv sync`, pulls in massive CUDA-bundled binary wheels (including `triton` shared libraries).
+
+A hard switch to a CPU-only `torch` variant is explicitly prohibited by the _"Simple-as-possible"_
+Rule: derived GPU-enabled projects must continue to use `uv sync --all-extras --all-groups`
+without modification.
+
+The observed pipeline error is:
 
 ```text
-$ git remote set-url origin "${CI_REPOSITORY_URL}" || echo 'Not a git repository; skipping'
-Restoring cache 03:06
-Checking cache for default-protected...
-Using presigned URL for cache download             
-Selecting primary cache URL                         alternate_modified=0001-01-01 00:00:00 +0000 UTC alternate_url=https://storage.googleapis.com/gitlab-com-runners-cache/project/15208219/73/73445e6334b99fb3506bd2949e83a3c02b7cdb648e6264d21388c763d253c5da primary_modified=2026-05-26 16:43:12 +0000 UTC primary_url=https://storage.googleapis.com/gitlab-com-runners-cache/project/15208219/default-protected
-Downloading cache from https://storage.googleapis.com/gitlab-com-runners-cache/project/15208219/default-protected  etag="ba79f1820723baccd897eea2bf758441"
-WARNING: .venv/lib/python3.14/site-packages/triton/_C/libtriton.so: write .venv/lib/python3.14/site-packages/triton/_C/libtriton.so: no space left on device (suppressing repeats) 
-WARNING: .venv/lib/python3.14/site-packages/triton/backends/: mkdir .venv/lib/python3.14/site-packages/triton/backends: no space left on device (suppressing repeats) 
-WARNING: .venv/lib/python3.14/site-packages/triton/backends/: lchmod .venv/lib/python3.14/site-packages/triton/backends/: no such file or directory (suppressing repeats) 
-WARNING: .venv/lib/python3.14/site-packages/triton/backends/: lchown .venv/lib/python3.14/site-packages/triton/backends/: no such file or directory (suppressing repeats) 
-Successfully extracted cache
-Executing "step_script" stage of the job script 00:00
-Using effective pull policy of [always] for container python:3.14
-Using docker image sha256:f494e154bc1f458228780ebfb2cef8654f0b0e9c860e8bf3ce24fa49f509670a for python:3.14 with digest python@sha256:250e5c97be05e1eb2272fbdbd810dfd638f9012e1e6f65c99390ad3239943a08 ...
-Cleaning up project directory and file based variables 00:01
-ERROR: Job failed (system failure): Error response from daemon: symlink ../32605b2b9a5c0ee378876e39ecc99d850864b419b12cc53f33c2ef29441bf42b-init/diff /var/lib/docker/overlay2/l/NSZO4MOTVCSHYNVVKTBE5FXIDM: no space left on device (docker.go:898:0s)
+WARNING: .venv/lib/python3.14/site-packages/triton/_C/libtriton.so:
+  write: no space left on device
 
+ERROR: Job failed (system failure): Error response from daemon:
+  symlink [...]: no space left on device (docker.go:898:0s)
 ```
-
 
 ## Objective
 
-Provide a refactoring of `pyproject.toml` and `.gitlab-ci.yml` that fix the CI/CD Pipeline problem under constraint of _"Simple-as-possible"_ Rule.
+Provide a concrete refactoring of `pyproject.toml` and `.gitlab-ci.yml` that resolves the
+disk-quota failure while respecting the _"Simple-as-possible"_ Rule.
 
-Discuss how a `micromamba` alternative setup could avoid the problem, externalizing CUDA dependency out of `uv` venv management.
-Focus on the prons and cons of this alternative, and possible impacts to final user's project setup (a.g `~/.bashrc` or `~/.zshrc` modifications),
+Additionally, analyse the `micromamba` alternative setup as a means of externalising the CUDA
+dependency from `uv` virtual environment management. Structure the analysis as follows:
 
+- _Mechanism_: how `micromamba` decouples CUDA from `uv sync`.
+- _Pros_: benefits for disk size, portability, and reproducibility.
+- _Cons_: additional setup burden (e.g. `~/.bashrc` / `~/.zshrc` modifications, `conda activate`
+  in CI steps, solver overhead).
+- _Impact on derived projects_: what a template consumer must do differently.
 
-## Sources
+## Source Files
 
-### 1. Original Project Configuration (`pyproject.toml`)
+The following configuration files are provided as attachments. If any attachment is absent,
+state which file is missing and proceed by generating a representative example based on the
+constraints above.
 
-provided as attachment.
-
-### 1. Original CI/CD pipeline Configuration (`.gitlqb-ci.yml`)
-
-provided as attachment.
-
-### 1. Original `micromamba` Pipeline Configuration (`onda-env.yaml`)
-
-provided as attachment.
-
+1. _Original `pyproject.toml`_ — current project configuration.
+2. _Original `.gitlab-ci.yml`_ — current CI/CD pipeline definition.
+3. _Original `conda-env.yaml`_ — existing `micromamba` environment specification.
 
 ## Deliverables
 
-### 1. Refactored Project Configuration (`pyproject.toml`)
+### 1. Refactored `pyproject.toml`
 
-- Provide a PEP 508/PEP 621  `uv`-compatible project.
-- Describe native/containerized venv setup for GPU-enabled environments.
-- Discuss NVIDIA compatibility consideration about GPU-family, NVIDIA drivers, cuDNN and `pytorch` versioning on both cases: with or without `micromamba` CUDA support.
+- Produce a PEP 508 / PEP 621 compliant, `uv`-compatible project file.
+- Describe how the virtual environment is set up for GPU-enabled environments,
+  both native and containerised.
+- Discuss NVIDIA compatibility considerations: GPU family, driver version, cuDNN, and
+  PyTorch versioning — for both the `uv`-only and `micromamba`-assisted cases.
 
-### 2. GitLab CI/CD Environment Specification (`.gitlqb-ci.yml`)
+### 2. Refactored `.gitlab-ci.yml`
 
-- Specify `uv sync` command syntax and implication on disk size limitation of default pipelind quota defaults.
-- Considering the verification nature of the pipeline. optimize disk requirements and consequent elaboration time, by tuning `gitlab-runner` configuration.
+- Specify the correct `uv sync` command and flags for the CI context.
+- Optimise disk usage and job duration given the 20 GB shared runner quota,
+  focusing on the verification nature of the pipeline (no GPU, no large binary wheels needed).
+- Tune cache configuration and `gitlab-runner` settings to minimise footprint.
 
-### 2. For `micromamba` alternative, a `conda` CUDA Environment Specification (`conda-env.yaml`)
+### 3. `conda-env.yaml` for `micromamba` Alternative
 
-- Define an environment containing: `cuda-toolkit=13.1`, `cudnn`, and `libblas`.
-- Ensure compatibility for NVIDIA Driver 580+ (CTK).
-
-
-
+- Define a `micromamba`/`conda` environment containing `cuda-toolkit=13.1`, `cudnn`,
+  and `libblas`.
+- Ensure compatibility with NVIDIA Driver 525+ and the CUDA 12.x Toolkit (CTK).
+- Note any version pinning required for PyTorch compatibility.
 
 ## Output Format
 
-- Reply in clear formatted "GitLab Flavored Markdown (GLFM)" Markdown,
-with precise (lint) validation:
-  - codeblock delimiters ``` placed atline start). Avoid codeblock nesting.
-  - use _underscore markup_ for emphasys
-  - prefer nested headings to text markup with asterisks
-  - use only "dash" for unordered lists, with correct indentation
-  - insert appropriate blank line separation after headings, list and codeblocks
+- Reply in clear, formatted GitLab Flavored Markdown (GLFM) with lint-valid structure:
+  - Place all codeblock delimiters (` ``` `) at line start; avoid nested codeblocks.
+  - Use _underscore markup_ for emphasis.
+  - Prefer nested headings over bold/asterisk text markup.
+  - Use only dashes for unordered lists, with correct indentation.
+  - Insert a blank line after every heading, list block, and codeblock.
 
-- Ignore document formatting markup, like:
-  - <details><summary> HTML blocks
-  - {=latex} codeblocks
-  - [!tip] [!note] block quotes
-  - code folding tags ("three curly braces pairs")
-  - internal links: e.g. [^]
+- Ignore document-pipeline formatting markup:
+  - `<details><summary>` HTML blocks
+  - `{=latex}` codeblocks
+  - `[!tip]` / `[!note]` block quotes
+  - Code-folding tags (`{{{` / `}}}`)
+  - Internal cross-reference links (e.g. `[^]`)
 
-- At the end, provide, as Markdown footnotes, a list of references to
-online documentation resources, linked to answer text where
-appropriate. To avoid reference clashing with other part of the
-document, prefix references with the string "rf-".
+- At the end, provide Markdown footnotes for all referenced online documentation,
+  linked inline where appropriate. Prefix all footnote identifiers with `rf-` to avoid
+  clashes with document-level references.
 
-- Add any additional important information not explicitly required in
-an "Additional Notes" section.
+- Add any important information not explicitly requested above in an _"Additional Notes"_ section.
 
-
-<details>
-<summary></summary>
-
-```{=latex}
-\newpage
-```
-
-</details>
-
-## Response Template
-
-<details>
-<summary>Example Markdown Structure:</summary>
-
-TODO:(q1-template) ...
-
-```markdown
-
-## Overview
-
-## Details
-
-\`\`\`bash
-#!/bin/bash
-
-echo "$(date -isec) - (rc=${rc:-$?}) completed."
-
-\`\`\`
-
-
-```
-
-</details>
 
 # A:1 (Claude)
 
