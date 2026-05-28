@@ -1,19 +1,38 @@
 ---
-title: TODO:(title)
-subtitle: TODO:(subtitle)
+title: Resolving GitLab CI/CD Disk-Quota Errors for CUDA Libraries
+subtitle: |
+  Optimizing Astral uv and micromamba configurations within restricted
+  shared runners for automated machine learning verification pipelines
+
 # {{{ // %+
 
-category: LLM-Style
-keywords: [GEN, TODO:(keywords)]
+category: DVE-Howto
+keywords: [GEN, GitLab-CI, CUDA, PyTorch, Astral-uv, Micromamba]
 abstract: |
-  TODO:(abstract)
-  
-  ...
+  This technical report addresses the disk-quota constraints
+  encountered in GitLab CI/CD pipelines when deploying complex
+  high-performance computing environments. Specifically, it
+  investigates storage exhaustion caused by massive CUDA-bundled
+  binary wheels during verification workflows on shared runners
+  restricted to a 20 GB storage limit.
+
+  To resolve this failure without compromising the simplicity of
+  local environment initialization via `uv sync`, a dual
+  optimization strategy is proposed. The framework details the
+  refactoring of `pyproject.toml` and `.gitlab-ci.yml` to
+  decouple local GPU-enabled configurations from cloud-based
+  validation steps.
+
+  Furthermore, an alternative deployment architecture utilizing
+  `micromamba` is evaluated. This analysis weighs the trade-offs
+  regarding externalizing CUDA dependencies, dependency isolation,
+  reproducibility, and structural overhead in derived templates.
 
 doctype: md-report
 
 # }}} // %+
 ---
+
 <!-- {{{ #TAG: TODO:(toc) // -->
 
 <!-- markdownlint-disable MD012 -->
