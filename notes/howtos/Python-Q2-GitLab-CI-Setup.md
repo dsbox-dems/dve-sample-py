@@ -26,19 +26,19 @@ doctype: md-report
 
 # TOC
 
-1. [Q:1 - TODO:(q1-ref)](#q1)
-   - see: [TODO:(a1-ref-claude) (Claude)](#a1-claude)
+1. [Q:1 - CI/CD Disk-Quota Resolution for CUDA libraries](#q1)
+   - see: [TODO:(CI/CD Disk-Quota Resolution: Refactoring Analysis (Claude)](#a1-claude)
    - see: [TODO:(a1-ref-gemini) (Gemini)](#a1-gemini)
-   - see: [TODO:(a1-ref-chatgpt) (ChatGPT)](#a1-chatgpt)
-   - see: [TODO:(a1-ref-perplexity) (Perplexity)](#a1-perplexity)
-   - see: [TODO:(a1-ref-deepseek) (DeepSeek)](#a1-deepseek)
-   - see: [TODO:(a1-ref-vibe) (Vibe)](#a1-vibe)
+   - see: [CI GPU Dependency Refactor (ChatGPT)](#a1-chatgpt)
+   - see: [Refactored GPU ML Project Configurations (DeepSeek)](#a1-deepseek)
+   - see: [Refactored GPU ML Project Configurations (Perplexity)](#a1-perplexity)
+   - see: [Refactored CI/CD Pipeline and `micromamba` Analysis (Vibe)](#a1-vibe)
 2. [Q:2 - TODO:(q2-ref)](#q2)
    - see: [TODO:(a2-ref-claude) (Claude)](#a2-claude)
    - see: [TODO:(a2-ref-gemini) (Gemini)](#a2-gemini)
    - see: [TODO:(a2-ref-chatgpt) (ChatGPT)](#a2-chatgpt)
-   - see: [TODO:(a2-ref-perplexity) (Perplexity)](#a2-perplexity)
    - see: [TODO:(a2-ref-deepseek) (DeepSeek)](#a2-deepseek)
+   - see: [TODO:(a2-ref-perplexity) (Perplexity)](#a2-perplexity)
    - see: [TODO:(a2-ref-vibe) (Vibe)](#a2-vibe)
 3. [A:a - TODO:(appendix-a)](#aa)
 
@@ -79,7 +79,7 @@ doctype: md-report
 
 # Q:1
 
-## Q:1 - **TODO:(q1-title)**
+## Q:1 - **CI/CD Disk-Quota Resolution for CUDA libraries**
 
 [^](#toc)
 
@@ -1001,6 +1001,9 @@ clearly if the version is not present, preventing silent mis-installs.
 
 TODO:(a1-gemini) ...
 
+
+
+
 # A:1 (ChatGPT)
 
 [^](#toc) **_CI GPU Dependency Refactor_**
@@ -1892,21 +1895,1029 @@ This can significantly reduce image size.
 
 # A:1 (DeepSeek)
 
-[^](#toc) **_TODO:(a1-ref-deepseek)_**
+[^](#toc) **_Refactored GPU ML Project Configurations_**
 
-TODO:(a1-deepseek) ...
+## Missing Attachments
+
+The following files were listed as attachments but are absent from the prompt:
+
+1. Original `pyproject.toml`
+2. Original `.gitlab-ci.yml`
+3. Original `conda-env.yaml`
+
+Representative examples have been generated based on the problem description, the technical constraints, and common patterns in GPU‑accelerated ML projects.
+
+---
+
+## 1. Refactored `pyproject.toml` /ad
+
+The core change is moving CUDA‑dependent packages (PyTorch, Triton) into an optional extra named `gpu`. This keeps the “single‑command” promise for GPU environments (`uv sync --all-extras --all-groups`), while allowing the CI pipeline to install only the lightweight linting, type‑checking, and testing dependencies.
+
+```toml
+[project]
+name = "ml-project-template"
+version = "0.1.0"
+description = "Template for GPU-accelerated ML research"
+requires-python = ">=3.12"
+dependencies = [
+    # Core dependencies – no GPU libraries here
+    "numpy>=1.26",
+    "scipy>=1.14",
+    "pydantic>=2",
+    "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+gpu = [
+    # PyTorch with CUDA and Triton; pick a version that matches your driver and CUDA toolkit
+    "torch>=2.5.0",
+    "triton>=2.3.0",
+    # Additional GPU-only libraries (e.g. custom CUDA ops)
+]
+dev = [
+    "ruff>=0.9.0",
+    "pyright>=1.1.400",
+]
+test = [
+    "pytest>=8",
+    "pytest-cov>=5",
+]
+
+[tool.uv]
+# No default extra, so a plain `uv sync` installs only the core deps.
+# Users must run `uv sync --all-extras --all-groups` to get everything.
+default-groups = []
+
+[tool.uv.sources]
+# Example: pin torch to the official index so that GPU wheels are fetched.
+torch = { index = "pytorch-cu121" }
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+```
+
+### How the virtual environment is set up for GPU‑enabled environments
+
+#### Native (dev / test)
+
+```bash
+uv sync --all-extras --all-groups
+```
+
+This command installs:
+
+- core dependencies,
+- the `gpu` extra → PyTorch + Triton CUDA wheels from the official PyTorch index,
+- `dev` and `test` extras → Ruff, Pyright, pytest.
+
+The `.venv` contains the full CUDA bundles. This works out‑of‑the‑box on any system with an NVIDIA driver ≥ 525 and a compatible GPU (Compute Capability 5.0+ for PyTorch 2.5). The CUDA runtime libraries are self‑contained inside the wheel; no system CUDA installation is required.
+
+#### Containerised (prod, Podman)
+
+Inside the rootless Podman container the same command is run. The container image only needs an NVIDIA driver stack exposed via the NVIDIA Container Toolkit. No extra CUDA packages are installed inside the image because `torch` already bundles them.
+
+#### CI (int) – see section 2
+
+The CI job *does not* use `--all-extras --all-groups`. It installs only the `dev` and `test` dependency groups, avoiding the large GPU wheels entirely.
+
+---
+
+## 2. Refactored `.gitlab-ci.yml` /ad
+
+The pipeline is split into stages. Each stage uses `uv` to synchronise a minimal virtual environment that fits comfortably within the 20 GB disk limit. The key optimisation is **not installing the `gpu` extra** and **caching only the uv global cache**, never the `.venv` directory itself (which would be bloated by large wheels).
+
+```yaml
+# .gitlab-ci.yml
+stages:
+  - lint
+  - test
+
+variables:
+  UV_CACHE_DIR: $CI_PROJECT_DIR/.uv-cache
+  # Keep a shared cache of downloaded wheels to speed up jobs
+  UV_PYTHON: "3.12"                    # or whatever Python version you target
+  UV_LINK_MODE: "copy"                 # Avoid symlink issues on Docker-backed runners
+
+cache:
+  key: "$CI_JOB_NAME"
+  paths:
+    - .uv-cache
+  policy: pull-push
+
+before_script:
+  - pip install --quiet uv
+
+# ----------------------------------------------------------------------
+# Lint stage – runs ruff check, ruff format, pyright
+# ----------------------------------------------------------------------
+ruff-check:
+  stage: lint
+  script:
+    - uv sync --frozen --group dev --no-install-project
+    - uv run ruff check .
+
+ruff-format:
+  stage: lint
+  script:
+    - uv sync --frozen --group dev --no-install-project
+    - uv run ruff format --check .
+
+pyright:
+  stage: lint
+  script:
+    - uv sync --frozen --group dev --no-install-project
+    - uv run pyright
+
+# ----------------------------------------------------------------------
+# Unit test stage – runs pytest without any GPU dependency
+# ----------------------------------------------------------------------
+unit-tests:
+  stage: test
+  script:
+    # Install dev + test groups, but NOT the gpu extra.
+    # The project itself is installed in editable mode because the test suite
+    # likely imports the package. `--no-install-project` is omitted.
+    - uv sync --frozen --group dev --group test
+    - uv run pytest --cov=src --cov-report=term-missing tests/
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+```
+
+### Why this solves the disk‑quota problem
+
+- **No `gpu` extra:** The largest packages (`torch`, `triton`) are never downloaded.
+- **Frozen install:** `--frozen` respects the lock file, avoiding accidental re‑resolution that could pull GPU wheels.
+- **Cache strategy:** Only `~/.cache/uv` (the wheel cache) is cached. A fresh `.venv` is created in each job, but its size stays well under 2 GB (Ruff, Pyright, pytest, and core deps). The old problem of caching the entire `.venv` containing `libtriton.so` and other large binaries is eliminated.
+- **Copy link mode:** GitLab SaaS runners often use overlay filesystems where symlinks can fail (as seen in the error message); `UV_LINK_MODE=copy` avoids this entirely.
+
+If disk pressure remains (e.g., many concurrent jobs), you can further reduce the uv cache by adding a `cache: policy: pull` in early jobs and a final job that pushes only the compressed cache. The current configuration is already sufficient for the described pipeline.
+
+---
+
+## 3. `conda-env.yaml` for `micromamba` Alternative /ad
+
+Below is a representative environment definition that installs the CUDA toolkit, cuDNN, and `libblas` via `micromamba`. The assumption is that PyTorch will be supplied by `uv sync` and must link against the system CUDA libraries provided by this environment.
+
+```yaml
+# conda-env.yaml
+name: cuda-system-libs
+channels:
+  - conda-forge
+  - nvidia
+dependencies:
+  - cuda-toolkit =12.4.0               # Compatible with driver ≥ 525
+  - cudnn =9.2.1                       # Matches CTK 12.x
+  - libblas =3.9.0                     # OpenBLAS, Netlib LAPACK
+  # System-level tools (optional)
+  - cmake
+  - make
+```
+
+### Mechanism: how `micromamba` decouples CUDA from `uv sync`
+
+1. `micromamba create -f conda-env.yaml` installs CUDA, cuDNN, and BLAS into a self‑contained prefix (e.g., `~/micromamba/envs/cuda-system-libs`).  
+2. The user activates this environment:  
+   `micromamba activate cuda-system-libs`  
+   This sets `PATH`, `LD_LIBRARY_PATH`, and `CUDA_HOME` to point at the conda‑managed libraries.  
+3. When `uv sync --all-extras --all-groups` is executed in the same shell, the PyTorch wheel is still downloaded from PyPI, but the CUDA libraries it bundles are *not* used at runtime – the dynamic linker prefers the `micromamba`‑provided ones because of `LD_LIBRARY_PATH`.
+
+*Caveat:* No official PyPI wheel of PyTorch is built to use an external CUDA runtime. The bundled libraries are always present and are typically used. For `micromamba`‑provided libraries to take effect, the user must manually remove or override the bundled `.so` files, or PyTorch must be rebuilt from source targeting the conda environment’s CUDA. This violates the “simple‑as‑possible” rule and introduces fragility.
+
+### Pros /ad
+
+- **Smaller `.venv` footprint** (in theory) because PyTorch’s bundled CUDA libs could be stripped.  
+- **Centralised CUDA management** – multiple projects can share one `micromamba` environment, reducing duplication.  
+- **Better reproducibility** when you need to control exactly which BLAS implementation is used (e.g., MKL vs. OpenBLAS).
+
+### Cons /ad
+
+- **Additional setup burden** – users must install `micromamba`, initialise it in their shell (`~/.bashrc` / `~/.zshrc` modifications), and remember to activate the environment before any `uv` command.  
+- **CI complexity** – GitLab jobs must also install `micromamba`, create the environment, and then activate it, increasing job duration and disk usage (the conda env itself is large).  
+- **Solver overhead** – `micromamba` is fast, but managing two package managers adds cognitive load.  
+- **Torch build requirement** – To truly use the `micromamba` CUDA and avoid the bundled wheels, PyTorch must be compiled from source (e.g., `pip install --no-binary torch`), which is slow and error‑prone. This directly contradicts the “single‑command” promise.  
+- **Portability** – The `micromamba` environment path is hard‑coded; sharing the project with colleagues requires documenting the exact conda environment name and location.
+
+### Impact on derived projects
+
+A template consumer who chooses the `micromamba` path must:
+
+1. Install `micromamba` and add `eval "$(micromamba shell hook -s bash)"` to their shell RC file.  
+2. Create the `cuda-system-libs` environment using the provided `conda-env.yaml`.  
+3. Always run `micromamba activate cuda-system-libs` before `uv sync --all-extras --all-groups`.  
+4. If PyTorch is to use the external CUDA, either delete the bundled libraries from the `.venv` or compile PyTorch from source, which **breaks the “one‑command” rule**.  
+5. In CI, the pipeline must include steps to install `micromamba`, create the conda environment, and activate it, significantly increasing maintenance burden.
+
+Because of the fundamental incompatibility between PyPI wheels and external CUDA, this alternative is **not recommended** for the template. The clean separation of GPU dependencies into an optional extra (Section 1) achieves the same goal without any of these drawbacks.
+
+---
+
+## Additional Notes /ad
+
+- **CUDA Toolkit version note:** The prompt mentions `cuda-toolkit=13.1`, but no such version exists as of 2026. The generated `conda-env.yaml` uses `12.4.0`, which is compatible with driver 525+ and PyTorch 2.5.x.  
+- **GPU family considerations:** PyTorch 2.5 requires NVIDIA GPUs with Compute Capability ≥ 5.0 (Maxwell and later). The template assumes CUDA 12.x, which requires driver ≥ 525. These constraints are documented in the project README, not in the configuration files.  
+- **uv cache tuning:** If a job still exceeds the 20 GB limit, add `cache: key: "$CI_COMMIT_REF_SLUG"` and use `uv cache prune` in a post‑script.  
+- **Lock file:** Always commit `uv.lock` to version control. This ensures identical resolution across all environments and speeds up `uv sync --frozen`.  
+- **Extensibility:** Derived projects can add their own GPU‑only dependencies under the `gpu` extra; the single‑command promise remains intact.
+
+---
+
+## References /ad
+
+[^ad-uv-docs]: Astral `uv` documentation – [https://docs.astral.sh/uv/](https://docs.astral.sh/uv/)  
+[^ad-micromamba]: micromamba – [https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html)  
+[^ad-pytorch-install]: PyTorch installation options – [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)  
+[^ad-nvidia-driver]: NVIDIA driver compatibility – [https://docs.nvidia.com/deploy/cuda-compatibility/](https://docs.nvidia.com/deploy/cuda-compatibility/)  
+[^ad-gitlab-cache]: GitLab CI cache – [https://docs.gitlab.com/ee/ci/caching/](https://docs.gitlab.com/ee/ci/caching/)  
+[^ad-uv-link-mode]: uv link mode (`copy`) – [https://docs.astral.sh/uv/reference/settings/#link-mode](https://docs.astral.sh/uv/reference/settings/#link-mode)
+
+
+
 
 # A:1 (Perplexity)
 
-[^](#toc) **_TODO:(a1-ref-perplexity)_**
+[^](#toc) **_Refactored GPU ML Project Configurations_**
 
-TODO:(a1-perplexity) ...
+Below is a concrete refactor that keeps the template’s `uv sync --all-extras --all-groups` workflow for developers, while making GitLab SaaS CI install only the minimal verification set so the shared runner does not cache a CUDA-sized `.venv`. [docs.astral](https://docs.astral.sh/uv/concepts/projects/sync/)
+
+## Refactored `pyproject.toml` /ap
+
+The key change is to stop hard-wiring CUDA wheels into the base project dependency set. `torch` and `torchvision` stay as normal project dependencies so derived projects can still use one-command setup, but the CUDA binding is moved to `uv` source routing that is only meaningful in GPU-capable environments, and the CI pipeline will avoid expanding extras/groups that are not needed for verification. [discuss.pytorch](https://discuss.pytorch.org/t/index-url-to-install-pytorch/198253)
+
+```toml
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dve_sample_py"
+version = "0.1.0"
+description = "Template for GPU-enabled research projects with uv and optional micromamba-assisted CUDA stacks"
+readme = "README.md"
+requires-python = ">=3.10,<3.15"
+authors = [
+  { name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" },
+]
+
+dependencies = [
+  "numpy",
+  "pandas",
+  "pandas-datareader",
+  "openpyxl",
+  "pyarrow",
+  "polars",
+  "SQLAlchemy",
+  "psycopg2-binary",
+  "mysql-connector-python",
+  "scipy",
+  "sympy",
+  "matplotlib",
+  "plotly",
+  "seaborn",
+  "Pillow",
+  "graphframes",
+  "graphviz",
+  "networkx",
+  "igraph",
+  "pyvis",
+  "pydot",
+  "requests",
+  "oauthlib",
+  "requests-oauthlib",
+  "urllib3",
+  "pyzmq",
+  "pyyaml",
+  "types-pyyaml",
+  "toml",
+  "types-toml",
+  "piny",
+  "click",
+  "pathspec",
+  "icecream",
+  "tqdm",
+  "pip",
+  "more-itertools",
+  "torch>=2.7,<2.11",
+  "torchvision>=0.22,<0.26",
+  "rootpath @ git+https://github.com/hute37/python-rootpath@stable",
+]
+
+[project.optional-dependencies]
+gpumon = [
+  "nvidia-ml-py; sys_platform == 'linux'",
+]
+
+[project.urls]
+documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
+homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+
+[project.scripts]
+main = "dve.cli:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_hello:main"
+
+[dependency-groups]
+agents = [
+  "aiohttp",
+  "anthropic",
+  "graphifyy",
+  "hypothesis",
+  "line-profiler",
+  "memory-profiler",
+  "openai",
+  "pydantic",
+  "scikit-learn",
+  "sentence-transformers",
+]
+
+jupyter = [
+  "jupyter",
+  "jupyter-core",
+  "jupyter-console",
+  "jupyter-lsp",
+  "notebook",
+  "jupyterlab",
+  "jupytext",
+  "nodeenv",
+  "nodejs",
+  "jupyterlab-lsp",
+  "jupyter-ruff",
+  "lux-api",
+  "ipykernel",
+  "ipywidgets",
+  "ipython",
+  "ipython-bg",
+  "marimo",
+]
+
+dev = [
+  "pytest",
+  "pytest-cov",
+  "behave",
+  "mock",
+  "nose",
+  "pyright",
+  "basedpyright",
+  "tree-sitter",
+  "ruff",
+  "colorama",
+  "py",
+  "mypy",
+  "setuptools",
+  "wheel",
+  "bumpversion",
+  "twine",
+]
+
+[tool.uv]
+package = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu124" }
+torchvision = { index = "pytorch-cu124" }
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dve", "src/vce"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "tests/pytest"]
+testpaths = ["tests/pytest"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+ignore_missing_imports = true
+
+[tool.pyright]
+include = ["src", "tests/pytest", "notebooks"]
+exclude = [
+  "notebooks/@databricks/*",
+  "doc/*",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
+  ".agents/*",
+  ".eggs/*.py",
+  "**/node_modules",
+  "**/__pycache__",
+  "docker",
+  "notes",
+  "data",
+  "logs",
+  "temp",
+]
+ignore = ["build"]
+defineConstant = { DEBUG = true }
+typeCheckingMode = "basic"
+reportMissingImports = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+fix = true
+
+[tool.ruff.lint]
+typing-modules = ["pandas._typing"]
+exclude = [
+  "notebooks/@databricks/*",
+  "doc/*",
+  ".eggs/*.py",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
+  ".agents/*",
+]
+select = [
+  "F",
+  "E",
+  "W",
+  "YTT",
+  "B",
+  "Q",
+  "T10",
+  "INT",
+  "PL",
+  "PT",
+  "PIE",
+  "PYI",
+  "TID",
+  "ISC",
+  "TCH",
+  "C4",
+  "PGH",
+  "RUF",
+  "S102",
+  "NPY002",
+  "PERF",
+  "FLY",
+  "G",
+  "FA",
+  "ICN001",
+  "SLOT",
+  "RSE",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.ruff.format]
+docstring-code-format = true
+exclude = [
+  "notebooks/@databricks/*",
+  "doc/*",
+  ".eggs/*.py",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
+  ".agents/*",
+]
+
+[tool.local]
+has_config = true
+config = "config.yaml"
+
+[tool.local.paths]
+log_dir = "logs"
+
+[tool.local.log]
+level = "INFO"
+
+[tool.local.hello]
+salutation = "Hi"
+```
+
+### Why this fixes the template problem
+
+- The template still exposes a single `uv sync --all-extras --all-groups` path for developers, which is the “simple-as-possible” contract you want to preserve.
+- The heavy CUDA wheel set is no longer encouraged in CI because the pipeline will not request extras/groups and will not cache the full environment.
+- The `uv` source override points `torch` and `torchvision` at a CUDA-specific PyTorch index, which is the standard way to install PyTorch with a pinned CUDA wheel family. [pytorch](https://pytorch.org/get-started/locally/)
+
+## Refactored `.gitlab-ci.yml` /ap
+
+The main CI change is to _stop caching `.venv`_ and to install only the verification dependencies needed for linting, typing, and tests. GitLab shared runners have a tight disk quota; caching the whole virtual environment is exactly what causes the quota blow-up when CUDA wheels are involved. [stackoverflow](https://stackoverflow.com/questions/73431683/how-to-speedup-python-venv-caching-in-gitlab-ci-local-runner)
+
+```yaml
+image: python:3.12-slim
+
+stages:
+  - verify
+
+variables:
+  UV_VERSION: "latest"
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  UV_NO_PROGRESS: "1"
+  UV_SYSTEM_PYTHON: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+cache:
+  key:
+    files:
+      - uv.lock
+      - pyproject.toml
+  paths:
+    - .cache/uv
+    - .cache/pip
+  policy: pull-push
+
+before_script:
+  - python --version
+  - df -h
+  - curl -LsSf https://astral.sh/uv/install.sh | sh
+  - export PATH="$HOME/.local/bin:$PATH"
+  - uv --version
+  - uv sync --locked --no-dev
+  - uv sync --locked --group dev
+  - df -h
+
+verify:
+  stage: verify
+  script:
+    - uv run pyright
+    - uv run ruff check .
+    - uv run ruff format --check .
+    - uv run pytest -q
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+```
+
+### What changed
+
+- `.venv` is no longer cached, which avoids storing a 10+ GB CUDA environment in GitLab cache.
+- `uv sync --locked --no-dev` gives a minimal runtime install, and `uv sync --locked --group dev` adds only what verification needs.
+- The pipeline runs only one verification job on `develop` and merge requests, which reduces repeated checkout and restore overhead.
+- `python:3.12-slim` is a better fit than a full image for disk-limited verification jobs.
+
+### Runner footprint tuning
+
+- Keep only `.cache/uv` and `.cache/pip` in cache.
+- Do not cache `.venv`.
+- Prefer `--locked` so CI does not re-resolve dependency graphs every run.
+- If you control the runner, configure a larger ephemeral build volume and a smaller cache volume, or disable workspace reuse for this project class when `.venv` is present; the issue is runner-local disk pressure, not just network download time. [github](https://github.com/yujunz/gitlab.com-runbooks/blob/master/docs/ci-runners/runners_cache_disk_space.md)
+
+## Micromamba alternative
+
+`micromamba` externalises the CUDA stack by placing CUDA, cuDNN, BLAS, and related shared libraries into a separate conda environment, while `uv` manages only the Python virtual environment and package set. That means `torch` can link against system-provided CUDA libraries instead of dragging large CUDA-bundled wheels into `.venv`. [docs.nvidia](https://docs.nvidia.com/deploy/cuda-compatibility/minor-version-compatibility.html)
+
+### Mechanism /ap
+
+- `micromamba` creates a CUDA runtime/development environment in a prefix such as `~/mamba/envs/cuda-base` or `/opt/mamba/envs/cuda-base`.
+- `uv sync` then installs PyTorch and the rest of the Python stack into a lean `.venv`, while runtime library resolution happens through `LD_LIBRARY_PATH` or a Podman container environment.
+- In practice, this is a clean split between “Python dependency management” and “GPU system dependency management.” [mamba.readthedocs](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html)
+
+### Pros /ap
+
+- Much smaller `.venv` in CI and on developer machines.
+- Better separation of concerns: `uv` handles Python packaging, `micromamba` handles native CUDA libraries.
+- Easier to share one CUDA stack across multiple projects on the same machine.
+- More reproducible than ad hoc `apt install` because the CUDA and cuDNN versions are solver-pinned in one environment spec. [wiki.unil](https://wiki.unil.ch/ci/books/high-performance-computing-hpc/page/using-mamba-to-install-conda-packages)
+
+### Cons /ap
+
+- More setup steps: users must initialize shell integration or run `micromamba activate` in each session.
+- CI jobs need explicit activation or `micromamba run`, which adds script complexity.
+- Solver time is nontrivial compared with `uv` alone.
+- The template consumer now has two dependency systems to understand and keep in sync.
+
+### Impact on derived projects /ap
+
+- Local developers must install and activate the CUDA environment before running GPU workloads.
+- CI must either export CUDA library paths or use `micromamba run` for any job that needs GPU-linked Python packages.
+- Template consumers lose the pure “one command after clone” property unless you provide a wrapper script, because `uv sync --all-extras --all-groups` alone will not provision CUDA anymore.
+- That is the main tradeoff: smaller Python environments versus more setup choreography.
+
+## `conda-env.yaml` for micromamba
+
+A small correction is important here: `cuda-toolkit=13.1` is not compatible with a “CUDA 12.x Toolkit” assumption. NVIDIA’s compatibility matrix says CUDA 12.x requires driver 525+, while CUDA 13.x requires driver 580+; you should choose one family consistently. [docs.nvidia](https://docs.nvidia.com/datacenter/tesla/drivers/supported-drivers-and-cuda-toolkit-versions.html)
+
+```yaml
+name: cuda-base
+channels:
+  - nvidia
+  - conda-forge
+
+dependencies:
+  - cuda-toolkit=13.1
+  - cudnn>=9
+  - libblas=*=*openblas
+  - libcblas=*=*openblas
+  - liblapack=*=*openblas
+  - libopenblas
+  - libcublas
+  - nccl
+  - cuda-nvtx
+  - cutensor
+  - gcc_linux-64>=12,<14
+  - gxx_linux-64>=12,<14
+  - sysroot_linux-64>=2.17
+```
+
+### Compatibility notes
+
+- If you truly want `cuda-toolkit=13.1`, target NVIDIA driver `580+`, not `525+`. [docs.nvidia](https://docs.nvidia.com/deploy/cuda-compatibility/minor-version-compatibility.html)
+- If you need to support driver `525+`, then pin the environment to a CUDA 12.x toolkit instead, for example `cuda-toolkit=12.6` or another 12.x release compatible with your PyTorch wheel family. [docs.nvidia](https://docs.nvidia.com/datacenter/tesla/drivers/supported-drivers-and-cuda-toolkit-versions.html)
+- For PyTorch, the `uv`-only route should point to the matching PyTorch CUDA wheel index, such as the CUDA 12.4 index shown above; PyTorch publishes versioned install instructions and wheel indices per CUDA family. [discuss.pytorch](https://discuss.pytorch.org/t/index-url-to-install-pytorch/198253)
+
+## NVIDIA versioning
+
+For the `uv`-only approach, your project should treat the CUDA family as part of the Python dependency contract: the selected `torch` and `torchvision` versions must match the wheel index you point `uv` at, and the host driver must satisfy that wheel family’s runtime requirements. [pytorch](https://pytorch.org/get-started/locally/)
+
+For the `micromamba`-assisted approach, PyTorch should be installed without its bundled CUDA stack, and the shared CUDA libraries must come from the micromamba environment; that gives you more control over disk usage, but the driver/toolkit matrix still has to be respected. [mamba.readthedocs](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html)
+
+## Additional Notes /ap
+
+- The original pipeline caches `.venv`, which is the most expensive thing you can cache on a 20 GB shared runner when CUDA wheels are present.
+- For verification-only CI, the best default is to keep the Python environment minimal and install the GPU stack only in developer or runtime environments.
+- If you want, I can also provide a _second_ version of the files where `uv` is fully CPU-neutral in CI and GPU-specific only in `dev`/`prod` via separate lockfile strategy.
+
+
 
 # A:1 (Vibe)
 
-[^](#toc) **_TODO:(a1-ref-vibe)_**
+[^](#toc) **_Refactored CI/CD Pipeline and `micromamba` Analysis_**
 
-TODO:(a1-vibe) ...
+## 1. Root Cause Analysis
+
+### Current Setup
+
+- **`pyproject.toml`**:
+  Uses `uv` with a custom index (`torch130`) pointing to PyTorch’s CUDA 13.0 wheels.
+  `torch==2.10.*` and `torchvision==0.25.*` are installed as **CUDA-bundled wheels** (include `libtriton.so`, `libcudart.so`, etc.).
+  These wheels are **~2–4 GB each** and pull in additional dependencies (e.g., `triton`), bloating `.venv` to **>20 GB** when cached.
+
+- **`.gitlab-ci.yml`**:
+  Caches `.venv`, `.cache/uv`, and `.cache/pip` between runs.
+  The `uv sync --dev` command restores the full GPU-enabled environment, including CUDA-bundled wheels, in the **`int`** (CI) environment where **no GPU is available or needed**.
+
+- **Failure**:
+  The CI runner’s 20 GB disk quota is exceeded by the restored `.venv` (due to CUDA wheels) and cache.
+  Error: `no space left on device` during symlink creation for `libtriton.so`.
+
+---
+
+## 2. Refactored Files
+
+---
+
+### 2.1. Refactored `pyproject.toml`
+
+#### Key Changes
+
+- **Environment Markers**:
+  Use `sys_platform == "linux"` and a custom marker (`--global-option="--no-binary :all:"` for CI) to **exclude CUDA wheels in CI**.
+  For GPU environments (`dev`, `test`, `prod`), rely on **system-provided CUDA** (via `micromamba` or host) and install PyTorch **without bundled CUDA**.
+
+- **Custom Index for GPU**:
+  For native/containerized GPU environments, use a **CUDA-aware PyTorch index** (e.g., `https://download.pytorch.org/whl/cu121` for CUDA 12.1).
+  For CI, use the **CPU-only index** (default PyPI).
+
+- **Dependency Groups**:
+  Split dependencies into:
+  - **`default`**: CPU-only (for CI).
+  - **`gpu`**: GPU-enabled (for `dev`, `test`, `prod`), activated via `--all-extras`.
+
+#### File
+
+```toml
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dve_sample_py"
+version = "0.1.0"
+description = "Template for GPU-enabled ML projects"
+requires-python = ">=3.10,<3.15"
+authors = [{ name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" }]
+
+# --- Core dependencies (CPU-only for CI) ---
+dependencies = [
+  # CPU-only PyTorch for CI
+  "torch==2.10.*; sys_platform != 'linux' or platform_system != 'Linux'",
+  "torch==2.10.*+cpu; sys_platform == 'linux' and platform_system == 'Linux' and 'CI' in os.environ",
+  # GPU PyTorch for native/containerized
+  "torch==2.10.*+cu121; sys_platform == 'linux' and platform_system == 'Linux' and 'CI' not in os.environ",
+
+  "torchvision==0.25.*; sys_platform != 'linux' or platform_system != 'Linux'",
+  "torchvision==0.25.*+cpu; sys_platform == 'linux' and platform_system == 'Linux' and 'CI' in os.environ",
+  "torchvision==0.25.*+cu121; sys_platform == 'linux' and platform_system == 'Linux' and 'CI' not in os.environ",
+
+  # Non-CUDA dependencies
+  "numpy",
+  "pandas",
+  "scipy",
+  "matplotlib",
+  "pillow",
+]
+
+# --- Optional dependency groups ---
+[project.optional-dependencies]
+gpu = [
+  # GPU-specific dependencies (e.g., NVIDIA ML)
+  "nvidia-ml-py3; sys_platform == 'linux'",
+]
+dev = [
+  "pytest",
+  "ruff",
+  "pyright",
+  "ipykernel",
+]
+
+[tool.uv]
+package = true
+
+# --- Indexes for GPU/CPU ---
+[tool.uv.sources]
+torch = { index = "pytorch-cpu", extra = "cpu" }
+torchvision = { index = "pytorch-cpu", extra = "cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[tool.uv.environment]
+# For CI: Force CPU-only
+UV_EXTRA_INDEX_URL = { value = "https://download.pytorch.org/whl/cpu", if = "'CI' in os.environ" }
+```
+
+#### How It Works
+
+- **CI (`int`)**:
+  `uv sync --all-extras --all-groups` installs **CPU-only PyTorch** from `pytorch-cpu` index.
+  No CUDA wheels → `.venv` size **<2 GB**.
+
+- **GPU (`dev`, `test`, `prod`)**:
+  `uv sync --all-extras --all-groups` installs **CUDA 12.1 PyTorch** from `pytorch-cu121` index.
+  Requires **system CUDA 12.1** (provided by `micromamba` or host).
+
+---
+
+### 2.2. Refactored `.gitlab-ci.yml`
+
+#### Key Changes /av
+
+- **CPU-Only Sync in CI**:
+  Use `uv sync --all-extras --all-groups --no-dev` (if `dev` group is GPU-only) or rely on **environment markers** to auto-select CPU wheels.
+
+- **Cache Optimization**:
+  - Cache **only `.cache/uv`** (not `.venv`).
+  - Use `uv cache prune --ci` to **remove unused wheels** after sync.
+  - Set `UV_CACHE_DIR` to a **shared cache** (e.g., `$CI_PROJECT_DIR/.cache/uv`).
+
+- **Disk Cleanup**:
+  Add a `before_script` step to **clear apt/dpkg caches** and **prune Docker images** (if applicable).
+
+#### File `.gitlab-ci.yml` /av
+
+```yaml
+---
+image: python:3.14-slim
+
+variables:
+  UV_VERSION: "latest"
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  # Force CPU-only PyTorch in CI
+  UV_EXTRA_INDEX_URL: "https://download.pytorch.org/whl/cpu"
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cache/uv
+    - .cache/pip
+  policy: pull-push
+
+stages:
+  - lint
+  - test
+
+before_script:
+  - apt-get update -qq && apt-get install -y --no-install-recommends ca-certificates curl git
+  - rm -rf /var/lib/apt/lists/*
+  - curl -LsSf https://astral.sh/uv/install.sh | sh
+  - export PATH="$HOME/.local/bin:$PATH"
+  - uv cache prune --ci
+  - uv sync --all-extras --all-groups
+  - uv run pip cache purge
+
+linting:
+  stage: lint
+  script:
+    - uv run ruff check .
+    - uv run ruff format --check .
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+typing:
+  stage: lint
+  script:
+    - uv run pyright
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+testing:
+  stage: test
+  script:
+    - uv run pytest -v
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+```
+
+#### Why It Works
+
+- **No `.venv` Cache**: Avoids restoring large CUDA wheels.
+- **CPU-Only Wheels**: PyTorch installs **~200 MB** (CPU) instead of **~4 GB** (CUDA).
+- **Cache Pruning**: `uv cache prune --ci` removes **unused wheels** from cache.
+- **Slim Image**: `python:3.14-slim` reduces base image size.
+
+---
+---
+
+## 3. `micromamba` Alternative Analysis
+
+---
+
+### 3.1. Mechanism
+
+`micromamba` installs **system-wide CUDA toolkit** (e.g., `/opt/mamba/envs/cuda-base`) **outside** the `uv` virtual environment.
+
+- **Decoupling**:
+  - `micromamba` manages `cuda-toolkit`, `cudnn`, `libcublas`, etc.
+  - `uv` installs PyTorch **without CUDA wheels** (e.g., `torch==2.10.*+cu121` from `pytorch-cu121` index).
+  - PyTorch **dynamically links** to system CUDA libraries via:
+  
+    ```bash
+    export LD_LIBRARY_PATH=/opt/mamba/envs/cuda-base/lib:$LD_LIBRARY_PATH
+    export CUDA_HOME=/opt/mamba/envs/cuda-base
+    ```
+
+---
+
+### 3.2. Pros
+
+| **Benefit**         | **Impact**                                                           |
+|---------------------|----------------------------------------------------------------------|
+| **Disk Size**       | `.venv` shrinks to **~1–2 GB** (no CUDA wheels).                     |
+| **Portability**     | Same `pyproject.toml` works across **native/containerized/GPU/CPU**. |
+| **Reproducibility** | CUDA version pinned in `conda-env.yaml` (e.g., `cuda-toolkit=12.1`). |
+| **Flexibility**     | Users can **override CUDA version** via `micromamba`.                |
+| **Compatibility**   | Works with **any NVIDIA driver ≥525** (CUDA 12.x).                   |
+
+---
+
+### 3.3. Cons
+
+| **Drawback**            | **Impact**                                                             |
+|-------------------------|------------------------------------------------------------------------|
+| **Setup Burden**        | Requires **pre-installing `micromamba`** and **sourcing environment**. |
+| **CI Complexity**       | Need to **activate `micromamba` env** before `uv sync` in GPU jobs.    |
+| **Solver Overhead**     | `micromamba` may take **longer to resolve** CUDA dependencies.         |
+| **Shell Configuration** | Users must add `micromamba` paths to `.bashrc`/`.zshrc`.               |
+| **Rootless Podman**     | Requires **`--volume` mounts** for `/opt/mamba` in containers.         |
+
+### 3.4. Impact on Derived Projects
+
+#### Template Consumers Must
+
+- Install `micromamba` (or use a pre-configured container with `micromamba` + CUDA).
+- Create the `cuda-base` environment:
+  
+  ```bash
+     micromamba env create -n cuda-base -f conda-env.yaml
+  ```
+  
+- Source the environment before running Python:
+  
+  ```bash
+     source /opt/mamba/bin/activate cuda-base
+     export LD_LIBRARY_PATH=/opt/mamba/envs/cuda-base/lib:$LD_LIBRARY_PATH
+  ```
+  
+- Use the **same `pyproject.toml`** (no changes needed).
+
+#### No Changes to `uv sync`
+
+  The command remains `uv sync --all-extras --all-groups` in all environments.
+
+### 3.5. `conda-env.yaml` for `micromamba`
+
+```yaml
+---
+name: cuda-base
+channels:
+  - nvidia
+  - conda-forge
+dependencies:
+  # CUDA 12.1 (compatible with NVIDIA Driver 525+)
+  - cuda-toolkit=12.1
+  - cudnn>=8.9
+  - libcublas
+  - libcublas-dev
+  - libopenblas
+  - nccl
+  - gxx_linux-64>=12,<14  # For nvcc compatibility
+  - sysroot_linux-64>=2.17
+```
+
+#### Compatibility Notes
+
+- **PyTorch 2.10.x** requires **CUDA 12.1** and **cuDNN 8.9**.
+- **NVIDIA Driver ≥525** supports CUDA 12.x.
+- **AMD EPYC (Rome)**: OpenBLAS outperforms MKL (included via `libopenblas`).
+
+## 4. NVIDIA Compatibility Matrix
+
+| **Component**     | **`uv`-Only (GPU)**        | **`micromamba` + `uv` (GPU)**       | **CI (CPU)**           |
+|-------------------|----------------------------|-------------------------------------|------------------------|
+| **PyTorch**       | `2.10.*+cu121` (CUDA 12.1) | `2.10.*+cu121` (links to system)    | `2.10.*+cpu`           |
+| **CUDA Toolkit**  | Bundled in wheel           | `cuda-toolkit=12.1` (system)        | N/A                    |
+| **cuDNN**         | Bundled in wheel           | `cudnn>=8.9` (system)               | N/A                    |
+| **Driver**        | ≥525                       | ≥525                                | N/A                    |
+| **`.venv` Size**  | ~4 GB                      | ~1 GB                               | ~200 MB                |
+| **Setup Command** | `uv sync --all-extras`     | `micromamba env create` + `uv sync` | `uv sync --all-extras` |
+
+## 5. Additional Notes /av
+
+### 5.1. Why Not CPU-Only PyTorch Everywhere?
+
+- **Prohibited by "Simple-as-possible" Rule**:
+  Derived projects must use `uv sync --all-extras --all-groups` **unchanged** for GPU support.
+
+### 5.2. Why Not Cache `.venv` in CI?
+
+- **`.venv` is Environment-Specific**:
+  Caching a GPU `.venv` (with CUDA wheels) and restoring it in CI (CPU) **fails** due to missing CUDA libraries.
+  Even if cached separately, the **size exceeds 20 GB**.
+
+### 5.3. `uv` vs. `micromamba` for CUDA
+
+- **`uv`**:
+  - **Pros**: Faster, simpler, no shell modifications.
+  - **Cons**: CUDA wheels bloat `.venv`.
+
+- **`micromamba`**:
+  - **Pros**: Smaller `.venv`, reproducible CUDA.
+  - **Cons**: Additional setup, slower dependency resolution.
+
+### 5.4. Recommended Approach
+
+- **For CI (`int`)**:
+  Use the **refactored `pyproject.toml` + `.gitlab-ci.yml`** (CPU-only wheels, no `.venv` cache).
+
+- **For GPU (`dev`, `test`, `prod`)**:
+  Use **`micromamba` + `uv`** for **minimal disk usage** and **reproducibility**.
+  Example `Dockerfile` for `prod`:
+  
+  ```dockerfile
+  FROM ubuntu:22.04
+  RUN apt-get update && apt-get install -y micromamba
+  COPY conda-env.yaml .
+  RUN micromamba env create -n cuda-base -f conda-env.yaml
+  ENV PATH="/opt/mamba/bin:$PATH"
+  RUN uv sync --all-extras --all-groups
+  ```
+
+## 6. Footnotes
+
+[^av-1]: [PyTorch CUDA Compatibility](https://pytorch.org/get-started/locally/#linux-cuda)
+
+[^av-2]: [NVIDIA CUDA Toolkit Documentation](https://docs.nvidia.com/cuda/)
+
+[^av-3]: [micromamba GitHub](https://github.com/mamba-org/mamba)
+
+[^av-4]: [Astral `uv` Documentation](https://astral.sh/uv)
+
+[^av-5]: [GitLab CI Cache Documentation](https://docs.gitlab.com/ee/ci/caching/)
 
 <!-- }}} \\ %1. -->
 <!-- ::{{{ #TAG: TODO:(q2-section) // -->
