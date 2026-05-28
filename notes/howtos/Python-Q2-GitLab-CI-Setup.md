@@ -27,8 +27,8 @@ doctype: md-report
 # TOC
 
 1. [Q:1 - CI/CD Disk-Quota Resolution for CUDA libraries](#q1)
-   - see: [TODO:(CI/CD Disk-Quota Resolution: Refactoring Analysis (Claude)](#a1-claude)
-   - see: [TODO:(a1-ref-gemini) (Gemini)](#a1-gemini)
+   - see: [CI/CD Disk-Quota Resolution: Refactoring Analysis (Claude)](#a1-claude)
+   - see: [CI/CD Disk Quota Resolution for ML (Gemini)](#a1-gemini)
    - see: [CI GPU Dependency Refactor (ChatGPT)](#a1-chatgpt)
    - see: [Refactored GPU ML Project Configurations (DeepSeek)](#a1-deepseek)
    - see: [Refactored GPU ML Project Configurations (Perplexity)](#a1-perplexity)
@@ -997,9 +997,186 @@ clearly if the version is not present, preventing silent mis-installs.
 
 # A:1 (Gemini)
 
-[^](#toc) **_TODO:(a1-ref-gemini)_**
+[^](#toc) **_CI/CD Disk Quota Resolution for ML_**
 
-TODO:(a1-gemini) ...
+
+The root cause of the pipeline failure is a combination of GitLab's
+shared runner disk constraints (20 GB) and the sheer volume of NVIDIA
+CUDA binaries bundled within standard PyTorch wheels. When the runner
+attempts to extract the cached `.venv` containing these wheels (often
+exceeding 5 GB uncompressed), the temporary extraction footprint
+exhausts the available disk space.
+
+To resolve this while strictly adhering to your _"Simple-as-possible"_
+Rule for template consumers, we can leverage Astral `uv`'s native
+index overriding capability. By defining a named package index in
+`pyproject.toml` and selectively overriding its URL via an environment
+variable in the CI pipeline, developers get GPU-enabled wheels locally
+by default, while the CI pipeline fetches lightweight CPU-only wheels.
+
+Here is the refactored architecture.
+
+## 1. Refactored Project Configuration
+
+In this `pyproject.toml`, we remove the hardcoded standard index and
+replace it with a named index (`pytorch`). Developers running `uv sync
+--all-extras --all-groups` will naturally resolve against the CUDA
+13.0 index defined here.
+
+```toml
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dve_sample_py"
+version = "0.1.0"
+description = "TODO(title): TITLE OF THE RESEARCH WORK / TITOLO DEL LAVORO DI RICERCA"
+readme = "README.md"
+requires-python = ">=3.10,<3.15"
+
+authors = [{ name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" }]
+
+dependencies = [
+  "torch==2.10.*",
+  "torchvision==0.25.*",
+  "numpy",
+  "pandas",
+  "scipy",
+  "SQLAlchemy",
+  "pytest",
+  "ruff",
+  "pyright"
+]
+
+[project.optional-dependencies]
+gpumon = [
+  "nvidia-ml-py; sys_platform == 'linux'",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch" }
+torchvision = { index = "pytorch" }
+
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+```
+
+## 2. Refactored Pipeline Definition
+
+In `.gitlab-ci.yml`, we introduce the `UV_INDEX_PYTORCH_URL` environment variable. When `uv` executes, it detects this variable and overrides the `pytorch` index URL defined in the project file, seamlessly substituting the CPU repository without altering the lockfile structure or requiring custom sync scripts.
+
+Crucially, we must stop caching the `.venv` directory. The `uv` cache (`.cache/uv`) is entirely sufficient to accelerate builds; omitting `.venv` prevents the `symlink` disk exhaustion errors during GitLab's artifact restoration phase.
+
+```yaml
+image: python:3.14
+
+variables:
+  UV_VERSION: "latest"
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+  # Override the custom index defined in pyproject.toml to fetch lightweight CPU wheels
+  UV_INDEX_PYTORCH_URL: "https://download.pytorch.org/whl/cpu"
+
+cache:
+  - key:
+      files:
+        - uv.lock
+    paths:
+      - .cache/uv
+    policy: pull-push
+
+stages:
+  - lint
+  - test
+
+before_script:
+  - df -h
+  - curl -LsSf https://astral.sh/uv/install.sh | sh
+  - export PATH="$HOME/.local/bin:$PATH"
+  # CI only needs standard dependencies and development tools. 
+  # This command respects the CPU index override.
+  - uv sync --all-groups
+  - df -h
+
+linting:
+  stage: lint
+  script:
+    - uv run ruff check .
+    - uv run ruff format --check .
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+typing:
+  stage: lint
+  script:
+    - uv run pyright
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+testing:
+  stage: test
+  script:
+    - uv run pytest -v
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+```
+
+## 3. The Micromamba Alternative Analysis
+
+Externalising the CUDA toolkit via `micromamba` shifts the heavy lifting of GPU library management from the Python package manager to the system level. Here is the optimised environment specification targeting your required CTK 13.x and OpenBLAS constraints.
+
+```yaml
+name: cuda-base
+channels:
+  - nvidia
+  - conda-forge
+dependencies:
+  - cuda-toolkit=13.1
+  - cudnn>=9
+  - libblas=*=*openblas
+  - libcblas=*=*openblas
+  - libopenblas
+  - libcublas
+  - libcublas-dev
+  - gxx_linux-64>=12,<14
+  - gcc_linux-64>=12,<14
+  - sysroot_linux-64>=2.17
+  - nccl
+  - cuda-nvtx
+  - cutensor
+
+```
+
+### Mechanism /ag
+
+`micromamba` provisions a shared `/opt/mamba/envs/cuda-base` directory containing the compiler toolchain, runtime libraries, and NVBLAS shims. The shell is configured to inject this path into `LD_LIBRARY_PATH` and `CUDA_HOME`. Subsequently, `uv` is invoked to install PyTorch, which is expected to dynamically link against these system-provided binaries rather than its internal bundled copies.
+
+### Pros /ag
+
+- *Disk Efficiency*: Multiple Podman containers and virtual environments can mount or reference the single system-level CUDA installation, drastically reducing the storage footprint across isolated research projects.
+- *Granular Control*: Researchers gain direct access to `nvcc` and profiling tools (`cuda-nvtx`) without relying on Python-packaged wrappers, facilitating custom C++/CUDA extensions via `Rcpp` or `pybind11`.
+
+### Cons /ag
+
+- *Dependency Clashes*: The strict constraint that PyTorch must be installed via `uv` creates friction here. Standard PyPI PyTorch wheels (2.1+) declare hard dependencies on `nvidia-cublas-cu12`, etc., which `uv` will attempt to download anyway. Preventing this requires complex `uv` override configurations to stub out the `nvidia-*` sub-packages, complicating the template maintenance.
+- *Statefulness*: Developers must remember to execute `micromamba activate cuda-base` before initiating `uv sync` or running their applications, introducing environmental state that breaks the single-command setup requirement.
+
+### Impact on Derived Projects /ag
+
+Adopting this alternative would require template consumers to modify their startup shell profiles (e.g., `~/.bashrc`) and carefully orchestrate the activation order between `micromamba` and `uv`. While powerful for bare-metal multi-tenant HPC nodes, it adds significant operational overhead for standard rootless Podman deployments where container images are intended to be self-sufficient.
+
+## Additional Notes on Production Deployment
+
+When transitioning these containers to the `prod` batch runtime on your multi-node cluster, pay close attention to the underlying cloud infrastructure provisioning. If you are deploying this architecture to Azure using GPU-accelerated SKUs (specifically sizes like the `Standard_NC40ads_H100_v5`), be aware that you must configure the boot volumes to use SCSI controllers. Attempting to provision these specific nodes with NVMe boot controllers will result in persistent metadata mismatch errors during the VM resize or creation operations.
+
+---
+
+[^ag-uv-index]: Astral documentation on `uv` Index configuration. Environment variables matching the pattern `UV_INDEX_<NAME>_URL` silently override the URL of named indexes defined within `pyproject.toml`.
+
 
 
 
