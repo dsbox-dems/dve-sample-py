@@ -38,7 +38,7 @@ abstract: |
   against the `micromamba`-managed system environment, thereby
   reducing image size and ensuring a consistent, auditable HPC
   software stack suitable for reproducible ML experimentation.
-  
+
 doctype: md-report
 # }}} // %+
 ---
