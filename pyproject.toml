@@ -276,8 +276,8 @@ package = true
 torch = { index = "torch-gpu" }
 torchvision = { index = "torch-gpu" }
 
-[tool.uv.environment]
-# For CI: Force CPU-only
+### [tool.uv.environment]
+### # For CI: Force CPU-only
 ### UV_INDEX_TORCH_GPU = { value = "https://download.pytorch.org/whl/cpu", if = "'CI' in os.environ" }
 ### UV_EXTRA_INDEX_URL = { value = "https://download.pytorch.org/whl/cpu", if = "'CI' in os.environ" }
 
