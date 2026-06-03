@@ -74,6 +74,9 @@ linting:
     # --no-install-project : do not install the project package itself.
     # Result: no torch, no torchvision, no triton, minimal disk use (~150 MB).
     - uv sync --only-group dev --no-install-project
+    - uv tree --show-sizes
+    - uv pip list
+    - du -sh .venv
     - df -h
   script:
     - uv run ruff check .
