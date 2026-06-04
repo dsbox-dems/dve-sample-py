@@ -30,11 +30,22 @@ class ConfigModelTest(unittest.TestCase):
         assert actual_config == cached_config
         log.debug("+++ CONFIG MODEL ID (default): %s %s", id(actual_config), id(cached_config))
 
-    def test_get_demo_my(self):
+    def test_get_demo_lt(self):
         cfg = conf.get_config()
-        db_config = cfg.get_value("data/db/demo_my")
+        db_config = cfg.get_value("data/db/demo_lt")
         assert db_config is not None
-        log.debug("+++ CONFIG DB (demo.my): %s", cfg.dump_value("data/db/demo_my"))
+        log.debug("+++ CONFIG DB (demo.lt): %s", cfg.dump_value("data/db/demo_lt"))
+
+    def test_env_lt_defaults(self):
+        exp = {
+            "path": "data/int/test",
+            "database": "demo",
+        }
+        cfg = conf.get_config()
+        act = cfg.get_value("data/db/demo_lt")
+        log.debug("+++ CONFIG DB (demo.lt): %s", cfg.dump_object(act))
+        assert exp["path"] == act["path"]
+        assert exp["database"] == act["database"]
 
     def test_env_my_defaults(self):
         exp = {
@@ -65,6 +76,21 @@ class ConfigModelTest(unittest.TestCase):
         assert exp["port"] == act["port"]
         assert exp["user"] == act["user"]
         assert exp["database"] == act["database"]
+
+    def test_env_lt_override(self):
+        exp = {
+            "path": "_path_",
+            "database": "_database_",
+        }
+        with environ.modified_environ(
+            X_DB_DEMO_PATH=exp["path"],
+            X_DB_DEMO_DATABASE=exp["database"],
+        ):
+            cfg = conf.get_config()
+            act = cfg.get_value("data/db/demo_lt")
+            log.debug("+++ CONFIG DB(e) (demo.lt): %s", cfg.dump_object(act))
+            assert exp["path"] == act["path"]
+            assert exp["database"] == act["database"]
 
     def test_env_my_override(self):
         exp = {

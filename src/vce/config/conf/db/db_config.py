@@ -2,11 +2,13 @@ from vce.config.conf.db import DbConfig
 from vce.config.conf import AppConfig, AppConfigEx
 
 DB_TYPE_GENERIC = "generic"
+DB_TYPE_SQLITE = "sqlite"
 DB_TYPE_MYSQL = "mysql"
 DB_TYPE_POSTGRESQL = "postgresql"
 
 # ruff: noqa: PLW0108
 DB_REG_CLASSES = {
+    DB_TYPE_SQLITE: lambda name, config: LtDbConfig.create(name, config),
     DB_TYPE_MYSQL: lambda name, config: MyDbConfig.create(name, config),
     DB_TYPE_POSTGRESQL: lambda name, config: PgDbConfig.create(name, config),
 }
@@ -48,6 +50,18 @@ class RefDbConfig(AbsDbConfig):
 
     def uri(self) -> str:
         return self.delegate.uri()
+
+
+class LtDbConfig(AbsDbConfig):
+    db_type = DB_TYPE_SQLITE
+
+    def __init__(self, name: str, config: dict):
+        super().__init__(name, config)
+
+    @classmethod
+    def create(cls, name: str, config: dict) -> AbsDbConfig:
+        result = MyDbConfig(name, config)
+        return result
 
 
 class MyDbConfig(AbsDbConfig):

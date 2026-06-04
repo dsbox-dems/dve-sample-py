@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 class DbConfigConsts(object):
     DB_TYPE_GENERIC = "generic"
+    DB_TYPE_SQLITE = "sqlite"
     DB_TYPE_MYSQL = "mysql"
     DB_TYPE_POSTGRESQL = "postgresql"
 
