@@ -125,3 +125,9 @@ data:
       database: ${X_DB_DEMO_DATABASE:-demo}
 
       uri: "{type}://{user}:{password}@{host}:{port}/{database}"
+
+test:
+
+  dummy_script:
+
+    filename: "test_one-1k.csv" # see: "dummy_script.py"

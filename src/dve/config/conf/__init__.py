@@ -26,6 +26,10 @@ class AppConfigConsts(object):
     DB_S_DATA = vce_conf.AppConfigConsts.DB_S_DATA
     DB_S_DEFAULT = vce_conf.AppConfigConsts.DB_S_DEFAULT
 
+    DMY_B_BASE = "test"
+    DMY_B_DUMMY_SCRIPT = DMY_B_BASE + "/" + "dummy_script"
+    DMY_C_DUMMY_SCRIPT_FILENAME = "filename"
+
 
 class AppConfig(ABC):
     cfg_type = AppConfigConsts.CFG_TYPE_GENERIC
@@ -126,3 +130,11 @@ def get_config(what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
 
 def db_config(db_name=AppConfigConsts.DB_S_DEFAULT) -> DbConfig:
     return AppConfigs.db(db_name)
+
+
+def cfg(what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
+    return get_config(what)
+
+
+def cdb(db_name=AppConfigConsts.DB_S_DEFAULT) -> DbConfig:
+    return db_config(db_name)

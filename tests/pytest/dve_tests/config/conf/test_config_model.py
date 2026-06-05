@@ -4,6 +4,7 @@ import unittest
 
 from dve.config import conf
 from vce.common.util import environ
+from dve.config.conf import cfg, AppConfigConsts as CK
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
@@ -18,6 +19,28 @@ class ConfigModelTest(unittest.TestCase):
         actual_name = cfg.name
         log.debug("+++ CONFIG NAME (default): %s", actual_name)
         assert actual_name is not None
+
+    def test_config_value_present(self):
+        cnf = cfg().get_value(CK.DMY_B_DUMMY_SCRIPT)
+        assert cnf is not None
+        log.debug("+++ CONFIG DUMMY_SCRIPT : %s", cfg().dump_object(cnf))
+        config_key = CK.DMY_C_DUMMY_SCRIPT_FILENAME
+        default_value = "_filename_"
+        actual_value = cnf.get(config_key, default_value)
+        log.debug("+++ CONFIG VALUE: %s = '%s'", config_key, actual_value)
+        assert actual_value is not None
+        assert actual_value != default_value
+
+    def test_config_value_absent(self):
+        cnf = cfg().get_value(CK.DMY_B_DUMMY_SCRIPT)
+        assert cnf is not None
+        log.debug("+++ CONFIG DUMMY_SCRIPT : %s", cfg().dump_object(cnf))
+        config_key = CK.DMY_C_DUMMY_SCRIPT_FILENAME + "+MISSING"
+        default_value = "_filename_"
+        actual_value = cnf.get(config_key, default_value)
+        log.debug("+++ CONFIG VALUE: %s = '%s'", config_key, actual_value)
+        assert actual_value is not None
+        assert actual_value == default_value
 
     def test_load_config(self):
         cfg = conf.get_config()

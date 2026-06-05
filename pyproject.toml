@@ -30,7 +30,9 @@ readme = "README.md"
 # ]
 requires-python = ">=3.10,<3.15"
 
-authors = [{ name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" }]
+authors = [
+  { name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" },
+]
 
 # }}} //
 # {{{ ////////////////////////////////////////////////////////////////
@@ -182,7 +184,7 @@ agents = [
   "pydantic",
   "scikit-learn",
   "sentence-transformers",
-  
+
 ]
 
 jupyter = [
@@ -215,7 +217,7 @@ jupyter = [
   "ipython-bg",
 
   # --- marimo ---
-  
+
   "marimo",
 ]
 
@@ -231,8 +233,11 @@ dev = [
   # --- edit ---
   "pyright",
   "basedpyright",
-  # "tree-sitter",
+  "tree-sitter",
 
+  # --- debug ---
+  "debugpy",
+  
   # --- lint ---
   "ruff",
   # "yapf",
@@ -280,7 +285,6 @@ torchvision = { index = "torch-gpu" }
 ### # For CI: Force CPU-only
 ### UV_INDEX_TORCH_GPU = { value = "https://download.pytorch.org/whl/cpu", if = "'CI' in os.environ" }
 ### UV_EXTRA_INDEX_URL = { value = "https://download.pytorch.org/whl/cpu", if = "'CI' in os.environ" }
-
 
 
 [[tool.uv.index]]
@@ -345,6 +349,8 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
 
+log_cli = true
+log_cli_level = "DEBUG"
 
 # --- [mypy] ---------------------------------------------------
 

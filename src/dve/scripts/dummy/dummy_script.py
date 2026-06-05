@@ -23,6 +23,7 @@ from vce.common.util.kernel import in_notebook
 from vce.common.util.lint import unused
 
 
+from dve.config.conf import cfg, AppConfigConsts as CK
 from dve.config.data import cfd
 
 # In[3]:
@@ -140,7 +141,15 @@ def arg_group(xargs):
 
 
 def arg_filename(xargs):
-    return xargs.filename
+    arg_filename = xargs.filename
+
+    if arg_filename is not None:
+        return arg_filename
+
+    cnf = cfg().get_value(CK.DMY_B_DUMMY_SCRIPT)
+    assert cnf is not None
+    def_filename = cnf.get(CK.DMY_C_DUMMY_SCRIPT_FILENAME, TEST_CASE_DEFAULT)
+    return def_filename
 
 
 def arg_slotid(xargs):
