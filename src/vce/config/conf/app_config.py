@@ -1,9 +1,137 @@
 import os.path
-from typing import Any
+from pathlib import Path
+from typing import Any, Self, cast
 from piny import YamlLoader
+import toml
 
 from vce.config.conf.db import DbConfig
-from vce.config.conf import AppConfigConsts, AppConfig, AppConfigEx
+from vce.config.conf import AppConfigConsts, AppConfig, AppConfigEx, ProjectConfig
+from vce.common.util.file import find_file_upwards
+
+
+class ProjectConfigImpl(ProjectConfig):
+    @classmethod
+    def create(cls, section: str = AppConfigConsts.CONFIG_L_SECTION_NAME) -> Self:
+        try:
+            result = cls(section=section)
+            result.setup()
+            return result
+        except Exception as ex:
+            print(type(ex))
+            print(ex.args)
+            print(ex)
+            raise ex
+
+    def __init__(self, section: str = AppConfigConsts.CONFIG_L_SECTION_NAME):
+        super().__init__(section=section)
+        self.base_path = None
+        self.project_path = None
+        self.config_path = None
+        self.has_project = False
+        self.has_config = False
+        self.local = {}
+
+    def setup(self) -> Self:
+        self.project_path = find_file_upwards(AppConfigConsts.CONFIG_L_ENV_PREFIX)
+        self.has_project = self.project_path is not None and self.project_path.exists()
+
+        if not self.has_project:
+            return self
+
+        assert self.project_path is not None
+
+        self.base_path = self.project_path.parent
+
+        self.local = self.load_local_config()
+
+        self.has_config = self.local.get(
+            AppConfigConsts.CONFIG_L_KEY_HAS_CONFIG, AppConfigConsts.CONFIG_L_DEF_HAS_CONFIG
+        )
+
+        if not self.has_config:
+            return self
+
+        self.config_path = self.resolve_config_path()
+
+        return self
+
+    def get_value(self, key: str, default_value: Any = None) -> Any:
+        env_key = AppConfigConsts.CONFIG_L_ENV_PREFIX + key.upper()
+        env_value = os.getenv(env_key)
+        if env_value:
+            return env_value
+        result = self.local.get(key, default_value)
+        return result
+
+    def load_local_config(self) -> dict[str, Any]:
+        """Load configuration from pyproject.toml.
+
+        Returns:
+        Configuration dictionary with tool.local settings
+        """
+        try:
+            pyproject_path = self.project_path
+            assert pyproject_path is not None
+
+            data = toml.load(pyproject_path)
+            tools = data.get(AppConfigConsts.CONFIG_L_SECTION_PARENT, {})
+            section = tools.get(AppConfigConsts.CONFIG_L_SECTION_NAME, {})
+            result = cast("dict[str, Any]", section)
+            return result
+        except Exception as ex:
+            print(type(ex))
+            print(ex.args)
+            print(ex)
+            raise ex
+
+    def resolve_config_path(self) -> Path:
+        """Find config.yaml from current dir and parents,
+           in not found try path relative to pyproject.toml
+
+        Returns:
+        Path of resolved config
+        """
+        try:
+            config_filename = self.get_value(
+                AppConfigConsts.CONFIG_L_KEY_CONFIG, AppConfigConsts.CONFIG_L_DEF_CONFIG
+            )
+            config_path = find_file_upwards(config_filename)
+
+            if config_path is None:
+                config_path = find_file_upwards(config_filename, self.base_path)
+
+            if config_path is None:
+                msg = f"config file not found: {config_filename} in dir: {Path.cwd()}"
+                raise ValueError(msg)
+
+            if not config_path.exists():
+                msg = f"config file not found: {config_filename} in dir: {Path.cwd()}"
+                raise ValueError(msg)
+
+            return config_path
+
+        except Exception as ex:
+            print(type(ex))
+            print(ex.args)
+            print(ex)
+            raise ex
+
+
+class ProjectConfigStore(object):
+    def __init__(self):
+        self._local = {}
+
+    def get_local(self, section: str = AppConfigConsts.CONFIG_L_SECTION_NAME) -> ProjectConfig:
+        result = self._local.get(section)
+        if result:
+            return result
+        result = ProjectConfigImpl.create(section)
+        self._local[section] = result
+        return result
+
+
+class ProjectConfigStoreGlobals(object):
+    store = ProjectConfigStore()
 
 
 class AbsAppConfig(AppConfigEx):
@@ -133,7 +261,7 @@ class AppConfigStore(object):
         self._config = {}
 
     @classmethod
-    def config_name(cls, what=AppConfigConsts.CONFIG_S_DEFAULT):
+    def config_name(cls, what=AppConfigConsts.CONFIG_S_DEFAULT) -> str:
         result = None
         if what == AppConfigConsts.CONFIG_S_MAIN:
             result = AppConfigConsts.CONFIG_F_MAIN
@@ -142,13 +270,13 @@ class AppConfigStore(object):
         return result
 
     @classmethod
-    def config_path(cls, what=AppConfigConsts.CONFIG_S_DEFAULT):
+    def config_path(cls, what=AppConfigConsts.CONFIG_S_DEFAULT) -> str:
         name = cls.config_name(what)
         fn = os.path.join(AppConfigConsts.CONFIG_F_ROOT, name)
         result = os.path.normpath(fn)
         return result
 
-    def load_config(self, what=AppConfigConsts.CONFIG_S_DEFAULT):
+    def load_config(self, what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
         config_path = self.config_path(what)
         if not os.path.exists(config_path):
             raise ValueError(f"Config Name {what} file not found: {config_path}")

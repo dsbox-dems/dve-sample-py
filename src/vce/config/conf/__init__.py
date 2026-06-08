@@ -16,6 +16,15 @@ class AppConfigConsts(object):
 
     CONFIG_C_PATH_SEP = "/"
 
+    CONFIG_L_PROJECT_FILE = "pyproject.toml"
+    CONFIG_L_SECTION_PARENT = "tool"
+    CONFIG_L_SECTION_NAME = "local"
+    CONFIG_L_ENV_PREFIX = "X_RUN_"
+    CONFIG_L_KEY_CONFIG = "config"
+    CONFIG_L_DEF_CONFIG = "config.yaml"
+    CONFIG_L_KEY_HAS_CONFIG = "has_config"
+    CONFIG_L_DEF_HAS_CONFIG = True
+
     CFG_TYPE_GENERIC = "generic"
     CFG_TYPE_YAML = "yaml"
     CFG_TYPE_ERROR = "error"
@@ -23,6 +32,15 @@ class AppConfigConsts(object):
     DB_S_DEMO = "demo"
     DB_S_DATA = "data"
     DB_S_DEFAULT = DB_S_DATA
+
+
+class ProjectConfig(ABC):
+    def __init__(self, section: str = AppConfigConsts.CONFIG_L_SECTION_NAME):
+        self.section = section
+
+    @abstractmethod
+    def get_value(self, key: str, default_value: Any = None) -> Any:
+        pass
 
 
 class AppConfig(ABC):
@@ -108,6 +126,13 @@ class AppConfigs(object):
         app_config = AppConfigs.get()
         result = app_config.db(db_name)
         return result
+
+
+def get_local_config(section: str = AppConfigConsts.CONFIG_L_SECTION_NAME) -> ProjectConfig:
+    from vce.config.conf.app_config import ProjectConfigStoreGlobals
+
+    result = ProjectConfigStoreGlobals.store.get_local(section)
+    return result
 
 
 def get_config(what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:

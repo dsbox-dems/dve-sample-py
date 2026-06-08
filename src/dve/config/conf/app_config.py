@@ -71,12 +71,12 @@ class AppConfigImpl(AppConfigEx):
             raise ex
 
 
-class AppConfigStore(object):
+class AppConfigStore(vce_conf_impl.AppConfigStore):
     def __init__(self):
         self._config = {}
 
     @classmethod
-    def config_name(cls, what=AppConfigConsts.CONFIG_S_DEFAULT):
+    def config_name(cls, what=AppConfigConsts.CONFIG_S_DEFAULT) -> str:
         result = None
         if what == AppConfigConsts.CONFIG_S_MAIN:
             result = AppConfigConsts.CONFIG_F_MAIN
@@ -85,13 +85,13 @@ class AppConfigStore(object):
         return result
 
     @classmethod
-    def config_path(cls, what=AppConfigConsts.CONFIG_S_DEFAULT):
+    def config_path(cls, what=AppConfigConsts.CONFIG_S_DEFAULT) -> str:
         name = cls.config_name(what)
         fn = os.path.join(AppConfigConsts.CONFIG_F_ROOT, name)
         result = os.path.normpath(fn)
         return result
 
-    def load_config(self, what=AppConfigConsts.CONFIG_S_DEFAULT):
+    def load_config(self, what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
         config_path = self.config_path(what)
         if not os.path.exists(config_path):
             raise ValueError(f"Config Name {what} file not found: {config_path}")

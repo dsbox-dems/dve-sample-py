@@ -13,6 +13,12 @@ log = logging.getLogger(__name__)
 class ConfigModelTest(unittest.TestCase):
     warnings_no = 0
 
+    def test_local_load(self):
+        loc = conf.get_local_config()
+        actual_section = loc.section
+        log.debug("+++ LOCAL SECTION (default): %s", actual_section)
+        assert actual_section is not None
+
     def test_config_name(self):
         cfg = conf.get_config()
         actual_name = cfg.name
