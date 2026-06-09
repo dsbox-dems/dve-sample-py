@@ -1,7 +1,4 @@
-import re
-import json
-from typing import Any
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from dve.config.conf.db import DbConfig
 
@@ -31,7 +28,7 @@ class AppConfigConsts(object):
     DMY_C_DUMMY_SCRIPT_FILENAME = "filename"
 
 
-class AppConfig(ABC):
+class AppConfig(vce_conf.BaseConfig):
     cfg_type = AppConfigConsts.CFG_TYPE_GENERIC
 
     def __init__(self, name: str):
@@ -44,44 +41,6 @@ class AppConfig(ABC):
     @abstractmethod
     def data(self) -> dict:
         pass
-
-    @abstractmethod
-    def get_value(self, key: str) -> Any:
-        pass
-
-    @abstractmethod
-    def has_value(self, key: str) -> bool:
-        pass
-
-    @abstractmethod
-    def dump_value(self, key: str) -> str:
-        pass
-
-    @abstractmethod
-    def get_bool(self, key: str, defValue: bool = False) -> bool:
-        pass
-
-    @abstractmethod
-    def get_int(self, key: str, defValue: int = 0) -> int:
-        pass
-
-    @abstractmethod
-    def get_float(self, key: str, defValue: float = 0.0) -> float:
-        pass
-
-    @abstractmethod
-    def get_str(self, key: str, defValue: str = "") -> str:
-        pass
-
-    @abstractmethod
-    def dump(self) -> str:
-        pass
-
-    @staticmethod
-    def dump_object(obj: Any) -> str:
-        msg = json.dumps(obj, indent=4, sort_keys=False, default=str)
-        result = re.sub('"password": *"[^"]*",', '"password": "***"', msg)
-        return result
 
 
 class AppConfigEx(AppConfig):
@@ -122,6 +81,20 @@ class AppConfigs(object):
         app_config = AppConfigs.get()
         result = app_config.db(db_name)
         return result
+
+    @staticmethod
+    def local(
+        section: str = vce_conf.AppConfigConsts.CONFIG_L_SECTION_NAME,
+    ) -> vce_conf.ProjectConfig:
+        result = get_local_config(section)
+        return result
+
+
+def get_local_config(
+    section: str = vce_conf.AppConfigConsts.CONFIG_L_SECTION_NAME,
+) -> vce_conf.ProjectConfig:
+    result = vce_conf.get_local_config(section)
+    return result
 
 
 def get_config(what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:

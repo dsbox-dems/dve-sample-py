@@ -396,6 +396,7 @@ fix = true
 
 [tool.ruff.lint]
 unfixable = []
+#ignore-init-module-imports = false
 typing-modules = ["pandas._typing"]
 exclude = [
   "notebooks/@databricks/*",

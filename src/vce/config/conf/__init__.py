@@ -1,5 +1,4 @@
-import re
-import json
+from pathlib import Path
 from typing import Any
 from abc import ABC, abstractmethod
 
@@ -34,29 +33,7 @@ class AppConfigConsts(object):
     DB_S_DEFAULT = DB_S_DATA
 
 
-class ProjectConfig(ABC):
-    def __init__(self, section: str = AppConfigConsts.CONFIG_L_SECTION_NAME):
-        self.section = section
-
-    @abstractmethod
-    def get_value(self, key: str, default_value: Any = None) -> Any:
-        pass
-
-
-class AppConfig(ABC):
-    cfg_type = AppConfigConsts.CFG_TYPE_GENERIC
-
-    def __init__(self, name: str):
-        self.name = name
-
-    @abstractmethod
-    def db(self, db_name: str) -> DbConfig:
-        pass
-
-    @abstractmethod
-    def data(self) -> dict:
-        pass
-
+class BaseConfig(ABC):
     @abstractmethod
     def get_value(self, key: str) -> Any:
         pass
@@ -86,14 +63,73 @@ class AppConfig(ABC):
         pass
 
     @abstractmethod
-    def dump(self) -> str:
+    def dump_object(self, obj: Any) -> str:
         pass
 
-    @staticmethod
-    def dump_object(obj: Any) -> str:
-        msg = json.dumps(obj, indent=4, sort_keys=False, default=str)
-        result = re.sub('"password": *"[^"]*",', '"password": "***"', msg)
-        return result
+    @abstractmethod
+    def dump_object_uri(self, uri: str) -> str:
+        pass
+
+    @abstractmethod
+    def dump(self, full: bool = False) -> str:
+        pass
+
+
+class ProjectConfig(BaseConfig):
+    @property
+    @abstractmethod
+    def section(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def base_path(self) -> Path:
+        pass
+
+    @property
+    @abstractmethod
+    def project_path(self) -> Path:
+        pass
+
+    @property
+    @abstractmethod
+    def config_path(self) -> Path:
+        pass
+
+    @property
+    @abstractmethod
+    def has_project(self) -> bool:
+        pass
+
+    @property
+    @abstractmethod
+    def has_config(self) -> bool:
+        pass
+
+    @property
+    @abstractmethod
+    def is_config_defined(self) -> bool:
+        pass
+
+    @property
+    @abstractmethod
+    def local(self) -> dict[str, Any]:
+        pass
+
+
+class AppConfig(BaseConfig):
+    cfg_type = AppConfigConsts.CFG_TYPE_GENERIC
+
+    def __init__(self, name: str):
+        self.name = name
+
+    @abstractmethod
+    def db(self, db_name: str) -> DbConfig:
+        pass
+
+    @abstractmethod
+    def data(self) -> dict:
+        pass
 
 
 class AppConfigEx(AppConfig):
@@ -125,6 +161,13 @@ class AppConfigs(object):
     def db(db_name=AppConfigConsts.DB_S_DEFAULT) -> DbConfig:
         app_config = AppConfigs.get()
         result = app_config.db(db_name)
+        return result
+
+    @staticmethod
+    def local(
+        section: str = AppConfigConsts.CONFIG_L_SECTION_NAME,
+    ) -> ProjectConfig:
+        result = get_local_config(section)
         return result
 
 

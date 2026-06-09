@@ -55,8 +55,14 @@ class AppConfigImpl(AppConfigEx):
     def get_str(self, key: str, defValue: str = "") -> str:
         return self.inner.get_str(key, defValue)
 
-    def dump(self) -> str:
-        return self.inner.dump()
+    def dump_object(self, obj: Any) -> str:
+        return self.inner.dump_object(obj)
+
+    def dump_object_uri(self, uri: str) -> str:
+        return self.inner.dump_object_uri(uri)
+
+    def dump(self, full: bool = False) -> str:
+        return self.inner.dump(full)
 
     @classmethod
     def create(cls, name: str, config: vce_conf.AppConfig) -> AppConfig:

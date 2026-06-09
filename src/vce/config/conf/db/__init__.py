@@ -1,5 +1,5 @@
-import re
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from vce.config.conf import BaseConfig
 
 
 class DbConfigConsts(object):
@@ -9,7 +9,7 @@ class DbConfigConsts(object):
     DB_TYPE_POSTGRESQL = "postgresql"
 
 
-class DbConfig(ABC):
+class DbConfig(BaseConfig):
     db_type = DbConfigConsts.DB_TYPE_GENERIC
 
     def __init__(self, name: str, config: dict):
@@ -23,11 +23,6 @@ class DbConfig(ABC):
     @abstractmethod
     def dump(self, full: bool = False) -> str:
         pass
-
-    @staticmethod
-    def dump_object_uri(uri: str) -> str:
-        result = re.sub("://([^:]*):([^@]*)@", r"://\1:***@", uri)
-        return result
 
 
 class DbConfigs(object):

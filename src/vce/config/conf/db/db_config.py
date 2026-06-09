@@ -1,5 +1,8 @@
+from typing import Any
+
 from vce.config.conf.db import DbConfig
-from vce.config.conf import AppConfig, AppConfigEx
+from vce.config.conf import AppConfigEx
+from vce.config.conf.app_config import BaseConfigMixin
 
 DB_TYPE_GENERIC = "generic"
 DB_TYPE_SQLITE = "sqlite"
@@ -14,7 +17,7 @@ DB_REG_CLASSES = {
 }
 
 
-class AbsDbConfig(DbConfig):
+class AbsDbConfig(DbConfig, BaseConfigMixin):
     def __init__(self, name: str, config: dict):
         super().__init__(name, config)
 
@@ -26,13 +29,25 @@ class AbsDbConfig(DbConfig):
         result = uri.format(**cfg)
         return result
 
+    def get_value(self, key: str, default_value: Any = None) -> Any:
+        cfg = self.config
+        result = cfg.get(key, default_value)
+        return result
+
+    def has_value(self, key: str) -> bool:
+        try:
+            value = self.get_value(key)
+            return value is not None
+        except ValueError:
+            return False
+
     def dump(self, full: bool = False) -> str:
         if full:
-            result = AppConfig.dump_object(self.config)
+            result = self.dump_object(self.config)
             return result
         else:
             uri = self.uri()
-            result = DbConfig.dump_object_uri(uri)
+            result = self.dump_object_uri(uri)
             return result
 
 

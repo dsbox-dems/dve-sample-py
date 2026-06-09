@@ -3,6 +3,7 @@ import sys
 import unittest
 
 from vce.config import conf
+from vce.config.conf import AppConfigConsts
 from vce.common.util import environ
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
@@ -15,9 +16,17 @@ class ConfigModelTest(unittest.TestCase):
 
     def test_local_load(self):
         loc = conf.get_local_config()
-        actual_section = loc.section
-        log.debug("+++ LOCAL SECTION (default): %s", actual_section)
-        assert actual_section is not None
+        assert loc is not None
+        assert loc.section is not None
+        assert loc.has_project
+        assert loc.is_config_defined
+        assert loc.has_project
+        assert loc.base_path is not None
+        assert loc.project_path is not None
+        assert loc.config_path is not None
+        log.debug("+++ LOCAL SECTION (default): %s", loc.section)
+        assert loc.section == AppConfigConsts.CONFIG_L_SECTION_NAME
+        log.debug("+++ LOCAL MODEL (default): %s", loc.dump())
 
     def test_config_name(self):
         cfg = conf.get_config()
