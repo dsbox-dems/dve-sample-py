@@ -6,15 +6,6 @@
 [build-system]
 requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
-##@(uv): requires = ["hatchling>=1.21"]
-##@(uv): build-backend = "hatchling.build"
-##@(poetry): requires = [
-##@(poetry):    "poetry-core>=2.0",
-##@(poetry):    "setuptools",
-##@(poetry):    "wheel",
-##@(poetry):    "incremental",
-##@(poetry):]
-##@(poetry):build-backend = "poetry.core.masonry.api"
 
 # ============================================================
 # Project metadata (PEP 621)
@@ -43,7 +34,6 @@ authors = [
 # ============================================================
 dependencies = [
 
-  # --- ML frameworks ---
   # --- ML frameworks ---
   # Index source: controlled by [[tool.uv.index]] name = "torch-gpu".
   # In GPU environments (dev / test / prod) the index resolves to:
@@ -232,6 +222,10 @@ dev = [
   "line-profiler",
   "memory-profiler",
 
+  # --- profile ---
+  "line-profiler",
+  "memory-profiler",
+
   # --- edit ---
   "pyright",
   "basedpyright",
@@ -307,24 +301,24 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel]
 packages = ["src/dve", "src/vce"]
 
-# --- [poetry] ---------------------------------------------------
+# # --- [poetry] ---------------------------------------------------
 
-[tool.poetry]
-requires-poetry = ">=2.0"
-packages = [{ include = "*", from = "src" }]
+# [tool.poetry]
+# requires-poetry = ">=2.0"
+# packages = [{ include = "*", from = "src" }]
 
-[[tool.poetry.source]]
-name = "torch130"
-url = "https://download.pytorch.org/whl/cu130"
-priority = "explicit"
+# [[tool.poetry.source]]
+# name = "torch130"
+# url = "https://download.pytorch.org/whl/cu130"
+# priority = "explicit"
 
-[tool.poetry.dependencies]
-torch = { source = "torch130" }
-torchvision = { source = "torch130" }
+# [tool.poetry.dependencies]
+# torch = { source = "torch130" }
+# torchvision = { source = "torch130" }
 
-[tool.poetry.dependencies.rootpath]
-git = "https://github.com/hute37/python-rootpath"
-branch = "stable"
+# [tool.poetry.dependencies.rootpath]
+# git = "https://github.com/hute37/python-rootpath"
+# branch = "stable"
 
 
 # --- [setuptools] ---------------------------------------------------
