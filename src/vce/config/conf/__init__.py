@@ -1,7 +1,7 @@
-from pathlib import Path
-from typing import Any
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
+from vce.config.conf.base import BaseConfig
+from vce.config.conf.local import ProjectConfig, get_local_config
 from vce.config.conf.db import DbConfig
 from vce.config.data import cfd
 
@@ -31,90 +31,6 @@ class AppConfigConsts(object):
     DB_S_DEMO = "demo"
     DB_S_DATA = "data"
     DB_S_DEFAULT = DB_S_DATA
-
-
-class BaseConfig(ABC):
-    @abstractmethod
-    def get_value(self, key: str) -> Any:
-        pass
-
-    @abstractmethod
-    def has_value(self, key: str) -> bool:
-        pass
-
-    @abstractmethod
-    def dump_value(self, key: str) -> str:
-        pass
-
-    @abstractmethod
-    def get_bool(self, key: str, defValue: bool = False) -> bool:
-        pass
-
-    @abstractmethod
-    def get_int(self, key: str, defValue: int = 0) -> int:
-        pass
-
-    @abstractmethod
-    def get_float(self, key: str, defValue: float = 0.0) -> float:
-        pass
-
-    @abstractmethod
-    def get_str(self, key: str, defValue: str = "") -> str:
-        pass
-
-    @abstractmethod
-    def dump_object(self, obj: Any) -> str:
-        pass
-
-    @abstractmethod
-    def dump_object_uri(self, uri: str) -> str:
-        pass
-
-    @abstractmethod
-    def dump(self, full: bool = False) -> str:
-        pass
-
-
-class ProjectConfig(BaseConfig):
-    @property
-    @abstractmethod
-    def section(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def base_path(self) -> Path:
-        pass
-
-    @property
-    @abstractmethod
-    def project_path(self) -> Path:
-        pass
-
-    @property
-    @abstractmethod
-    def config_path(self) -> Path:
-        pass
-
-    @property
-    @abstractmethod
-    def has_project(self) -> bool:
-        pass
-
-    @property
-    @abstractmethod
-    def has_config(self) -> bool:
-        pass
-
-    @property
-    @abstractmethod
-    def is_config_defined(self) -> bool:
-        pass
-
-    @property
-    @abstractmethod
-    def local(self) -> dict[str, Any]:
-        pass
 
 
 class AppConfig(BaseConfig):
@@ -171,16 +87,12 @@ class AppConfigs(object):
         return result
 
 
-def get_local_config(section: str = AppConfigConsts.CONFIG_L_SECTION_NAME) -> ProjectConfig:
-    from vce.config.conf.app_config import ProjectConfigStoreGlobals
-
-    result = ProjectConfigStoreGlobals.store.get_local(section)
-    return result
-
-
 def get_config(what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
     return AppConfigs.get(what)
 
 
 def db_config(db_name=AppConfigConsts.DB_S_DEFAULT) -> DbConfig:
     return AppConfigs.db(db_name)
+
+
+#  LocalWords:  toml

@@ -2,7 +2,7 @@ from typing import Any
 
 from vce.config.conf.db import DbConfig
 from vce.config.conf import AppConfigEx
-from vce.config.conf.app_config import BaseConfigMixin
+from vce.config.conf.base.base_config import BaseConfigMixin
 
 DB_TYPE_GENERIC = "generic"
 DB_TYPE_SQLITE = "sqlite"

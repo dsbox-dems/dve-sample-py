@@ -28,7 +28,7 @@ readme = "README.md"
 #     {file = "LICENSE"},
 #     {file = "LICENSE.md"},
 # ]
-requires-python = ">=3.10,<3.15"
+requires-python = ">=3.12,<3.15"
 
 authors = [
   { name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" },
@@ -114,6 +114,7 @@ dependencies = [
   "oauthlib",
   "requests-oauthlib",
   "urllib3",
+  "aiohttp",
   "pyzmq",
 
   "pyyaml",
@@ -122,6 +123,7 @@ dependencies = [
   "types-toml",
   "piny",
   "click",
+  "pydantic",
   "pathspec",
 
   "icecream",
@@ -174,17 +176,12 @@ hello = "dve.scripts.dummy.dummy_hello:main"
 agents = [
 
   # --- skills ---
-  "aiohttp",
-  "anthropic",
-  "graphifyy",
-  "hypothesis",
-  "line-profiler",
-  "memory-profiler",
-  "openai",
-  "pydantic",
-  "scikit-learn",
-  "sentence-transformers",
-
+  # "anthropic",
+  # "openai",
+  # "graphifyy",
+  # "scikit-learn",
+  # "sentence-transformers",
+  
 ]
 
 jupyter = [
@@ -217,7 +214,7 @@ jupyter = [
   "ipython-bg",
 
   # --- marimo ---
-
+  
   "marimo",
 ]
 
@@ -226,9 +223,14 @@ dev = [
   # --- test ---
   "pytest",
   "pytest-cov",
+  "hypothesis",
   "behave",
   "mock",
   "nose",
+  
+  # --- profile ---
+  "line-profiler",
+  "memory-profiler",
 
   # --- edit ---
   "pyright",
@@ -273,7 +275,6 @@ dev = [
 [tool.uv]
 # Treat this directory as an installable package
 package = true
-
 
 [tool.uv.sources]
 # Both packages resolved from the "torch-gpu" named index.
@@ -384,14 +385,15 @@ exclude = [
 ignore = ["build"]
 defineConstant = { DEBUG = true }
 typeCheckingMode = "basic"
+#typeCheckingMode = "strict"
 reportMissingImports = true
-
+#reportMissingTypeStubs = true
 
 # --- [ruff] ---------------------------------------------------
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py312"
 fix = true
 
 [tool.ruff.lint]

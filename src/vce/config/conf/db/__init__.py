@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from vce.config.conf import BaseConfig
+from vce.config.conf.base import BaseConfig
 
 
 class DbConfigConsts(object):

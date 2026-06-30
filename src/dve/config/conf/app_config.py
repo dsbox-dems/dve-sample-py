@@ -1,5 +1,5 @@
 import os.path
-from typing import Any, cast
+from typing import Any, cast, override
 
 from dve.config.conf.db import DbConfig
 from dve.config.conf import AppConfigConsts, AppConfig, AppConfigEx
@@ -77,26 +77,11 @@ class AppConfigImpl(AppConfigEx):
             raise ex
 
 
-class AppConfigStore(vce_conf_impl.AppConfigStore):
+class AppConfigStore(vce_conf_impl.BaseConfigStore[AppConfig]):
     def __init__(self):
-        self._config = {}
+        super().__init__(AppConfig)
 
-    @classmethod
-    def config_name(cls, what=AppConfigConsts.CONFIG_S_DEFAULT) -> str:
-        result = None
-        if what == AppConfigConsts.CONFIG_S_MAIN:
-            result = AppConfigConsts.CONFIG_F_MAIN
-        if result is None:
-            raise ValueError(f'Config Name unknown: "{what}", cannot load')
-        return result
-
-    @classmethod
-    def config_path(cls, what=AppConfigConsts.CONFIG_S_DEFAULT) -> str:
-        name = cls.config_name(what)
-        fn = os.path.join(AppConfigConsts.CONFIG_F_ROOT, name)
-        result = os.path.normpath(fn)
-        return result
-
+    @override
     def load_config(self, what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
         config_path = self.config_path(what)
         if not os.path.exists(config_path):
@@ -112,41 +97,6 @@ class AppConfigStore(vce_conf_impl.AppConfigStore):
             print(ex.args)
             print(ex)
             raise ex
-
-    def get_config(self, what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
-        if what in self._config:
-            handle = self._config[what]
-            result = handle["data"]
-            return result
-
-        handle = {
-            "what": what,
-            "loaded": True,
-            "failed": False,
-            "error": None,
-            "data": None,
-        }
-        self._config[what] = handle
-        try:
-            handle["data"] = self.load_config(what)
-
-        except Exception as ex:
-            handle["failed"] = True
-            handle["error"] = ex
-            handle["data"] = None
-            print(type(ex))
-            print(ex.args)
-            print(ex)
-            raise ex
-
-        h = self._config[what]
-        result = h["data"]
-
-        if result is None:
-            ex = h["error"]
-            raise ValueError(f"Config Name {what} not loaded: {type(ex)} {ex.args}")
-
-        return result
 
 
 class AppConfigStoreGlobals:

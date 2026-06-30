@@ -3,6 +3,7 @@ from abc import abstractmethod
 from dve.config.conf.db import DbConfig
 
 import vce.config.conf as vce_conf
+import vce.config.conf.base as vce_base
 import vce.config.conf.db as vce_conf_db
 
 
@@ -28,7 +29,7 @@ class AppConfigConsts(object):
     DMY_C_DUMMY_SCRIPT_FILENAME = "filename"
 
 
-class AppConfig(vce_conf.BaseConfig):
+class AppConfig(vce_base.BaseConfig):
     cfg_type = AppConfigConsts.CFG_TYPE_GENERIC
 
     def __init__(self, name: str):
