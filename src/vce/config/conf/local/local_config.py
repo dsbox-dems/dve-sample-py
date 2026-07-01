@@ -3,13 +3,13 @@ from pathlib import Path
 from typing import Any, Self, cast
 import toml
 
-from vce.config.conf.base.base_config import BaseConfigMixin
+from vce.config.conf.base.base_config import BaseConfigImpl
 from vce.config.conf.local import LocalConfigConsts, ProjectConfig
 from vce.common.util.file import find_file_upwards
 from vce.common.util.format import dump_object
 
 
-class ProjectConfigImpl(ProjectConfig, BaseConfigMixin):
+class ProjectConfigImpl(BaseConfigImpl, ProjectConfig):
     @classmethod
     def create(cls, section: str = LocalConfigConsts.CONFIG_L_SECTION_NAME) -> Self:
         try:
@@ -30,7 +30,7 @@ class ProjectConfigImpl(ProjectConfig, BaseConfigMixin):
         self._local = {}
 
     def setup(self) -> Self:
-        self._project_path = find_file_upwards(LocalConfigConsts.CONFIG_L_ENV_PREFIX)
+        self._project_path = find_file_upwards(LocalConfigConsts.CONFIG_L_PROJECT_FILE)
         if not self.has_project:
             return self
 

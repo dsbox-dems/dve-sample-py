@@ -18,6 +18,7 @@ class ConfigModelTest(unittest.TestCase):
         loc = conf.get_local_config()
         assert loc is not None
         assert loc.section is not None
+
         assert loc.has_project
         assert loc.is_config_defined
         assert loc.has_project

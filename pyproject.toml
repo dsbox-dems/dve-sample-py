@@ -19,7 +19,7 @@ readme = "README.md"
 #     {file = "LICENSE"},
 #     {file = "LICENSE.md"},
 # ]
-requires-python = ">=3.12,<3.15"
+requires-python = ">=3.14,<3.15"
 
 authors = [
   { name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" },
@@ -171,7 +171,7 @@ agents = [
   # "graphifyy",
   # "scikit-learn",
   # "sentence-transformers",
-  
+
 ]
 
 jupyter = [
@@ -204,7 +204,7 @@ jupyter = [
   "ipython-bg",
 
   # --- marimo ---
-  
+
   "marimo",
 ]
 
@@ -217,7 +217,7 @@ dev = [
   "behave",
   "mock",
   "nose",
-  
+
   # --- profile ---
   "line-profiler",
   "memory-profiler",
@@ -230,10 +230,12 @@ dev = [
   "pyright",
   "basedpyright",
   "tree-sitter",
+  "semgrep",
+  "mypy",
 
   # --- debug ---
   "debugpy",
-  
+
   # --- lint ---
   "ruff",
   # "yapf",
@@ -244,10 +246,12 @@ dev = [
   # "sphinx-autoapi",
   # "sphinx-rtd-theme",
 
+  # --- data ---
+  "csvkit",
+
   # --- misc ---
   "colorama",
-  "py",
-  "mypy",
+  #"py",
 
   # --- packaging ---
   "setuptools",

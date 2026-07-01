@@ -2,11 +2,13 @@ import os.path
 from typing import Any
 from abc import abstractmethod
 
-from vce.config.conf.base import BaseConfig, BaseConfigConsts
+from vce.config.conf.base import BaseConfig, BaseConfigEx, BaseConfigConsts
 from vce.common.util.format import dump_object, dump_object_uri
+from vce.common.util.lint import unused
 
 
-class BaseConfigMixin(BaseConfig):
+class BaseConfigMixin(BaseConfigEx):
+    # BaseConfig interface
     @abstractmethod
     def get_value(self, key: str) -> Any:
         pass
@@ -18,6 +20,17 @@ class BaseConfigMixin(BaseConfig):
     @abstractmethod
     def dump(self, full: bool = False) -> str:
         pass
+
+    # BaseConfigEx interface
+    @abstractmethod
+    def data(self) -> dict:
+        pass
+
+    @abstractmethod
+    def db_config(self, db_name: str) -> dict:
+        pass
+
+    # default implementation
 
     def dump_object(self, obj: Any) -> str:
         return dump_object(obj)
@@ -71,7 +84,7 @@ class BaseConfigMixin(BaseConfig):
         return result
 
 
-class AbsBaseConfig(BaseConfigMixin):
+class BaseConfigImpl(BaseConfigMixin):
     def __init__(self, name: str, conf: dict | None = None):
         self.name = name
         self.conf = conf or {}
@@ -109,11 +122,54 @@ class AbsBaseConfig(BaseConfigMixin):
             return False
 
     def dump(self, full: bool = False) -> str:
+        unused(full)
         result = dump_object(self.conf)
         return result
 
 
-class ErrAbsConfig(AbsBaseConfig, BaseConfigMixin):
+class BaseConfigWrapper[T: BaseConfigEx](BaseConfigImpl):
+    def __init__(self, name: str, inner: T):
+        super().__init__(name)
+        self.inner = inner
+
+    def db_config(self, db_name: str) -> dict:
+        return self.inner.db_config(db_name)
+
+    def data(self) -> dict:
+        return self.inner.data()
+
+    def get_value(self, key: str) -> Any:
+        return self.inner.get_value(key)
+
+    def has_value(self, key: str) -> bool:
+        return self.inner.has_value(key)
+
+    def dump_value(self, key: str) -> str:
+        return self.inner.dump_value(key)
+
+    def get_int(self, key: str, defValue: int = 0) -> int:
+        return self.inner.get_int(key, defValue)
+
+    def get_bool(self, key: str, defValue: bool = False) -> bool:
+        return self.inner.get_bool(key, defValue)
+
+    def get_float(self, key: str, defValue: float = 0.0) -> float:
+        return self.inner.get_float(key, defValue)
+
+    def get_str(self, key: str, defValue: str = "") -> str:
+        return self.inner.get_str(key, defValue)
+
+    def dump_object(self, obj: Any) -> str:
+        return self.inner.dump_object(obj)
+
+    def dump_object_uri(self, uri: str) -> str:
+        return self.inner.dump_object_uri(uri)
+
+    def dump(self, full: bool = False) -> str:
+        return self.inner.dump(full)
+
+
+class ErrAbsConfig(BaseConfigImpl, BaseConfigMixin):
     cfg_type = BaseConfigConsts.CFG_TYPE_ERROR
 
     def __init__(self, name: str, ex: Exception):

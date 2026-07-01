@@ -74,3 +74,13 @@ class BaseConfig(ABC):
     @abstractmethod
     def dump(self, full: bool = False) -> str:
         pass
+
+
+class BaseConfigEx(BaseConfig):
+    @abstractmethod
+    def data(self) -> dict:
+        pass
+
+    @abstractmethod
+    def db_config(self, db_name: str) -> dict:
+        pass

@@ -44,10 +44,7 @@ class AppConfig(vce_base.BaseConfig):
         pass
 
 
-class AppConfigEx(AppConfig):
-    def __init__(self, name: str):
-        super().__init__(name)
-
+class AppConfigEx(AppConfig, vce_base.BaseConfigEx):
     @abstractmethod
     def db_config(self, db_name: str) -> dict:
         pass

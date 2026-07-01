@@ -1,13 +1,18 @@
 from dve.config.conf.db import DbConfig
 from dve.config.conf import AppConfigEx
 
+import vce.config.conf.base.base_config as vce_base
 import vce.config.conf.db as vce_conf_db
 
 
-class DbConfigImpl(DbConfig):
-    def __init__(self, name: str, inner: vce_conf_db.DbConfig):
-        super().__init__(name)
-        self.inner = inner
+class DbConfigBase(vce_base.BaseConfigWrapper[vce_conf_db.DbConfigEx]):
+    def __init__(self, name: str, inner: vce_conf_db.DbConfigEx):
+        super().__init__(name, inner)
+
+
+class DbConfigImpl(DbConfigBase, DbConfig):
+    def __init__(self, name: str, inner: vce_conf_db.DbConfigEx):
+        super().__init__(name, inner)
 
     def uri(self) -> str:
         return self.inner.uri()
@@ -17,7 +22,8 @@ class DbConfigImpl(DbConfig):
 
     @classmethod
     def create(cls, name: str, inner: vce_conf_db.DbConfig) -> DbConfig:
-        result = DbConfigImpl(name, inner)
+        inner_ex = inner.as_ex()
+        result = DbConfigImpl(name, inner_ex)
         return result
 
 

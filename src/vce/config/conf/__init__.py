@@ -1,6 +1,7 @@
 from abc import abstractmethod
+from typing import cast
 
-from vce.config.conf.base import BaseConfig
+from vce.config.conf.base import BaseConfig, BaseConfigEx
 from vce.config.conf.local import ProjectConfig, get_local_config
 from vce.config.conf.db import DbConfig
 from vce.config.data import cfd
@@ -43,14 +44,15 @@ class AppConfig(BaseConfig):
     def db(self, db_name: str) -> DbConfig:
         pass
 
+    def as_ex(self) -> "AppConfigEx":
+        result = cast("AppConfigEx", self)
+        return result
+
+
+class AppConfigEx(AppConfig, BaseConfigEx):
     @abstractmethod
     def data(self) -> dict:
         pass
-
-
-class AppConfigEx(AppConfig):
-    def __init__(self, name: str):
-        super().__init__(name)
 
     @abstractmethod
     def db_config(self, db_name: str) -> dict:

@@ -2,7 +2,7 @@ from typing import Any
 
 from vce.config.conf.db import DbConfig
 from vce.config.conf import AppConfigEx
-from vce.config.conf.base.base_config import BaseConfigMixin
+from vce.config.conf.base.base_config import BaseConfigImpl
 
 DB_TYPE_GENERIC = "generic"
 DB_TYPE_SQLITE = "sqlite"
@@ -17,12 +17,12 @@ DB_REG_CLASSES = {
 }
 
 
-class AbsDbConfig(DbConfig, BaseConfigMixin):
+class AbsDbConfig(BaseConfigImpl, DbConfig):
     def __init__(self, name: str, config: dict):
         super().__init__(name, config)
 
     def uri(self) -> str:
-        cfg = self.config
+        cfg = self.conf
         if "uri" not in cfg:
             raise ValueError(f"alias not found for db source: {self.name}")
         uri = str(cfg["uri"])
@@ -30,7 +30,7 @@ class AbsDbConfig(DbConfig, BaseConfigMixin):
         return result
 
     def get_value(self, key: str, default_value: Any = None) -> Any:
-        cfg = self.config
+        cfg = self.conf
         result = cfg.get(key, default_value)
         return result
 
@@ -43,7 +43,7 @@ class AbsDbConfig(DbConfig, BaseConfigMixin):
 
     def dump(self, full: bool = False) -> str:
         if full:
-            result = self.dump_object(self.config)
+            result = self.dump_object(self.conf)
             return result
         else:
             uri = self.uri()

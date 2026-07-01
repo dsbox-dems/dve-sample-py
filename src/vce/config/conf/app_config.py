@@ -1,22 +1,18 @@
 import os.path
-from typing import Any, override
+from typing import Any, cast, override
 from piny import YamlLoader
 
-from vce.config.conf.base.base_config import BaseConfigMixin, BaseConfigStore
+from vce.config.conf.base.base_config import BaseConfigImpl, BaseConfigStore
 from vce.config.conf.db import DbConfig
 from vce.config.conf import AppConfigConsts, AppConfigEx
-from vce.common.util.format import dump_object
 
 
-class AbsAppConfig(AppConfigEx, BaseConfigMixin):
-    def __init__(self, name: str, conf: dict):
-        super().__init__(name)
-        self.conf = conf
-        self.path_separator = AppConfigConsts.CONFIG_C_PATH_SEP
-
-    def db_config(self, db_name: str) -> dict:
-        result = self.conf["data"]["db"][db_name]
-        return result
+class AbsAppConfig(
+    BaseConfigImpl,
+    AppConfigEx,
+):
+    def __init__(self, name: str, conf: dict | None = None):
+        super().__init__(name, conf)
 
     def db(self, db_name: str) -> DbConfig:
         # ruff: noqa: PLC0415
@@ -25,48 +21,18 @@ class AbsAppConfig(AppConfigEx, BaseConfigMixin):
         result = DbConfigFactory.get_instance(self, db_name)
         return result
 
-    def data(self) -> dict:
-        return self.conf
-
-    def key_path(self, key: str) -> list:
-        result = key.split(self.path_separator)
-        return result
-
-    def get_value(self, key: str) -> Any:
-        keys = self.key_path(key)
-        cfg = self.conf
-        ks = []
-        for k in keys:
-            try:
-                ks.append(k)
-                cfg = cfg[k]
-            except KeyError as ex:
-                msg = f"config key not found: {ks} in key: {key}"
-                raise ValueError(msg) from ex
-        return cfg
-
-    def has_value(self, key: str) -> bool:
-        try:
-            self.get_value(key)
-            return True
-        except ValueError:
-            return False
-
-    def dump(self, full: bool = False) -> str:
-        result = dump_object(self.conf)
-        return result
-
 
 class YamlAppConfig(AbsAppConfig):
     cfg_type = AppConfigConsts.CFG_TYPE_YAML
 
-    def __init__(self, name: str, conf: Any):
+    def __init__(self, name: str, conf: dict | None = None):
         super().__init__(name, conf)
 
     @classmethod
     def create(cls, name: str, config_path: str) -> AbsAppConfig:
         try:
-            conf = YamlLoader(path=config_path).load()
+            raw_conf = YamlLoader(path=config_path).load()
+            conf = cast("dict[str, Any]", raw_conf)
             result = YamlAppConfig(name, conf)
             return result
         except Exception as ex:
