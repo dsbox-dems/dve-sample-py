@@ -8,30 +8,13 @@ from vce.config.data import cfd
 
 
 class AppConfigConsts(object):
-    CONFIG_F_ROOT = cfd().DATA_WORK
-    CONFIG_F_MAIN = "./config.yaml"
-
-    CONFIG_S_MAIN = "main"
-    CONFIG_S_DEFAULT = CONFIG_S_MAIN
-
-    CONFIG_C_PATH_SEP = "/"
-
-    CONFIG_L_PROJECT_FILE = "pyproject.toml"
-    CONFIG_L_SECTION_PARENT = "tool"
+    CONFIG_S_DEFAULT = "main"
     CONFIG_L_SECTION_NAME = "local"
-    CONFIG_L_ENV_PREFIX = "X_RUN_"
-    CONFIG_L_KEY_CONFIG = "config"
-    CONFIG_L_DEF_CONFIG = "config.yaml"
-    CONFIG_L_KEY_HAS_CONFIG = "has_config"
-    CONFIG_L_DEF_HAS_CONFIG = True
 
     CFG_TYPE_GENERIC = "generic"
     CFG_TYPE_YAML = "yaml"
-    CFG_TYPE_ERROR = "error"
 
-    DB_S_DEMO = "demo"
-    DB_S_DATA = "data"
-    DB_S_DEFAULT = DB_S_DATA
+    DB_S_DEFAULT = "data"
 
 
 class AppConfig(BaseConfig):

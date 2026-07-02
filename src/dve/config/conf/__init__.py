@@ -8,20 +8,11 @@ import vce.config.conf.db as vce_conf_db
 
 
 class AppConfigConsts(object):
-    CONFIG_F_ROOT = vce_conf.AppConfigConsts.CONFIG_F_ROOT
-    CONFIG_F_MAIN = vce_conf.AppConfigConsts.CONFIG_F_MAIN
-
-    CONFIG_S_MAIN = vce_conf.AppConfigConsts.CONFIG_S_MAIN
     CONFIG_S_DEFAULT = vce_conf.AppConfigConsts.CONFIG_S_DEFAULT
-
-    CONFIG_C_PATH_SEP = vce_conf.AppConfigConsts.CONFIG_C_PATH_SEP
 
     CFG_TYPE_GENERIC = vce_conf.AppConfigConsts.CFG_TYPE_GENERIC
     CFG_TYPE_YAML = vce_conf.AppConfigConsts.CFG_TYPE_YAML
-    CFG_TYPE_ERROR = vce_conf.AppConfigConsts.CFG_TYPE_ERROR
 
-    DB_S_DEMO = vce_conf.AppConfigConsts.DB_S_DEMO
-    DB_S_DATA = vce_conf.AppConfigConsts.DB_S_DATA
     DB_S_DEFAULT = vce_conf.AppConfigConsts.DB_S_DEFAULT
 
     DMY_B_BASE = "test"
