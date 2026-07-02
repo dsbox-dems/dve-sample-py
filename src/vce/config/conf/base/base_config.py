@@ -208,16 +208,11 @@ class BaseConfigStore[T: BaseConfig]:
             result = handle["data"]
             return result
 
-        handle = {
-            "what": what,
-            "loaded": True,
-            "failed": False,
-            "error": None,
-            "data": None,
-        }
+        handle = {"what": what, "loaded": True, "failed": False}
         self._config[what] = handle
         try:
             handle["data"] = self.load_config(what)
+            handle["error"] = None
 
         except Exception as ex:
             handle["failed"] = True
