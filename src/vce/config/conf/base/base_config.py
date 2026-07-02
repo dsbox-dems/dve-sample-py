@@ -3,6 +3,7 @@ from typing import Any
 from abc import abstractmethod
 
 from vce.config.conf.base import BaseConfig, BaseConfigEx, BaseConfigConsts
+
 from vce.common.util.format import dump_object, dump_object_uri
 from vce.common.util.lint import unused
 
@@ -181,6 +182,10 @@ class BaseConfigStore[T: BaseConfig]:
     def __init__(self, config_class: type[BaseConfig]):
         self._config_class = config_class
         self._config = {}
+
+    @classmethod
+    def is_config_defined(cls, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> bool:
+        return True
 
     @classmethod
     def config_name(cls, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> str:

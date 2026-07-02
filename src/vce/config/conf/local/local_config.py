@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import Any, Self, cast
 import toml
 
-from vce.config.conf.base.base_config import BaseConfigImpl
-from vce.config.conf.local import LocalConfigConsts, ProjectConfig
+from vce.config.conf.base import BaseConfig, BaseConfigConsts
+from vce.config.conf.base.base_config import BaseConfigImpl, BaseConfigStore
+from vce.config.conf.local import LocalConfigConsts, ProjectConfig, get_local_config
 from vce.common.util.file import find_file_upwards
 from vce.common.util.format import dump_object
 
@@ -170,3 +171,37 @@ class ProjectConfigStore(object):
 
 class ProjectConfigStoreGlobals(object):
     store = ProjectConfigStore()
+
+
+class LocalConfigStore[T: BaseConfig](BaseConfigStore[T]):
+    def __init__(self, config_class: type[BaseConfig]):
+        self._config_class = config_class
+        self._config = {}
+
+    @classmethod
+    def is_config_defined(cls, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> bool:
+        loc: ProjectConfig = get_local_config()
+        result = loc.is_config_defined
+        return result
+
+    @classmethod
+    def config_name(cls, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> str:
+        loc: ProjectConfig = get_local_config()
+
+        result = None
+        if what == BaseConfigConsts.CONFIG_S_MAIN:
+            result = loc.config_path.name
+        if result is None:
+            raise ValueError(f'Config Name unknown: "{what}", cannot load')
+        return result
+
+    @classmethod
+    def config_path(cls, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> str:
+        loc: ProjectConfig = get_local_config()
+
+        result = None
+        if what == BaseConfigConsts.CONFIG_S_MAIN:
+            result = loc.config_path.as_posix()
+        if result is None:
+            raise ValueError(f'Config Path unknown: "{what}", cannot load')
+        return result

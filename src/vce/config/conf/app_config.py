@@ -3,9 +3,10 @@ import os.path
 from typing import Any, cast, override, TYPE_CHECKING
 from piny import YamlLoader
 
-from vce.config.conf.base.base_config import BaseConfigImpl, BaseConfigStore
+from vce.config.conf.base.base_config import BaseConfigImpl
 from vce.config.conf import AppConfigConsts, AppConfigEx
-from vce.config.conf import ProjectConfig, get_local_config
+from vce.config.conf.local import ProjectConfig, get_local_config
+from vce.config.conf.local.local_config import LocalConfigStore
 
 if TYPE_CHECKING:
     from vce.config.conf.db import DbConfig
@@ -59,7 +60,7 @@ class YamlAppConfig(AbsAppConfig):
             raise ex
 
 
-class AppConfigStore(BaseConfigStore[YamlAppConfig]):
+class AppConfigStore(LocalConfigStore[YamlAppConfig]):
     def __init__(self):
         super().__init__(YamlAppConfig)
 
