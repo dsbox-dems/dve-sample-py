@@ -183,12 +183,10 @@ class BaseConfigStore[T: BaseConfig]:
         self._config_class = config_class
         self._config = {}
 
-    @classmethod
-    def is_config_defined(cls, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> bool:
+    def is_config_defined(self, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> bool:
         return True
 
-    @classmethod
-    def config_name(cls, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> str:
+    def config_name(self, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> str:
         result = None
         if what == BaseConfigConsts.CONFIG_S_MAIN:
             result = BaseConfigConsts.CONFIG_F_MAIN
@@ -196,9 +194,8 @@ class BaseConfigStore[T: BaseConfig]:
             raise ValueError(f'Config Name unknown: "{what}", cannot load')
         return result
 
-    @classmethod
-    def config_path(cls, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> str:
-        name = cls.config_name(what)
+    def config_path(self, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> str:
+        name = self.config_name(what)
         fn = os.path.join(BaseConfigConsts.CONFIG_F_ROOT, name)
         result = os.path.normpath(fn)
         return result

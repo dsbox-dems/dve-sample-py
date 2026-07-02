@@ -178,14 +178,15 @@ class LocalConfigStore[T: BaseConfig](BaseConfigStore[T]):
         self._config_class = config_class
         self._config = {}
 
-    @classmethod
-    def is_config_defined(cls, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> bool:
+    def is_config_defined(self, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> bool:
         loc: ProjectConfig = get_local_config()
-        result = loc.is_config_defined
+        if what == BaseConfigConsts.CONFIG_S_MAIN:
+            result = loc.is_config_defined
+        else:
+            result = False
         return result
 
-    @classmethod
-    def config_name(cls, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> str:
+    def config_name(self, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> str:
         loc: ProjectConfig = get_local_config()
 
         result = None
@@ -195,8 +196,7 @@ class LocalConfigStore[T: BaseConfig](BaseConfigStore[T]):
             raise ValueError(f'Config Name unknown: "{what}", cannot load')
         return result
 
-    @classmethod
-    def config_path(cls, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> str:
+    def config_path(self, what=BaseConfigConsts.CONFIG_S_DEFAULT) -> str:
         loc: ProjectConfig = get_local_config()
 
         result = None

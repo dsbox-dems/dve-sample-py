@@ -66,11 +66,14 @@ class AppConfigStore(LocalConfigStore[YamlAppConfig]):
 
     @override
     def load_config(self, what=AppConfigConsts.CONFIG_S_DEFAULT) -> YamlAppConfig:
-        config_path = self.config_path(what)
-        if not os.path.exists(config_path):
-            raise ValueError(f"Config Name {what} file not found: {config_path}")
         try:
-            result = YamlAppConfig.create(what, config_path)
+            if self.is_config_defined(what):
+                config_path = self.config_path(what)
+                if not os.path.exists(config_path):
+                    raise ValueError(f"Config Name {what} file not found: {config_path}")
+                result = YamlAppConfig.create(what, config_path)
+            else:
+                result = YamlAppConfig.create_empty(what)
             return result
         except Exception as ex:
             print(type(ex))
