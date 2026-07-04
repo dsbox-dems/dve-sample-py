@@ -4,7 +4,6 @@ from typing import cast
 from vce.config.conf.base import BaseConfig, BaseConfigEx
 from vce.config.conf.local import ProjectConfig, get_local_config
 from vce.config.conf.db import DbConfig
-from vce.config.data import cfd
 
 
 class AppConfigConsts(object):

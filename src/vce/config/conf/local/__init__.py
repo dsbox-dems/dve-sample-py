@@ -3,7 +3,6 @@ from typing import Any
 from abc import abstractmethod
 
 from vce.config.conf.base import BaseConfig
-from vce.config.data import cfd
 
 
 class LocalConfigConsts(object):
