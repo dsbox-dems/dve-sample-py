@@ -6,15 +6,6 @@
 [build-system]
 requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
-##@(uv): requires = ["hatchling>=1.21"]
-##@(uv): build-backend = "hatchling.build"
-##@(poetry): requires = [
-##@(poetry):    "poetry-core>=2.0",
-##@(poetry):    "setuptools",
-##@(poetry):    "wheel",
-##@(poetry):    "incremental",
-##@(poetry):]
-##@(poetry):build-backend = "poetry.core.masonry.api"
 
 # ============================================================
 # Project metadata (PEP 621)
@@ -28,9 +19,11 @@ readme = "README.md"
 #     {file = "LICENSE"},
 #     {file = "LICENSE.md"},
 # ]
-requires-python = ">=3.10,<3.15"
+requires-python = ">=3.14,<3.15"
 
-authors = [{ name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" }]
+authors = [
+  { name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" },
+]
 
 # }}} //
 # {{{ ////////////////////////////////////////////////////////////////
@@ -41,7 +34,6 @@ authors = [{ name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it"
 # ============================================================
 dependencies = [
 
-  # --- ML frameworks ---
   # --- ML frameworks ---
   # Index source: controlled by [[tool.uv.index]] name = "torch-gpu".
   # In GPU environments (dev / test / prod) the index resolves to:
@@ -112,6 +104,7 @@ dependencies = [
   "oauthlib",
   "requests-oauthlib",
   "urllib3",
+  "aiohttp",
   "pyzmq",
 
   "pyyaml",
@@ -120,6 +113,7 @@ dependencies = [
   "types-toml",
   "piny",
   "click",
+  "pydantic",
   "pathspec",
 
   "icecream",
@@ -172,17 +166,12 @@ hello = "dve.scripts.dummy.dummy_hello:main"
 agents = [
 
   # --- skills ---
-  "aiohttp",
-  "anthropic",
-  "graphifyy",
-  "hypothesis",
-  "line-profiler",
-  "memory-profiler",
-  "openai",
-  "pydantic",
-  "scikit-learn",
-  "sentence-transformers",
-  
+  # "anthropic",
+  # "openai",
+  # "graphifyy",
+  # "scikit-learn",
+  # "sentence-transformers",
+
 ]
 
 jupyter = [
@@ -215,7 +204,7 @@ jupyter = [
   "ipython-bg",
 
   # --- marimo ---
-  
+
   "marimo",
 ]
 
@@ -224,14 +213,28 @@ dev = [
   # --- test ---
   "pytest",
   "pytest-cov",
+  "hypothesis",
   "behave",
   "mock",
   "nose",
 
+  # --- profile ---
+  "line-profiler",
+  "memory-profiler",
+
+  # --- profile ---
+  "line-profiler",
+  "memory-profiler",
+
   # --- edit ---
   "pyright",
   "basedpyright",
-  # "tree-sitter",
+  "tree-sitter",
+  "semgrep",
+  "mypy",
+
+  # --- debug ---
+  "debugpy",
 
   # --- lint ---
   "ruff",
@@ -243,10 +246,12 @@ dev = [
   # "sphinx-autoapi",
   # "sphinx-rtd-theme",
 
+  # --- data ---
+  "csvkit",
+
   # --- misc ---
   "colorama",
-  "py",
-  "mypy",
+  #"py",
 
   # --- packaging ---
   "setuptools",
@@ -269,7 +274,6 @@ dev = [
 # Treat this directory as an installable package
 package = true
 
-
 [tool.uv.sources]
 # Both packages resolved from the "torch-gpu" named index.
 # Override in CI with: UV_INDEX_TORCH_GPU=https://download.pytorch.org/whl/cpu
@@ -280,7 +284,6 @@ torchvision = { index = "torch-gpu" }
 ### # For CI: Force CPU-only
 ### UV_INDEX_TORCH_GPU = { value = "https://download.pytorch.org/whl/cpu", if = "'CI' in os.environ" }
 ### UV_EXTRA_INDEX_URL = { value = "https://download.pytorch.org/whl/cpu", if = "'CI' in os.environ" }
-
 
 
 [[tool.uv.index]]
@@ -302,24 +305,24 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel]
 packages = ["src/dve", "src/vce"]
 
-# --- [poetry] ---------------------------------------------------
+# # --- [poetry] ---------------------------------------------------
 
-[tool.poetry]
-requires-poetry = ">=2.0"
-packages = [{ include = "*", from = "src" }]
+# [tool.poetry]
+# requires-poetry = ">=2.0"
+# packages = [{ include = "*", from = "src" }]
 
-[[tool.poetry.source]]
-name = "torch130"
-url = "https://download.pytorch.org/whl/cu130"
-priority = "explicit"
+# [[tool.poetry.source]]
+# name = "torch130"
+# url = "https://download.pytorch.org/whl/cu130"
+# priority = "explicit"
 
-[tool.poetry.dependencies]
-torch = { source = "torch130" }
-torchvision = { source = "torch130" }
+# [tool.poetry.dependencies]
+# torch = { source = "torch130" }
+# torchvision = { source = "torch130" }
 
-[tool.poetry.dependencies.rootpath]
-git = "https://github.com/hute37/python-rootpath"
-branch = "stable"
+# [tool.poetry.dependencies.rootpath]
+# git = "https://github.com/hute37/python-rootpath"
+# branch = "stable"
 
 
 # --- [setuptools] ---------------------------------------------------
@@ -345,6 +348,8 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
 
+log_cli = true
+log_cli_level = "DEBUG"
 
 # --- [mypy] ---------------------------------------------------
 
@@ -378,18 +383,20 @@ exclude = [
 ignore = ["build"]
 defineConstant = { DEBUG = true }
 typeCheckingMode = "basic"
+#typeCheckingMode = "strict"
 reportMissingImports = true
-
+#reportMissingTypeStubs = true
 
 # --- [ruff] ---------------------------------------------------
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py312"
 fix = true
 
 [tool.ruff.lint]
 unfixable = []
+#ignore-init-module-imports = false
 typing-modules = ["pandas._typing"]
 exclude = [
   "notebooks/@databricks/*",

@@ -1,33 +1,26 @@
-import re
-import json
-from typing import Any
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from dve.config.conf.db import DbConfig
 
 import vce.config.conf as vce_conf
+import vce.config.conf.base as vce_base
 import vce.config.conf.db as vce_conf_db
 
 
 class AppConfigConsts(object):
-    CONFIG_F_ROOT = vce_conf.AppConfigConsts.CONFIG_F_ROOT
-    CONFIG_F_MAIN = vce_conf.AppConfigConsts.CONFIG_F_MAIN
-
-    CONFIG_S_MAIN = vce_conf.AppConfigConsts.CONFIG_S_MAIN
     CONFIG_S_DEFAULT = vce_conf.AppConfigConsts.CONFIG_S_DEFAULT
-
-    CONFIG_C_PATH_SEP = vce_conf.AppConfigConsts.CONFIG_C_PATH_SEP
 
     CFG_TYPE_GENERIC = vce_conf.AppConfigConsts.CFG_TYPE_GENERIC
     CFG_TYPE_YAML = vce_conf.AppConfigConsts.CFG_TYPE_YAML
-    CFG_TYPE_ERROR = vce_conf.AppConfigConsts.CFG_TYPE_ERROR
 
-    DB_S_DEMO = vce_conf.AppConfigConsts.DB_S_DEMO
-    DB_S_DATA = vce_conf.AppConfigConsts.DB_S_DATA
     DB_S_DEFAULT = vce_conf.AppConfigConsts.DB_S_DEFAULT
 
+    DMY_B_BASE = "test"
+    DMY_B_DUMMY_SCRIPT = DMY_B_BASE + "/" + "dummy_script"
+    DMY_C_DUMMY_SCRIPT_FILENAME = "filename"
 
-class AppConfig(ABC):
+
+class AppConfig(vce_base.BaseConfig):
     cfg_type = AppConfigConsts.CFG_TYPE_GENERIC
 
     def __init__(self, name: str):
@@ -41,49 +34,8 @@ class AppConfig(ABC):
     def data(self) -> dict:
         pass
 
-    @abstractmethod
-    def get_value(self, key: str) -> Any:
-        pass
 
-    @abstractmethod
-    def has_value(self, key: str) -> bool:
-        pass
-
-    @abstractmethod
-    def dump_value(self, key: str) -> str:
-        pass
-
-    @abstractmethod
-    def get_bool(self, key: str, defValue: bool = False) -> bool:
-        pass
-
-    @abstractmethod
-    def get_int(self, key: str, defValue: int = 0) -> int:
-        pass
-
-    @abstractmethod
-    def get_float(self, key: str, defValue: float = 0.0) -> float:
-        pass
-
-    @abstractmethod
-    def get_str(self, key: str, defValue: str = "") -> str:
-        pass
-
-    @abstractmethod
-    def dump(self) -> str:
-        pass
-
-    @staticmethod
-    def dump_object(obj: Any) -> str:
-        msg = json.dumps(obj, indent=4, sort_keys=False, default=str)
-        result = re.sub('"password": *"[^"]*",', '"password": "***"', msg)
-        return result
-
-
-class AppConfigEx(AppConfig):
-    def __init__(self, name: str):
-        super().__init__(name)
-
+class AppConfigEx(AppConfig, vce_base.BaseConfigEx):
     @abstractmethod
     def db_config(self, db_name: str) -> dict:
         pass
@@ -119,6 +71,20 @@ class AppConfigs(object):
         result = app_config.db(db_name)
         return result
 
+    @staticmethod
+    def local(
+        section: str = vce_conf.AppConfigConsts.CONFIG_L_SECTION_NAME,
+    ) -> vce_conf.ProjectConfig:
+        result = get_local_config(section)
+        return result
+
+
+def get_local_config(
+    section: str = vce_conf.AppConfigConsts.CONFIG_L_SECTION_NAME,
+) -> vce_conf.ProjectConfig:
+    result = vce_conf.get_local_config(section)
+    return result
+
 
 def get_config(what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
     return AppConfigs.get(what)
@@ -126,3 +92,11 @@ def get_config(what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
 
 def db_config(db_name=AppConfigConsts.DB_S_DEFAULT) -> DbConfig:
     return AppConfigs.db(db_name)
+
+
+def cfg(what=AppConfigConsts.CONFIG_S_DEFAULT) -> AppConfig:
+    return get_config(what)
+
+
+def cdb(db_name=AppConfigConsts.DB_S_DEFAULT) -> DbConfig:
+    return db_config(db_name)

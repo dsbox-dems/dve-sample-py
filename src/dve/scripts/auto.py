@@ -51,7 +51,7 @@ def exec_spec(argv, xargs, name, spec: sp.JobSpec, **kwargs):
 
 def auto_dispatch(argv, xargs, name, **kwargs):
     spec = JOB_SPECS.get_job_spec(name)
-    exec_spec(argv, xargs, name, spec, **kwargs)
+    return exec_spec(argv, xargs, name, spec, **kwargs)
 
 
 def auto_exec(argv, xargs, name, **kwargs):
