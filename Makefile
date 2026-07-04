@@ -28,6 +28,16 @@ TESTS := 'tests'
 IMG_MAKE_DIR ?= 'docker/r-images'
 
 
+# ---(project.conf)----------------------------------------
+
+X_BLD_R ?= 0
+X_BLD_R_MAN_KNITR ?= 0
+
+X_BLD_P ?= 0
+X_BLD_P_MAN_SPHINIX ?= 0
+
+
+
 # ---(DOCS)------------------------------------------------
 
 DOC_MAKE_DIR ?= 'doc'
@@ -43,11 +53,13 @@ CLEAN_DIRS = ${TEMP_DIR}
 
 # ---(progs)------------------------------------------------
 
-SHELL := /bin/bash
-RSCRIPT := Rscript
-#POETRY := poetry
 POETRY := $(shell command -v poetry 2> /dev/null)
-PY_RUN := ${POETRY} run
+UV := $(shell command -v uv 2> /dev/null)
+PY_RUN := ${UV} run
+
+SHELL := /bin/bash
+RSCRIPT := ${PY_RUN} Rscript
+#POETRY := poetry
 
 
 #}}} \\\
@@ -62,25 +74,23 @@ PY_RUN := ${POETRY} run
 all: # @HELP/base make: "init,check,test,docs,build"  targets
 all: init check test docs build
 
-start: # @HELP/base runs: `poetry run ./start.sh`
+start: # @HELP/base runs: `uv run ./start.sh`
 start:
-	${POETRY} 'run' './start.sh' 
+	${PY_RUN}  './start.sh' 
 
 
 
 test: # @HELP/base runs: `devtools::test()`
 test: init
-	${POETRY} run 'pytest' || true
+	${PY_RUN}  'pytest' || true
 	${RSCRIPT} -e 'devtools::test()'
 
 
-check: # @HELP/base runs: mypy, pflake8, pylint
+check: # @HELP/base runs: ruff check
 check: init
 	@echo "+++ {{{ CHECK /////////";
-	@echo "+++ Running Poetry Check..."; $(POETRY) check || true
-	@echo "+++ Running Mypy..."; $(POETRY) run mypy $(SRC) $(TESTS) || true
-	@echo "+++ Running Flake8..."; $(POETRY) run pflake8  || true # This is not a typo
-	@echo "+++ Running Pylint..."; $(POETRY) run pylint $(SRC) || true
+	@echo "+++ Running UV sync......"; $(UV) sync || true
+	@echo "+++ Running Ruff check..."; $(UV) run ruff check || true
 	@echo "+++ }}} CHECK \\\\\\\\\ ";
 
 docs: # @HELP/base make: "man,readme,vignettes"  targets
@@ -101,12 +111,29 @@ readme: README.rst
 
 format: # @HELP/baseformat code with black
 format: 
-	${POETRY} run black $(SRC) $(TESTS)
+	${UV} run ruff format
 
 
-build: # @HELP/base runs: `devtools::build()`
-build: 
-	${POETRY} build
+build-p: # @HELP/base runs: `uv build`
+build-p: 
+	${UV} build
+
+build-r: # @HELP/base runs: `devtools::build()`
+build-r: 
+	${RSCRIPT} -e 'devtools::build()'
+
+ifeq ($(X_BLD_P),1)
+	build_p: build-p
+else
+	build_p:
+endif
+ifeq ($(X_BLD_R),1)
+	build_r: build-r
+else
+	build_r:
+endif
+build: # @HELP/base runs: build-py, build-r`
+build: build_p build_r
 
 install: # @HELP/base runs: `devtools::install()`
 install:
@@ -118,15 +145,15 @@ uninstall:
 
 status: # @HELP/base runs: `poetry show` and `renv::diagnostics()`
 status:
-	${POETRY} 'show'
+	${UV} 'pip' 'list'
 	${RSCRIPT} -e 'renv::diagnostics()'
 
 clean: # @HELP/base clean all files in .gitignore
 	@echo "+++ {{{ CLEAN /////////";
-	@echo "+++ Running  py3clean..."; $(POETRY) run py3clean -v $(SRC) $(TESTS) || true
-	@echo "+++ Cleaning pytest cache..."; [ -d .pytest_cache ] && rm -rf .pytest_cache || true
+	@echo "+++ Running  uv cache clean....."; $(UV) cache clean || true
+	@echo "+++ Cleaning pytest cache......."; [ -d .pytest_cache ] && rm -rf .pytest_cache || true
 	@echo "+++ NOT Cleaning build, dist ..."; echo "rm -rf ./build ./dist"  || true
-	@echo "+++ NOT Running git clean ..."; echo "git clean -Xdf"  || true
+	@echo "+++ NOT Running git clean ......"; echo "git clean -Xdf"  || true
 	@echo "+++ }}} CLEAN \\\\\\\\\ ";
 
 init: # @HELP/base initialize local (temp,logs) directories
@@ -230,7 +257,8 @@ build-validate:
 .PHONY: runtime-test runtime-check runtime-status
 .PHONY: runtime-environ runtime-profile
 .PHONY: runtime-build
-.PHONY: runtime-rstudio runtime-lab runtime-notebook runtime-code
+.PHONY: rruntime-dev runtime-code runtime-cursor runtime-antigravity
+.PHONY: runtime-rstudio runtime-lab runtime-notebook
 .PHONY: runtime-command runtime-term runtime-xterm runtime-help
 
 runtime-repl: # @HELP/runtime ...
@@ -321,8 +349,20 @@ runtime-notebook: # @HELP/runtime ...
 runtime-notebook:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
+runtime-dev: # @HELP/runtime ...
+runtime-dev:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
 runtime-code: # @HELP/runtime ...
 runtime-code:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-cursor: # @HELP/runtime ...
+runtime-cursor:
+	cd ${IMG_MAKE_DIR} && $(MAKE) $@
+
+runtime-antigravity: # @HELP/runtime ...
+runtime-antigravity:
 	cd ${IMG_MAKE_DIR} && $(MAKE) $@
 
 runtime-help: help/runtime

@@ -27,6 +27,7 @@
 *.log
 *.tlog
 /logs/
+*.log.json
 
 # ===( Data )=============================================================
 
@@ -92,6 +93,10 @@ Thumbs.db
 # ---( virtualenv )-----
 venv/
 venv
+.venv/
+.venc.cdk/
+.venv.*/
+
 
 # ---( setup )-----
 **/*.2delete
@@ -567,4 +572,15 @@ env-args.txt
 
 # }}} ---
 
+# {{{ [ CONTAINERS ] ////////////////////////////////////////////////////////
 
+# ===( Docker & Podman )=====================================================
+
+# Ignore container intermediate files and podman-specific tmp
+docker/**/*.tmp
+docker/**/*.log
+docker/build/
+docker-compose.override.yml
+.docker-cache/
+
+# }}} ---

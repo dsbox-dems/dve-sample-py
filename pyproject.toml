@@ -6,15 +6,6 @@
 [build-system]
 requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
-##@(uv): requires = ["hatchling>=1.21"]
-##@(uv): build-backend = "hatchling.build"
-##@(poetry): requires = [
-##@(poetry):    "poetry-core>=2.0",
-##@(poetry):    "setuptools",
-##@(poetry):    "wheel",
-##@(poetry):    "incremental",
-##@(poetry):]
-##@(poetry):build-backend = "poetry.core.masonry.api"
 
 # ============================================================
 # Project metadata (PEP 621)
@@ -22,16 +13,16 @@ build-backend = "hatchling.build"
 [project]
 name = "dve_sample_py"
 version = "0.1.0"
-description = "Reproducible experiments for [Paper Title]"
+description = "TODO(title): TITLE OF THE RESEARCH WORK / TITOLO DEL LAVORO DI RICERCA"
 readme = "README.md"
 # license-files = [
 #     {file = "LICENSE"},
 #     {file = "LICENSE.md"},
 # ]
-requires-python = ">=3.10,<3.15"
+requires-python = ">=3.14,<3.15"
 
 authors = [
-    {name = "Datalab DEMS", email = "datalab@unimib.it"},
+  { name = "Data Science Lab DEMS/datalab", email = "datalab@unimib.it" },
 ]
 
 # }}} //
@@ -44,13 +35,36 @@ authors = [
 dependencies = [
 
   # --- ML frameworks ---
-  # "tensorflow==2.20.*",
-  ### "tensorflow==2.21.*",
-  ### "tensorflow-datasets==4.9.*",
-  # "tensorboard",
+  # Index source: controlled by [[tool.uv.index]] name = "torch-gpu".
+  # In GPU environments (dev / test / prod) the index resolves to:
+  # https:^//download.pytorch.org/whl/cu130
+  # In CI set:
+  # UV_INDEX_TORCH_GPU=https:^//download.pytorch.org/whl/cpu
+  # to redirect to the CPU wheel server, eliminating triton and all
+  # CUDA-bundled libraries from the virtual environment  # "tensorflow==2.20.*",
 
   "torch==2.10.*",
   "torchvision==0.25.*",
+
+
+  ### # torch: full specification
+  ### # see: notes/howtos/Python-Q2-GitLab-CI-Setup.md
+  ### 
+  ### # CPU-only PyTorch for CI
+  ### "torch==2.10.*; sys_platform != 'linux' or platform_system != 'Linux'",
+  ### "torch==2.10.*+cpu; sys_platform == 'linux' and platform_system == 'Linux' and 'CI' in os.environ",
+  ### # GPU PyTorch for native/containerized
+  ### "torch==2.10.*+cu121; sys_platform == 'linux' and platform_system == 'Linux' and 'CI' not in os.environ",
+  ### 
+  ### "torchvision==0.25.*; sys_platform != 'linux' or platform_system != 'Linux'",
+  ### "torchvision==0.25.*+cpu; sys_platform == 'linux' and platform_system == 'Linux' and 'CI' in os.environ",
+  ### "torchvision==0.25.*+cu121; sys_platform == 'linux' and platform_system == 'Linux' and 'CI' not in os.environ",
+
+
+  ### "tensorflow==2.21.*",
+  ### "tensorflow-datasets==4.9.*",
+  ### "tensorboard",
+
 
   # --- data ---
   "numpy",
@@ -63,9 +77,9 @@ dependencies = [
 
   # --- sql ---
   "SQLAlchemy",
+  "psycopg2-binary",
   "mysql-connector-python",
   # "mysqlclient",
-  "psycopg2-binary",
 
   # --- stats ---
   "scipy",
@@ -90,17 +104,20 @@ dependencies = [
   "oauthlib",
   "requests-oauthlib",
   "urllib3",
+  "aiohttp",
   "pyzmq",
 
   "pyyaml",
   "types-pyyaml",
   "toml",
   "types-toml",
+  "piny",
   "click",
+  "pydantic",
   "pathspec",
 
   "icecream",
-  "radian",
+  #"radian",
   "tqdm",
 
   "pip",
@@ -128,23 +145,34 @@ gpumon = [
 
 [project.urls]
 documentation = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py/-/wikis/home"
-homepage      = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
-repository    = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
+homepage = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py"
+repository = "https://gitlab.com/ub-dems-public/ds-labs/dve-sample-py.git"
 
 # ============================================================
 # Script commands
 # ============================================================
 
 [project.scripts]
-main  = "dve.cli:main"
-demo  = "vce.cli:main"
-hello = "dve.scripts.dummy.dummy_script:main"
+main = "dve.cli:main"
+demo = "vce.cli:main"
+hello = "dve.scripts.dummy.dummy_hello:main"
 
 
 # ============================================================
 # Development dependency groups
 # ============================================================
 [dependency-groups]
+
+agents = [
+
+  # --- skills ---
+  # "anthropic",
+  # "openai",
+  # "graphifyy",
+  # "scikit-learn",
+  # "sentence-transformers",
+
+]
 
 jupyter = [
 
@@ -174,6 +202,10 @@ jupyter = [
   "ipywidgets",
   "ipython",
   "ipython-bg",
+
+  # --- marimo ---
+
+  "marimo",
 ]
 
 dev = [
@@ -181,13 +213,29 @@ dev = [
   # --- test ---
   "pytest",
   "pytest-cov",
+  "hypothesis",
   "behave",
   "mock",
   "nose",
 
+  # --- profile ---
+  "line-profiler",
+  "memory-profiler",
+
+  # --- profile ---
+  "line-profiler",
+  "memory-profiler",
+
   # --- edit ---
   "pyright",
-  
+  "basedpyright",
+  "tree-sitter",
+  "semgrep",
+  "mypy",
+
+  # --- debug ---
+  "debugpy",
+
   # --- lint ---
   "ruff",
   # "yapf",
@@ -198,16 +246,18 @@ dev = [
   # "sphinx-autoapi",
   # "sphinx-rtd-theme",
 
+  # --- data ---
+  "csvkit",
+
   # --- misc ---
   "colorama",
-  "py",
-  "mypy",
+  #"py",
 
   # --- packaging ---
   "setuptools",
   "wheel",
   "bumpversion",
-  "twine"
+  "twine",
 ]
 
 
@@ -225,39 +275,54 @@ dev = [
 package = true
 
 [tool.uv.sources]
-torch = { index = "torch130" }
-torchvision = { index = "torch130" }
+# Both packages resolved from the "torch-gpu" named index.
+# Override in CI with: UV_INDEX_TORCH_GPU=https://download.pytorch.org/whl/cpu
+torch = { index = "torch-gpu" }
+torchvision = { index = "torch-gpu" }
+
+### [tool.uv.environment]
+### # For CI: Force CPU-only
+### UV_INDEX_TORCH_GPU = { value = "https://download.pytorch.org/whl/cpu", if = "'CI' in os.environ" }
+### UV_EXTRA_INDEX_URL = { value = "https://download.pytorch.org/whl/cpu", if = "'CI' in os.environ" }
+
 
 [[tool.uv.index]]
-name = "torch130"
+# GPU default: CUDA 13.0-compiled wheels (driver ^>= 580).
+# Rename from "torch130" to "torch-gpu" so the uv env-var override reads:
+# UV_INDEX_TORCH_GPU=<url>
+name = "torch-gpu"
 url = "https://download.pytorch.org/whl/cu130"
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/*"]
+packages = ["src/dve", "src/vce"]
 
-# --- [poetry] ---------------------------------------------------
+# # --- [poetry] ---------------------------------------------------
 
-[tool.poetry]
-requires-poetry = ">=2.0"
-packages = [{ include = "*", from = "src" }]
+# [tool.poetry]
+# requires-poetry = ">=2.0"
+# packages = [{ include = "*", from = "src" }]
 
-[[tool.poetry.source]]
-name = "torch130"
-url = "https://download.pytorch.org/whl/cu130"
-priority = "explicit"
+# [[tool.poetry.source]]
+# name = "torch130"
+# url = "https://download.pytorch.org/whl/cu130"
+# priority = "explicit"
 
-[tool.poetry.dependencies]
-torch = {source = "torch130"}
-torchvision = {source = "torch130"}
+# [tool.poetry.dependencies]
+# torch = { source = "torch130" }
+# torchvision = { source = "torch130" }
 
-[tool.poetry.dependencies.rootpath]
-git = "https://github.com/hute37/python-rootpath"
-branch = "stable"
-
+# [tool.poetry.dependencies.rootpath]
+# git = "https://github.com/hute37/python-rootpath"
+# branch = "stable"
 
 
 # --- [setuptools] ---------------------------------------------------
@@ -276,14 +341,15 @@ branch = "stable"
 # --- [pytest] ---------------------------------------------------
 
 [tool.pytest.ini_options]
-pythonpath   = ["src", "tests/pytest"]
-testpaths    = ["tests/pytest"]
+pythonpath = ["src", "tests/pytest"]
+testpaths = ["tests/pytest"]
 python_files = ["test_*.py"]
-python_classes  = ["Test*"]
+python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts      = "-v --tb=short"
+addopts = "-v --tb=short"
 
-
+log_cli = true
+log_cli_level = "DEBUG"
 
 # --- [mypy] ---------------------------------------------------
 
@@ -298,43 +364,78 @@ ignore_missing_imports = true
 [tool.pyright]
 include = ["src", "tests/pytest", "notebooks"]
 exclude = [
-    "**/node_modules",
-    "**/__pycache__",
-    "docker",
-    "notes",
-    "data",
-    "logs",
-    "temp",
+  "notebooks/@databricks/*",
+  "doc/*",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
+  ".agents/*",
+  ".eggs/*.py",
+  "**/node_modules",
+  "**/__pycache__",
+  "docker",
+  "notes",
+  "data",
+  "logs",
+  "temp",
 ]
-ignore              = ["build"]
-defineConstant      = {DEBUG = true}
-typeCheckingMode    = "basic"
+ignore = ["build"]
+defineConstant = { DEBUG = true }
+typeCheckingMode = "basic"
+#typeCheckingMode = "strict"
 reportMissingImports = true
-
+#reportMissingTypeStubs = true
 
 # --- [ruff] ---------------------------------------------------
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
-fix            = true
+target-version = "py312"
+fix = true
 
 [tool.ruff.lint]
-unfixable      = []
+unfixable = []
+#ignore-init-module-imports = false
 typing-modules = ["pandas._typing"]
 exclude = [
-    "doc/sphinxext/*.py",
-    "doc/build/*.py",
-    "doc/temp/*.py",
-    ".eggs/*.py",
-    "pandas/util/version/*",
-    "pandas/io/clipboard/__init__.py",
-    "env",
+  "notebooks/@databricks/*",
+  "doc/*",
+  ".eggs/*.py",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
+  ".agents/*",
 ]
 select = [
-    "F","E","W","YTT","B","Q","T10","INT","PL","PT","PIE","PYI",
-    "TID","ISC","TCH","C4","PGH","RUF","S102","NPY002","PERF",
-    "FLY","G","FA","ICN001","SLOT","RSE",
+  "F",
+  "E",
+  "W",
+  "YTT",
+  "B",
+  "Q",
+  "T10",
+  "INT",
+  "PL",
+  "PT",
+  "PIE",
+  "PYI",
+  "TID",
+  "ISC",
+  "TCH",
+  "C4",
+  "PGH",
+  "RUF",
+  "S102",
+  "NPY002",
+  "PERF",
+  "FLY",
+  "G",
+  "FA",
+  "ICN001",
+  "SLOT",
+  "RSE",
 ]
 ignore = []
 
@@ -342,11 +443,22 @@ ignore = []
 convention = "google"
 
 [tool.ruff.lint.isort]
-combine-as-imports       = true
-split-on-trailing-commas = false
+combine-as-imports = true
+#split-on-trailing-comma  = false
+
 
 [tool.ruff.format]
 docstring-code-format = true
+exclude = [
+  "notebooks/@databricks/*",
+  "doc/*",
+  ".eggs/*.py",
+  "home/*",
+  "notes/*",
+  "renv/*",
+  ".venv/*",
+  ".agents/*",
+]
 
 # }}} //
 # {{{ ////////////////////////////////////////////////////////////////

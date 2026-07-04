@@ -8,7 +8,7 @@ import pandas as pd
 import os
 import os.path
 import sys
-from collections import namedtuple
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
@@ -19,6 +19,7 @@ from vce.cli.xargs import get_demo_argparser
 
 from vce.common.util.trace import trace_logger
 from vce.common.util.kernel import in_notebook
+from vce.common.util.lint import unused
 from vce.config.data import cfd
 
 # In[3]:
@@ -29,7 +30,7 @@ logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 trc = trace_logger("dmy")
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[4]:
 
@@ -57,7 +58,7 @@ ARGV_NOTEBOOK = ARGV_DEFAULT
 # -----
 args = None
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[5]:
 
@@ -78,7 +79,7 @@ def parse_args(argv=None, **kwargs):
     return result
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def jobid():
@@ -88,49 +89,53 @@ def jobid():
     return jobid
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[6]:
 
-Model = namedtuple("Model", ["spec", "parms"])
+
+@dataclass
+class Model:
+    spec: dict = field(default_factory=dict)
+    parms: dict = field(default_factory=dict)
+
 
 model: Optional[Model] = None
 
 
 def retrieve_model():
-    global model
-    spec = dict()
-    parms = dict()
+    spec = {}
+    parms = {}
     model = Model(spec, parms)
     return model
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[7]:
 
-DataConf = namedtuple(
-    "DataConf",
-    [
-        "dd_jobid",
-        "dd_slot",
-        "dd_slots",
-        "dd_group",
-        "dd_filename",
-        "dd_path",
-        "dd_temp",
-        "dd_part",
-        "dd_indir",
-        "dd_outdir",
-        "dd_infile",
-        "dd_outfile",
-    ],
-)
+
+@dataclass
+class DataConf:
+    dd_jobid: str
+    dd_slot: int
+    dd_slots: int
+    dd_group: str
+    dd_filename: str
+    dd_path: str
+    dd_temp: str
+    dd_part: str
+    dd_indir: str
+    dd_outdir: str
+    dd_infile: str
+    dd_outfile: str
+
 
 dd_conf: Optional[DataConf] = None
 
 
 def arg_jobid(args):
+    unused(args)
     return jobid()
 
 
@@ -143,16 +148,16 @@ def arg_filename(args):
 
 
 def arg_slotid(args):
+    unused(args)
     return 0
 
 
 def arg_slotnum(args):
+    unused(args)
     return 1
 
 
 def config_data() -> DataConf:
-    global dd_conf, args
-
     dd_jobid = arg_jobid(args)
     dd_slot = arg_slotid(args)
     dd_slots = arg_slotnum(args)
@@ -185,7 +190,7 @@ def config_data() -> DataConf:
     return dd_conf
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[7]:
 
@@ -197,7 +202,6 @@ def ensure_path(filename):
 
 
 def load_data(dd_conf: Optional[DataConf] = dd_conf):
-    global df
     assert dd_conf is not None
     dd_infile = dd_conf.dd_infile
     df = pd.read_csv(dd_infile, sep=";")
@@ -207,13 +211,16 @@ def load_data(dd_conf: Optional[DataConf] = dd_conf):
 
 # In[8]:
 
-InputData = namedtuple("InputData", ["df"])
+
+@dataclass
+class InputData:
+    df: Optional[pd.DataFrame] = None
+
 
 in_data: Optional[InputData] = None
 
 
 def prepare_data(df, model: Optional[Model] = model):
-    global in_data
     assert model is not None
     # spec = model.spec
     # parms = model.parms
@@ -224,29 +231,33 @@ def prepare_data(df, model: Optional[Model] = model):
 
 # In[9]:
 
-OutputData = namedtuple(
-    "OutputData",
-    [
-        "out",
-    ],
-)
+
+@dataclass
+class OutputData:
+    out: Optional[pd.DataFrame] = None
+
 
 out_data: Optional[OutputData] = None
 
 
 def evaluate_model(lim, in_data=in_data, model=model):
-    result = {}
+    unused(lim, in_data, model)
+    result = pd.DataFrame(
+        {
+            "float": [1.0],
+            "int": [1],
+            "datetime": [pd.Timestamp("20180310")],
+            "string": ["foo"],
+        }
+    )
     return result
 
 
-def process_data(
-    in_data=in_data, model=model, dd_conf: Optional[DataConf] = dd_conf
-) -> OutputData:
+def process_data(in_data=in_data, model=model, dd_conf: Optional[DataConf] = dd_conf) -> OutputData:
     assert dd_conf is not None
     lim = 1
     with trc:
         out = evaluate_model(lim, in_data=in_data, model=model)
-        global out_data
         out_data = OutputData(out=out)
         return out_data
 
@@ -254,9 +265,7 @@ def process_data(
 # In[10]:
 
 
-def save_data(
-    out_data: Optional[OutputData] = out_data, dd_conf: Optional[DataConf] = dd_conf
-):
+def save_data(out_data: Optional[OutputData] = out_data, dd_conf: Optional[DataConf] = dd_conf):
     assert dd_conf is not None
     assert out_data is not None
 
@@ -264,10 +273,11 @@ def save_data(
     ensure_path(dd_outfile)
 
     out = out_data.out
+    assert out is not None
     out.to_csv(dd_outfile, sep=";", index=False, encoding="utf-8-sig")
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[13]:
 
@@ -296,33 +306,30 @@ def run_worker():
     return RC
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def exec(argv, xargs, **kwargs):
-    global RC
+    unused(argv, xargs, kwargs)
     RC = run_worker()
     return RC
 
 
 @std_main(log=log, debug=True)
 def main(argv=None, **kwargs):
-    global RC, xargs
-
     print(argv)
     print(__name__ + "main:" + str(argv))
 
     argv = get_argv(argv)
 
-    log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
+    log.info(">> ### %s.main(argv=%s)", __name__, str(argv))
     xargs = parse_args(argv, **kwargs)
-    exec(argv, xargs, **kwargs)
-
-    log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
+    RC = exec(argv, xargs, **kwargs)
+    log.info("<< ### %s.main => (rc=%d)", __name__, RC)
     return RC
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[14]:
 

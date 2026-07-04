@@ -1,7 +1,7 @@
 from typing import Optional, Callable, TypeVar, Sequence
 from dataclasses import dataclass
 
-import vce.common.util.proc as proc
+from vce.common.util import proc
 import vce.common.util.environ as en
 
 
@@ -15,7 +15,7 @@ class JobName:
     ns: str
 
 
-JobNameT = TypeVar("JobNameT", bound=JobName, covariant=True)
+JobNameT_co = TypeVar("JobNameT_co", bound=JobName, covariant=True)
 
 
 @dataclass(kw_only=True)
@@ -39,7 +39,7 @@ class JobCall:
         return script_wrapper
 
 
-JobCallT = TypeVar("JobCallT", bound=JobCall, covariant=True)
+JobCallT_co = TypeVar("JobCallT_co", bound=JobCall, covariant=True)
 
 
 @dataclass(kw_only=True)
@@ -47,7 +47,7 @@ class JobParm:
     v: dict
 
 
-JobParmT = TypeVar("JobParmT", bound=JobParm, covariant=True)
+JobParmT_co = TypeVar("JobParmT_co", bound=JobParm, covariant=True)
 
 
 @dataclass(kw_only=True)
@@ -57,7 +57,7 @@ class JobSpec:
     parm: JobParm
 
 
-JobSpecT = TypeVar("JobSpecT", bound=JobSpec, covariant=True)
+JobSpecT_co = TypeVar("JobSpecT_co", bound=JobSpec, covariant=True)
 
 
 @dataclass
@@ -72,7 +72,7 @@ class JobSpecs:
                     return spec
         raise ValueError(f"Job Info not found in Specs: id={job_id}, ns={job_ns}")
 
-    def get_auto_name(self) -> str:
+    def get_auto_name(self, name: str = "") -> str:
         job_id = en.env_get(JobParmsConsts.ENV_AUTO)
         if job_id:
             return job_id
@@ -80,7 +80,7 @@ class JobSpecs:
             return self.auto
         if self.specs:
             return self.specs[0].name.id
-        raise ValueError(f"Job Specs is empty")
+        raise ValueError(f"Job Specs is empty(name={name})")
 
     def get_auto_spec(self) -> JobSpec:
         job_id = self.get_auto_name()
@@ -88,7 +88,7 @@ class JobSpecs:
         return result
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def parm(**kwargs) -> JobParm:
@@ -117,7 +117,6 @@ def get_job_specs() -> JobSpecs:
 
 
 def set_job_specs(specs: JobSpecs) -> JobSpecs:
-    global _specs
     _specs = specs
     return _specs
 

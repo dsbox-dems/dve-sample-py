@@ -3,16 +3,15 @@
 
 # In[1]:
 
-import numpy as np
 import pandas as pd
 
 import time
 import os
 import os.path
 import sys
-from collections import namedtuple
+from typing import NamedTuple
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any
 
 # In[2]:
 
@@ -21,9 +20,10 @@ from dve.cli.xargs import get_dummy_argparser
 
 from vce.common.util.trace import trace_logger
 from vce.common.util.kernel import in_notebook
+from vce.common.util.lint import unused
 
-import dve.cli.parms as sp
 
+from dve.config.conf import cfg, AppConfigConsts as CK
 from dve.config.data import cfd
 
 # In[3]:
@@ -34,11 +34,12 @@ logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 trc = trace_logger("dmy")
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[4]:
 
 RC = 0
+xargs = {}
 
 TIME_START = datetime.now()
 
@@ -62,7 +63,7 @@ ARGV_NOTEBOOK = ARGV_DEFAULT
 # -----
 args = None
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[5]:
 
@@ -77,7 +78,7 @@ def get_argv(argv: Optional[list[str]] = None) -> list[str]:
     return ARGV_DEFAULT
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def jobid():
@@ -87,49 +88,51 @@ def jobid():
     return jobid
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[6]:
 
-Model = namedtuple("Model", ["spec", "parms"])
+
+class Model(NamedTuple):
+    spec: dict
+    parms: dict
+
 
 model: Optional[Model] = None
 
 
 def retrieve_model():
-    global model
-    spec = dict()
-    parms = dict()
+    spec = {}
+    parms = {}
     model = Model(spec, parms)
     return model
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[7]:
 
-DataConf = namedtuple(
-    "DataConf",
-    [
-        "dd_jobid",
-        "dd_slot",
-        "dd_slots",
-        "dd_group",
-        "dd_filename",
-        "dd_path",
-        "dd_temp",
-        "dd_part",
-        "dd_indir",
-        "dd_outdir",
-        "dd_infile",
-        "dd_outfile",
-    ],
-)
+
+class DataConf(NamedTuple):
+    dd_jobid: str
+    dd_slot: int
+    dd_slots: int
+    dd_group: str
+    dd_filename: str
+    dd_path: str
+    dd_temp: str
+    dd_part: str
+    dd_indir: str
+    dd_outdir: str
+    dd_infile: str
+    dd_outfile: str
+
 
 dd_conf: Optional[DataConf] = None
 
 
 def arg_jobid(xargs):
+    unused(xargs)
     return jobid()
 
 
@@ -138,19 +141,28 @@ def arg_group(xargs):
 
 
 def arg_filename(xargs):
-    return xargs.filename
+    arg_filename = xargs.filename
+
+    if arg_filename is not None:
+        return arg_filename
+
+    cnf = cfg().get_value(CK.DMY_B_DUMMY_SCRIPT)
+    assert cnf is not None
+    def_filename = cnf.get(CK.DMY_C_DUMMY_SCRIPT_FILENAME, TEST_CASE_DEFAULT)
+    return def_filename
 
 
 def arg_slotid(xargs):
+    unused(xargs)
     return 0
 
 
 def arg_slotnum(xargs):
+    unused(xargs)
     return 1
 
 
 def config_data() -> DataConf:
-    global dd_conf, xargs
 
     dd_jobid = arg_jobid(xargs)
     dd_slot = arg_slotid(xargs)
@@ -184,7 +196,7 @@ def config_data() -> DataConf:
     return dd_conf
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[7]:
 
@@ -196,7 +208,6 @@ def ensure_path(filename):
 
 
 def load_data(dd_conf: Optional[DataConf] = dd_conf):
-    global df
     assert dd_conf is not None
     dd_infile = dd_conf.dd_infile
     df = pd.read_csv(dd_infile, sep=";")
@@ -206,7 +217,10 @@ def load_data(dd_conf: Optional[DataConf] = dd_conf):
 
 # In[8]:
 
-InputData = namedtuple("InputData", ["df"])
+
+class InputData(NamedTuple):
+    df: Optional[pd.DataFrame]
+
 
 in_data: Optional[InputData] = None
 
@@ -214,10 +228,9 @@ df: pd.DataFrame = pd.DataFrame(columns=["null"])
 
 
 def prepare_data(df=None, model: Optional[Model] = model):
-    global in_data
     assert model is not None
-    spec = model.spec
-    parms = model.parms
+    # spec = model.spec
+    # parms = model.parms
 
     in_data = InputData(df=df)
     return in_data
@@ -226,15 +239,14 @@ def prepare_data(df=None, model: Optional[Model] = model):
 # In[9]:
 
 
-def evaluate_model(
-    limits, in_data=in_data, model=model, dd_conf: Optional[DataConf] = dd_conf
-):
+def evaluate_model(limits, in_data=in_data, model=model, dd_conf: Optional[DataConf] = dd_conf):
+    unused(limits)
     t1 = time.time()
     assert model is not None
     assert dd_conf is not None
     assert in_data is not None
-    spec, parms = model.spec, model.parms
-    df = in_data.df
+    # spec, _parms = model.spec, model.parms
+    # df = in_data.df
     results = pd.DataFrame(
         columns=[
             "id",
@@ -251,24 +263,20 @@ def evaluate_model(
     return results
 
 
-OutputData = namedtuple(
-    "OutputData",
-    [
-        "out",
-    ],
-)
+class OutputData(NamedTuple):
+    out: Any
+
 
 out_data: Optional[OutputData] = None
 
 
-def process_data(
-    in_data=in_data, model=model, dd_conf: Optional[DataConf] = dd_conf
-) -> OutputData:
+def process_data(in_data=in_data, model=model, dd_conf: Optional[DataConf] = dd_conf) -> OutputData:
     assert dd_conf is not None
+    assert in_data is not None
+    assert in_data.df is not None
     lim = len(in_data.df)
     with trc:
         out = evaluate_model(lim, in_data=in_data, model=model)
-        global out_data
         out_data = OutputData(out=out)
         return out_data
 
@@ -276,9 +284,7 @@ def process_data(
 # In[10]:
 
 
-def save_data(
-    out_data: Optional[OutputData] = out_data, dd_conf: Optional[DataConf] = dd_conf
-):
+def save_data(out_data: Optional[OutputData] = out_data, dd_conf: Optional[DataConf] = dd_conf):
     assert dd_conf is not None
     assert out_data is not None
 
@@ -289,7 +295,7 @@ def save_data(
     out.to_csv(dd_outfile, sep=";", index=False, encoding="utf-8-sig")
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[13]:
 
@@ -318,7 +324,7 @@ def run_worker():
     return RC
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 def parse_args(argv, **kwargs):
@@ -328,30 +334,28 @@ def parse_args(argv, **kwargs):
 
 
 def exec(argv, xargs, **kwargs):
-    global RC
+    unused(argv, xargs, kwargs)
     RC = run_worker()
     return RC
 
 
 @std_main(log=log, debug=True)
 def main(argv, **kwargs):
-    global RC
-    global xargs
 
     print(argv)
     print(__name__ + "main:" + str(argv))
 
     argv = get_argv(argv)
 
-    log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
+    log.info(">> ### %s.main(argv=%s)", __name__, str(argv))
     xargs = parse_args(argv=argv, **kwargs)
     RC = exec(argv, xargs, **kwargs)
 
-    log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
+    log.info("<< ### %s.main => (rc=%d)", __name__, RC)
     return RC
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[14]:
 

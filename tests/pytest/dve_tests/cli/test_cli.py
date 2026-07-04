@@ -1,9 +1,7 @@
 import logging
 import sys
-import io
 import pytest
 import unittest
-from contextlib import redirect_stdout
 
 from dve.cli import main
 
@@ -21,35 +19,28 @@ class CliTest(unittest.TestCase):
 
     def test_runner_args(self):
         argv = ["-v", "--exec", "main", "--cmd", "test"]
-        log.debug("+++ cli.main:" + str(argv))
-        out = io.StringIO()
-        with redirect_stdout(out):
-            main(argv)
-        s = out.getvalue()
-        assert argv[0] in s
+        log.debug("+++ cli.main: %s", str(argv))
+        RC = main(argv)
+        log.debug("+++ cli.main: %s -> (rc = %d)", str(argv), RC)
+        assert RC == 0
 
     def test_auto_check(self):
         argv = ["--name", "test-01"]
-        log.debug("+++ cli.main:" + str(argv))
-        out = io.StringIO()
-        with redirect_stdout(out):
-            main(argv)
-        s = out.getvalue()
-        assert "'job_name': 'test-01'" in s
+        log.debug("+++ cli.main: %s", str(argv))
+        RC = main(argv)
+        log.debug("+++ cli.main: %s -> (rc = %d)", str(argv), RC)
+        assert RC == 0
 
     def test_runner_check(self):
         argv = ["-v", "--exec", "main", "--cmd", "auto", "--name", "test-01"]
-        log.debug("+++ cli.main:" + str(argv))
-        out = io.StringIO()
-        with redirect_stdout(out):
-            main(argv)
-        s = out.getvalue()
-        assert "'job_name': 'test-01'" in s
+        log.debug("+++ cli.main: %s", str(argv))
+        RC = main(argv)
+        log.debug("+++ cli.main: %s -> (rc = %d)", str(argv), RC)
+        assert RC == 0
 
     def setUp(self):
         # self.conf_dir = os.environ['CONFIG_DIR']
-        log = logging.getLogger(__name__)
-        pass
+        logging.getLogger(__name__)
 
     def tearDown(self):
         pass

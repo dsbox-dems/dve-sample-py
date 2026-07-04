@@ -1,0 +1,115 @@
+---
+# ---------------------------------------------------------------------------
+# Disk-budget notes
+# ---------------------------------------------------------------------------
+# GitLab SaaS shared runners carry a 20 GB working-directory quota.
+# The CUDA-bundled torch wheel + triton alone exceed this budget.
+#
+# Fix: redirect the "torch-gpu" named index to the CPU wheel server for all
+# CI jobs via UV_INDEX_TORCH_GPU.  Downstream consumers running on GPU hosts
+# omit this variable and continue to receive CUDA wheels from the cu130 index.
+#
+# Cache strategy: persist only $UV_CACHE_DIR (downloaded wheel archives).
+# Do NOT cache .venv — extracting from the wheel cache is fast (~30 s) and
+# avoids the cache-serialisation phase that itself hits the disk quota.
+# ---------------------------------------------------------------------------
+
+image: python:3.14-slim
+
+variables:
+  # --- uv installation ---
+  UV_VERSION: "latest"
+
+  # --- uv cache location (project-relative, included in GitLab cache) ---
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.cache/uv"
+
+  # --- index override: redirect "torch-gpu" to CPU wheel server in CI ---
+  # uv resolves UV_INDEX_<NAME_UPPER> where hyphens become underscores.
+  # CPU wheels do not include triton, saving ~1.5 GB per job.
+  UV_INDEX_TORCH_GPU: "https://download.pytorch.org/whl/cpu"
+
+  # --- disable progress bars (cleaner CI logs) ---
+  UV_NO_PROGRESS: "1"
+
+  # --- never use the system Python; always use uv-managed interpreter ---
+  UV_PYTHON_PREFERENCE: "only-managed"
+
+# Only the uv download cache is persisted.  .venv is intentionally excluded.
+cache:
+  key:
+    files:
+      - pyproject.toml
+      - uv.lock
+  paths:
+    - .cache/uv
+  policy: pull-push
+
+stages:
+  - lint
+  - test
+
+# ---------------------------------------------------------------------------
+# Shared setup fragment — referenced via YAML anchors
+# ---------------------------------------------------------------------------
+.install_uv: &install_uv
+  - echo "#__init__"
+  - env
+  - df -h
+  - apt-get update -qq && apt-get install -y --no-install-recommends ca-certificates curl git
+  - rm -rf /var/lib/apt/lists/*
+  - curl -LsSf https://astral.sh/uv/install.sh | sh
+  - export PATH="$HOME/.local/bin:$PATH"
+  - uv --version
+
+# ---------------------------------------------------------------------------
+# lint stage
+# ---------------------------------------------------------------------------
+
+linting:
+  stage: lint
+  before_script:
+    - *install_uv
+    # Lint jobs operate on source text only.
+    # --only-group dev  : install ruff and its peers; skip main dependencies.
+    # --no-install-project : do not install the project package itself.
+    # Result: no torch, no torchvision, no triton, minimal disk use (~150 MB).
+    - uv sync --only-group dev --no-install-project
+    - uv tree --show-sizes
+    - uv pip list
+    - du -sh .venv
+    - df -h
+  script:
+    - uv run ruff check .
+    - uv run ruff format --check .
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+typing:
+  stage: lint
+  before_script:
+    - *install_uv
+    # pyright requires all project imports to be resolvable, so main deps
+    # (including CPU torch) must be present.  UV_INDEX_TORCH_GPU redirects
+    # the cu130 index to the CPU wheel server; triton is not a dep of CPU torch.
+    - uv sync --group dev
+    - df -h
+  script:
+    - uv run pyright
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+# ---------------------------------------------------------------------------
+# test stage
+# ---------------------------------------------------------------------------
+
+testing:
+  stage: test
+  before_script:
+    - *install_uv
+    # Same sync scope as typing: main deps + dev group, CPU torch.
+    - uv sync --group dev
+    - df -h
+  script:
+    - uv run pytest -v
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'

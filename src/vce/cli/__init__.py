@@ -22,6 +22,7 @@ def exec(argv, xargs, **kwargs):
         entry = "demo"
 
     if entry == "demo":
+        # ruff: noqa: PLC0415
         import vce.demo.demo_runner as runner
 
         RC = runner.main(argv, **kwargs)

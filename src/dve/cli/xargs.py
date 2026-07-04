@@ -15,6 +15,7 @@ class AppArgsConsts(object):
     ARGS_ENV_AUTO = "X_E_AUTO"
 
 
+# ruff: noqa :B026
 class AppMainArgs(std_args.AppMainArgs):
     arg_type = AppArgsConsts.ARG_TYPE_MAIN
 
@@ -89,9 +90,7 @@ class AppTestArgs(AppAutoArgs):
 
     def test_parser(self) -> argparse.ArgumentParser:
         parser = self.auto_parser()
-        parser.add_argument(
-            "--demo-arg-1", "-1", type=str, help="demo script arg 1", default="A"
-        )
+        parser.add_argument("--demo-arg-1", "-1", type=str, help="demo script arg 1", default="A")
         return parser
 
     def get_parser(self) -> argparse.ArgumentParser:
@@ -111,9 +110,7 @@ class AppDummyArgs(AppAutoArgs):
 
     def dummy_parser(self) -> argparse.ArgumentParser:
         parser = self.auto_parser()
-        parser.add_argument(
-            "--dummy-arg-1", "-1", type=str, help="dummy script arg 1", default="A"
-        )
+        parser.add_argument("--dummy-arg-1", "-1", type=str, help="dummy script arg 1", default="A")
         return parser
 
     def get_parser(self) -> argparse.ArgumentParser:

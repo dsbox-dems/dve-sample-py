@@ -18,7 +18,7 @@ from vce.common.util.kernel import in_notebook
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[4]:
 
@@ -40,12 +40,18 @@ ARGV_NOTEBOOK = ARGV_DEFAULT
 # -----
 args = None
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[4]:
 
+TRACE = False
+
 
 def get_dummy_argparser(*argv, **kwargs) -> ArgumentParser:
+
+    if TRACE:
+        log.debug(">> ### main(argv=%s), (kvargv=%s)", str(argv), str(kwargs))
+
     parser = ArgumentParser(
         add_help=True,
         conflict_handler="resolve",
@@ -61,13 +67,13 @@ def get_dummy_argparser(*argv, **kwargs) -> ArgumentParser:
         ./runtime.sh py hello [  -s Hi -w Moon -n 5 ]
 
     NOTE:
-        
+
     - requires:
         poetry install
-        
+
     - externally:
-        ./runtime.sh sh poetry install    
-    
+        ./runtime.sh sh poetry install
+
     """,
     )
 
@@ -112,7 +118,7 @@ def get_argv(argv: list[str] | None) -> list[str]:
     return ARGV_DEFAULT
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[5]:
 
@@ -130,12 +136,12 @@ def run_worker(args: Namespace) -> int:
 
     print(message)
 
-    log.info(f"== { message }")
+    log.info("== %s", message)
 
     return RC
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[6]:
 
@@ -147,29 +153,26 @@ def parse_args(argv: list[str], **kwargs) -> Namespace:
 
 
 def exec(args: Namespace) -> int:
-    global RC
     RC = run_worker(args)
     return RC
 
 
 def main(argv: list[str] | None = None, **kwargs) -> int:
-    global RC
-    global args
 
     print(argv)
     print(__name__ + "main:" + str(argv))
 
     argv = get_argv(argv)
 
-    log.info(">> ### " + __name__ + ".main(argv=" + str(argv) + ")")
+    log.info(">> ### %s.main(argv=%s)", __name__, str(argv))
     args = parse_args(argv=argv, **kwargs)
     RC = exec(args)
 
-    log.info("<< ###" + __name__ + ".main => (rc=" + str(RC) + ")")
+    log.info("<< ### %s.main => (rc=%d)", __name__, RC)
     return RC
 
 
-# /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+# //////////////////////////////////////////////////////////////////////////////////////////////////
 
 # In[7]:
 

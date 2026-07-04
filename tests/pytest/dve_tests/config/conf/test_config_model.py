@@ -4,6 +4,7 @@ import unittest
 
 from dve.config import conf
 from vce.common.util import environ
+from dve.config.conf import cfg, AppConfigConsts as CK
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
@@ -16,27 +17,58 @@ class ConfigModelTest(unittest.TestCase):
     def test_config_name(self):
         cfg = conf.get_config()
         actual_name = cfg.name
-        log.debug("+++ CONFIG NAME (default):" + actual_name)
-        self.assertIsNotNone(actual_name)
+        log.debug("+++ CONFIG NAME (default): %s", actual_name)
+        assert actual_name is not None
+
+    def test_config_value_present(self):
+        cnf = cfg().get_value(CK.DMY_B_DUMMY_SCRIPT)
+        assert cnf is not None
+        log.debug("+++ CONFIG DUMMY_SCRIPT : %s", cfg().dump_object(cnf))
+        config_key = CK.DMY_C_DUMMY_SCRIPT_FILENAME
+        default_value = "_filename_"
+        actual_value = cnf.get(config_key, default_value)
+        log.debug("+++ CONFIG VALUE: %s = '%s'", config_key, actual_value)
+        assert actual_value is not None
+        assert actual_value != default_value
+
+    def test_config_value_absent(self):
+        cnf = cfg().get_value(CK.DMY_B_DUMMY_SCRIPT)
+        assert cnf is not None
+        log.debug("+++ CONFIG DUMMY_SCRIPT : %s", cfg().dump_object(cnf))
+        config_key = CK.DMY_C_DUMMY_SCRIPT_FILENAME + "+MISSING"
+        default_value = "_filename_"
+        actual_value = cnf.get(config_key, default_value)
+        log.debug("+++ CONFIG VALUE: %s = '%s'", config_key, actual_value)
+        assert actual_value is not None
+        assert actual_value == default_value
 
     def test_load_config(self):
         cfg = conf.get_config()
-        self.assertIsNotNone(cfg)
-        log.debug("+++ CONFIG MODEL (default):" + cfg.dump())
+        assert cfg is not None
+        log.debug("+++ CONFIG MODEL (default): %s", cfg.dump())
 
     def test_get_config(self):
         actual_config = conf.get_config()
         cached_config = conf.get_config()
-        self.assertEqual(actual_config, cached_config)
-        log.debug(
-            f"+++ CONFIG MODEL ID (default): {id(actual_config)}, {id(cached_config)}"
-        )
+        assert actual_config == cached_config
+        log.debug("+++ CONFIG MODEL ID (default): %s %s ", id(actual_config), id(cached_config))
 
-    def test_get_demo_my(self):
+    def test_get_demo_lt(self):
         cfg = conf.get_config()
-        db_config = cfg.get_value("data/db/demo_my")
-        self.assertIsNotNone(db_config)
-        log.debug(f'+++ CONFIG DB (demo.my): {cfg.dump_value("data/db/demo_my")} ')
+        db_config = cfg.get_value("data/db/demo_lt")
+        assert db_config is not None
+        log.debug("+++ CONFIG DB (demo.lt): %s", cfg.dump_value("data/db/demo_lt"))
+
+    def test_env_lt_defaults(self):
+        exp = {
+            "path": "data/int/test",
+            "database": "demo",
+        }
+        cfg = conf.get_config()
+        act = cfg.get_value("data/db/demo_lt")
+        log.debug("+++ CONFIG DB (demo.lt): %s", cfg.dump_object(act))
+        assert exp["path"] == act["path"]
+        assert exp["database"] == act["database"]
 
     def test_env_my_defaults(self):
         exp = {
@@ -47,11 +79,11 @@ class ConfigModelTest(unittest.TestCase):
         }
         cfg = conf.get_config()
         act = cfg.get_value("data/db/demo_my")
-        log.debug(f"+++ CONFIG DB (demo.my): {cfg.dump_object(act)}")
-        self.assertEqual(exp["host"], act["host"])
-        self.assertEqual(exp["port"], act["port"])
-        self.assertEqual(exp["user"], act["user"])
-        self.assertEqual(exp["database"], act["database"])
+        log.debug("+++ CONFIG DB (demo.my): %s", cfg.dump_object(act))
+        assert exp["host"] == act["host"]
+        assert exp["port"] == act["port"]
+        assert exp["user"] == act["user"]
+        assert exp["database"] == act["database"]
 
     def test_env_pg_defaults(self):
         exp = {
@@ -62,11 +94,26 @@ class ConfigModelTest(unittest.TestCase):
         }
         cfg = conf.get_config()
         act = cfg.get_value("data/db/demo_pg")
-        log.debug(f"+++ CONFIG DB (demo.pg): {cfg.dump_object(act)}")
-        self.assertEqual(exp["host"], act["host"])
-        self.assertEqual(exp["port"], act["port"])
-        self.assertEqual(exp["user"], act["user"])
-        self.assertEqual(exp["database"], act["database"])
+        log.debug("+++ CONFIG DB (demo.pg): %s", cfg.dump_object(act))
+        assert exp["host"] == act["host"]
+        assert exp["port"] == act["port"]
+        assert exp["user"] == act["user"]
+        assert exp["database"] == act["database"]
+
+    def test_env_lt_override(self):
+        exp = {
+            "path": "_path_",
+            "database": "_database_",
+        }
+        with environ.modified_environ(
+            X_DB_DEMO_PATH=exp["path"],
+            X_DB_DEMO_DATABASE=exp["database"],
+        ):
+            cfg = conf.get_config()
+            act = cfg.get_value("data/db/demo_lt")
+            log.debug("+++ CONFIG DB(e) (demo.lt): %s", cfg.dump_object(act))
+            assert exp["path"] == act["path"]
+            assert exp["database"] == act["database"]
 
     def test_env_my_override(self):
         exp = {
@@ -85,12 +132,12 @@ class ConfigModelTest(unittest.TestCase):
         ):
             cfg = conf.get_config()
             act = cfg.get_value("data/db/demo_my")
-            log.debug(f"+++ CONFIG DB(e) (demo.my): {cfg.dump_object(act)}")
-            self.assertEqual(exp["host"], act["host"])
-            self.assertEqual(exp["port"], act["port"])
-            self.assertEqual(exp["user"], act["user"])
-            self.assertEqual(exp["password"], act["password"])
-            self.assertEqual(exp["database"], act["database"])
+            log.debug("+++ CONFIG DB(e) (demo.my): %s", cfg.dump_object(act))
+            assert exp["host"] == act["host"]
+            assert exp["port"] == act["port"]
+            assert exp["user"] == act["user"]
+            assert exp["password"] == act["password"]
+            assert exp["database"] == act["database"]
 
     def test_env_pg_override(self):
         exp = {
@@ -109,20 +156,18 @@ class ConfigModelTest(unittest.TestCase):
         ):
             cfg = conf.get_config()
             act = cfg.get_value("data/db/demo_pg")
-            log.debug(f"+++ CONFIG DB(e) (demo.pg): {cfg.dump_object(act)}")
-            self.assertEqual(exp["host"], act["host"])
-            self.assertEqual(exp["port"], act["port"])
-            self.assertEqual(exp["user"], act["user"])
-            self.assertEqual(exp["password"], act["password"])
-            self.assertEqual(exp["database"], act["database"])
+            log.debug("+++ CONFIG DB(e) (demo.pg): %s", cfg.dump_object(act))
+            assert exp["host"] == act["host"]
+            assert exp["port"] == act["port"]
+            assert exp["user"] == act["user"]
+            assert exp["password"] == act["password"]
+            assert exp["database"] == act["database"]
 
     def setUp(self):
         conf.AppConfigs.unload_all()
-        pass
 
     def tearDown(self):
         conf.AppConfigs.unload_all()
-        pass
 
 
 if __name__ == "__main__":

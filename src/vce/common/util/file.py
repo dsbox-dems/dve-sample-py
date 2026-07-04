@@ -1,8 +1,7 @@
 import os
 import os.path
-import re
-import glob
 import sys
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import vce.common.util.time as tm
@@ -26,9 +25,25 @@ def replace_ext(path, ext):
     return name + ext
 
 
+def find_file_upwards(filename: str, start_dir: Path | None = None) -> Path | None:
+    d = Path.cwd()
+    if start_dir is not None:
+        d = start_dir
+
+    root = Path(d.root)
+
+    while d != root:
+        attempt = d / filename
+        if attempt.exists():
+            return attempt
+        d = d.parent
+
+    return None
+
+
 def program_name():
     program_path = sys.argv[0] if bool(sys.argv) else "_"
-    program_name, ext = os.path.splitext(os.path.basename(program_path))
+    program_name, _ = os.path.splitext(os.path.basename(program_path))
     return program_name
 
 

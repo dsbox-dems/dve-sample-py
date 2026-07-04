@@ -1,9 +1,10 @@
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from textwrap import dedent
 import re
 from datetime import datetime
-
+from typing import ClassVar
 from vce.common.util.time import timer
+from vce.common.util.lint import unused
 
 import logging
 
@@ -52,18 +53,18 @@ class TraceInterval:
         elapsed_time = self.elapsed_time
         item_count = self.item_count
         if self.frozen:
-            return f'{{ "n": {item_count}, "ms": {int(elapsed_time*1000)} }}'
+            return f'{{ "n": {item_count}, "ms": {int(elapsed_time * 1000)} }}'
         else:
-            return f'{{ "i": {item_count}, "ms": {int(elapsed_time*1000)} }}'
+            return f'{{ "i": {item_count}, "ms": {int(elapsed_time * 1000)} }}'
 
     def to_dict(self):
-        return dict(
-            i=self.item_count,
-            ms=int(self.elapsed_time * 1000),
-            hz=Decimal.from_float(
+        return {
+            "i": self.item_count,
+            "ms": int(self.elapsed_time * 1000),
+            "hz": Decimal.from_float(
                 self.item_count / self.elapsed_time if self.elapsed_time > 0 else -1.0
             ).quantize(Decimal(".01"), rounding=ROUND_HALF_UP),
-        )
+        }
 
     def add_time(self, other):
         elapsed_time = self.elapsed_time + other.elapsed_time
@@ -91,7 +92,7 @@ class TraceCounter:
     def update(self, item_delta=1):
         elapsed = self.start.elapsed()
         item_count = self.interval.item_count + item_delta
-        self.interval = TraceInterval(elapsed, item_count)
+        self.interval = TraceInterval(int(elapsed), item_count)
         return self.is_expired()
 
     def flush(self):
@@ -118,9 +119,8 @@ class TraceCounter:
 
 
 class TraceFrame:
-    def __init__(
-        self, name, owner, parent, ctx, logger, time_period, item_samples, verbose
-    ):
+    # ruff: noqa: PLR0913
+    def __init__(self, name, owner, parent, ctx, logger, time_period, item_samples, verbose):
         self.start = timer()
         self.name = name
         self.owner = owner
@@ -245,22 +245,22 @@ class TraceFrame:
 
 
         """
-        row = dict(
-            ts={},
-            tag={},
-            rec={},
-            sum={},
-            tot={},
-            net={},
-            ctx={},
-        )
+        row = {
+            "ts": {},
+            "tag": {},
+            "rec": {},
+            "sum": {},
+            "tot": {},
+            "net": {},
+            "ctx": {},
+        }
 
-        row["ts"] = dict(
-            t=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            ms=int(self.uptime() * 1000),
-        )
+        row["ts"] = {
+            "t": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "ms": int(self.uptime() * 1000),
+        }
 
-        row["tag"] = dict(s=self.name, w=what)
+        row["tag"] = {"s": self.name, "w": what}
 
         row["ctx"] = self.ctx
 
@@ -274,17 +274,18 @@ class TraceFrame:
             row["net"] = self.net_interval().to_dict()
 
         if is_tot:
-            row["tot"] = outer_total.to_dict()
+            if outer_total is not None:
+                row["tot"] = outer_total.to_dict()
 
         return to_json_oneline(
             f"""\
         \t{{
-          \t"ts": {row['ts']},
-          \t"rec": {row['rec']},
-          \t"sum": {row['sum']},
-          \t"net": {row['net']},
-          \t"tot": {row['tot']},
-          \t"tag": {row['tag']}
+          \t"ts": {row["ts"]},
+          \t"rec": {row["rec"]},
+          \t"sum": {row["sum"]},
+          \t"net": {row["net"]},
+          \t"tot": {row["tot"]},
+          \t"tag": {row["tag"]}
         \t}}
         \t,\t
         """
@@ -314,14 +315,14 @@ class TraceFrame:
     def report_subtotal(self, parent_total):
         if self.disabled():
             return
-        prefix = self.log_prefix(
-            "#", no_rec=True, is_tot=True, outer_total=parent_total
-        )
+        prefix = self.log_prefix("#", no_rec=True, is_tot=True, outer_total=parent_total)
         text = f"{prefix}"
         self.logger.debug(text)
 
 
 class TraceLogger:
+    global_ctx: ClassVar[dict] = {}
+
     def __init__(self, name="_", time_period=30, item_samples=0, verbose=0):
         self.start = timer()
         self.name = name
@@ -336,12 +337,8 @@ class TraceLogger:
         self.root = self.push_frame(self.name + "._0_")
 
     @classmethod
-    def make_frame(
-        cls, name, owner, parent, ctx, logger, time_period, item_samples, verbose
-    ):
-        return TraceFrame(
-            name, owner, parent, ctx, logger, time_period, item_samples, verbose
-        )
+    def make_frame(cls, name, owner, parent, ctx, logger, time_period, item_samples, verbose):
+        return TraceFrame(name, owner, parent, ctx, logger, time_period, item_samples, verbose)
 
     def push_frame(self, name):
         ctx = {} if self.top is None else self.top.ctx
@@ -371,6 +368,8 @@ class TraceLogger:
         self.push_frame(name=name).open()
 
     def exit(self):
+        if self.top is None:
+            return None
         frame = self.pop_frame()
         self.top.accumulate(frame)
         return frame.close()
@@ -379,21 +378,26 @@ class TraceLogger:
         self.enter()
 
     def __exit__(self, exc_type, exc_value, exc_tb):
+        unused(exc_type, exc_value, exc_tb)
         self.exit()
 
-    def ctx(self):
+    def ctx(self) -> dict:
+        if self.top is None:
+            return TraceLogger.global_ctx
         return self.top.ctx
 
     def all(self):
+        if self.top is None:
+            return self
         self.top.counter.time_period = 0
         return self
 
     def update(self, item_delta=1):
+        if self.top is None:
+            return None
         return self.top.update(item_delta=item_delta)
 
 
-def trace_logger(name="_", time_period=30, item_samples=0, verbose=0):
-    result = TraceLogger(
-        name, time_period=time_period, item_samples=item_samples, verbose=verbose
-    )
+def trace_logger(name="_", time_period=30, item_samples=0, verbose=0) -> TraceLogger:
+    result = TraceLogger(name, time_period=time_period, item_samples=item_samples, verbose=verbose)
     return result
