@@ -4,9 +4,6 @@ from abc import ABC, abstractmethod
 from vce.config.data import cfd
 
 
-from vce.config.data import cfd
-
-
 class BaseConfigConsts(object):
     CONFIG_F_ROOT = cfd().DATA_WORK
     CONFIG_F_MAIN = "./config.yaml"
