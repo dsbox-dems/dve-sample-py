@@ -25,15 +25,16 @@
 ## Commands
 
 | Task                | Command                                                |
-|---------------------|--------------------------------------------------------|
+|---------------------+--------------------------------------------------------|
 | Single test         | `uv run pytest path/to/test.py::Class::method -xvs`    |
 | Test file           | `uv run pytest path/to/test.py -xvs`                   |
 | Package tests       | `uv run pytest path/to/package -xvs`                   |
 | Run Python script   | `uv run python dev/my_script.py`                       |
 | Jupyter CLI         | `uv run jupyter --notebook-dir=notebooks --no-browser` |
-| Type-check          | `uv run pyright path/to/code`                          |
+| Type check          | `uv run pyright path/to/code`                          |
 | Lint                | `uv run ruff check --fix <file>`                       |
 | Format              | `uv run ruff format <file>`                            |
+| License check       | `uv run reuse lint`                                    |
 | Install Python deps | `uv lock && uv sync --all-extras --all-groups`         |
 | Install Node deps   | `uv run jlpm up && uv run jlpm install`                |
 | Manual checks       | `prek run --from-ref <target_branch> --stage manual`   |
