@@ -105,7 +105,9 @@ keywords:
 # ── License ─────────────────────────────────────────────────────────
 # SPDX license identifier — see https://spdx.org/licenses/
 # For confidential projects use: "LicenseRef-proprietary"
-license: "AFL-3.0"
+# Dual-Licensed project.
+# See: REUSE.toml for details.
+license: "GPL-3.0-or-later OR CC-BY-4.0"
 
 # ── Funding and acknowledgements ────────────────────────────────────
 
@@ -113,12 +115,10 @@ license: "AFL-3.0"
 # funding: "Grant / Fondo: [FUNDER NAME, GRANT ID]"
 
 message: >
-  If you use resources provided by the DEMS DataScience Lab (datalab),
-  please cite this work as indicated and acknowledge datalab in your
-  publications. /
-  Se si utilizzano risorse fornite dal DataScience Lab (datalab) del DEMS,
-  si prega di citare questo lavoro come indicato e di riconoscere datalab
-  nelle pubblicazioni.
+  If you use this software, please cite it using these metadata.
+  This project is dual-licensed under GPL-3.0-or-later OR CC-BY-4.0
+  as specified in the root REUSE.toml and LICENSE.md files.
+  The DEMS DataScience Lab (datalab) should be acknowledged in publications.
   See: https://datalab.unimib.it/labs/rules/
 
 # ── datalab-specific metadata (do not remove) ───────────────────────

@@ -4,8 +4,11 @@
 # Build system (PEP 518 / PEP 517)
 # ============================================================
 [build-system]
-requires = ["hatchling>=1.21"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.11.26,<0.12"]
+build-backend = "uv_build"
+#requires = ["hatchling>=1.21"]
+#build-backend = "hatchling.build"
+
 
 # ============================================================
 # Project metadata (PEP 621)
@@ -15,10 +18,10 @@ name = "dve_sample_py"
 version = "0.1.0"
 description = "TODO(title): TITLE OF THE RESEARCH WORK / TITOLO DEL LAVORO DI RICERCA"
 readme = "README.md"
-# license-files = [
-#     {file = "LICENSE"},
-#     {file = "LICENSE.md"},
-# ]
+license-files = [
+     "LICENSES/*.txt",
+     "LICENSE.md",
+]
 requires-python = ">=3.14,<3.15"
 
 authors = [
@@ -222,10 +225,6 @@ dev = [
   "line-profiler",
   "memory-profiler",
 
-  # --- profile ---
-  "line-profiler",
-  "memory-profiler",
-
   # --- edit ---
   "pyright",
   "basedpyright",
@@ -239,6 +238,9 @@ dev = [
   # --- lint ---
   "ruff",
   # "yapf",
+
+  # --- license ---
+  "reuse",
 
   # --- docs ---
   # "sphinx",
@@ -304,6 +306,11 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dve", "src/vce"]
+
+
+[tool.uv.build-backend]
+#namespace = true
+module-name = ["vce", "dve"]
 
 # # --- [poetry] ---------------------------------------------------
 
