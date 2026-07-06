@@ -16,9 +16,8 @@ version = "0.1.0"
 description = "TODO(title): TITLE OF THE RESEARCH WORK / TITOLO DEL LAVORO DI RICERCA"
 readme = "README.md"
 license-files = [
-     {file = "LICENSES/GPL-3.0-or-later.txt"},
-     {file = "LICENSES/CC-BY-4.0.txt"},
-     {file = "LICENSE.md"},
+     "LICENSES/*.txt",
+     "LICENSE.md",
 ]
 requires-python = ">=3.14,<3.15"
 
