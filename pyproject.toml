@@ -222,10 +222,6 @@ dev = [
   "line-profiler",
   "memory-profiler",
 
-  # --- profile ---
-  "line-profiler",
-  "memory-profiler",
-
   # --- edit ---
   "pyright",
   "basedpyright",
@@ -239,6 +235,9 @@ dev = [
   # --- lint ---
   "ruff",
   # "yapf",
+
+  # --- license ---
+  "reuse",
 
   # --- docs ---
   # "sphinx",
