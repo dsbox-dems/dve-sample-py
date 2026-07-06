@@ -98,6 +98,17 @@ typing:
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
 
+licensing:
+  stage: lint
+  before_script:
+    - *install_uv
+    - uv sync --group dev
+    - df -h
+  script:
+    - uv run reuse lint
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
 # ---------------------------------------------------------------------------
 # test stage
 # ---------------------------------------------------------------------------
