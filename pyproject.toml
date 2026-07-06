@@ -4,8 +4,11 @@
 # Build system (PEP 518 / PEP 517)
 # ============================================================
 [build-system]
-requires = ["hatchling>=1.21"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.11.26,<0.12"]
+build-backend = "uv_build"
+#requires = ["hatchling>=1.21"]
+#build-backend = "hatchling.build"
+
 
 # ============================================================
 # Project metadata (PEP 621)
@@ -303,6 +306,11 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dve", "src/vce"]
+
+
+[tool.uv.build-backend]
+#namespace = true
+module-name = ["vce", "dve"]
 
 # # --- [poetry] ---------------------------------------------------
 
