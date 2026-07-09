@@ -25,7 +25,7 @@
 ## Commands
 
 | Task                | Command                                                |
-|---------------------+--------------------------------------------------------|
+|---------------------|--------------------------------------------------------|
 | Single test         | `uv run pytest path/to/test.py::Class::method -xvs`    |
 | Test file           | `uv run pytest path/to/test.py -xvs`                   |
 | Package tests       | `uv run pytest path/to/package -xvs`                   |

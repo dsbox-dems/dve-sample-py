@@ -12,8 +12,23 @@ Based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Removed
 
+## [3.2607.0] - 2026-07-07
 
-## [3.2606.0] - 2026-07-07
+### Added
+
+- release CI/CD pipeline
+
+### Changed
+
+- downstream development project
+
+### Removed
+
+- uv_build disabled
+
+
+
+## [3.2606.1] - 2026-07-07
 
 ### Added
 
