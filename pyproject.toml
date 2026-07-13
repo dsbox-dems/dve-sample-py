@@ -351,9 +351,9 @@ packages = ["src/dve", "src/vce"]
 
 # --- [uv_build] ---------------------------------------------------
 
-[tool.uv.build-backend]
-namespace = true
-#module-name = ["vce", "dve"]
+# [tool.uv.build-backend]
+# namespace = true
+# #module-name = ["vce", "dve"]
 
 
 # --- [setuptools] ---------------------------------------------------
