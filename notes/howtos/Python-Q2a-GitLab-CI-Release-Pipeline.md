@@ -172,7 +172,7 @@ on the _downstream_ project, that executes the following ordered stages:
 The following variables must be pre-configured in the downstream project's CI/CD settings:
 
 | Variable            | Scope  | Purpose                                                   |
-|---------------------+--------+-----------------------------------------------------------|
+|---------------------|--------|-----------------------------------------------------------|
 | `UPSTREAM_TOKEN`    | masked | GitLab API token with `api` scope on the upstream project |
 | `REGISTRY_URL`      | plain  | Public container registry base URL                        |
 | `REGISTRY_USER`     | plain  | Registry authentication username                          |
