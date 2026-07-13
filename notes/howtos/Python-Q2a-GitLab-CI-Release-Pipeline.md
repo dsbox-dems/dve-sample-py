@@ -1,19 +1,42 @@
 ---
-title: TODO:(title)
-subtitle: TODO:(subtitle)
+title: GitLab CI/CD Release Pipeline for a Multi-Repository
+  Python Project
+subtitle: |
+  Automated validation, upstream synchronization, container
+  image delivery, and release notification for the
+  `dve-simple-py` codebase across public and private GitLab
+  repositories
 # {{{ // %+
-
-category: LLM-Style
-keywords: [GEN, TODO:(keywords)]
+category: Python-HOWTO
+keywords: [GEN, GitLab-CI-CD, uv, Podman, Pyright-Ruff-Pytest, Container-Registry, Multi-repository-Release]
 abstract: |
-  TODO:(abstract)
+  This report specifies a GitLab CI/CD pipeline coordinating a
+  private downstream repository (`ub-dems/dve-simple-py`) and
+  its public upstream counterpart (`ub-dems-public/dve-simple-py`),
+  both sharing a single Python codebase managed with `uv`.
+  The workflow is triggered by commit tags matching the pattern
+  `v*.*.*` on the downstream project.
 
-  ...
+  The pipeline proceeds through seven ordered stages: pre-release
+  validation via `pyright`, `ruff`, and `pytest`; automated Merge
+  Request creation against the upstream `main` branch through the
+  GitLab API; upstream merge and tag propagation following
+  successful upstream CI; parallel container image builds using
+  the shared `build-images.sh` script; conditional image push to
+  a public registry; a GitHub mirror push; and multi-channel
+  release notification via email and Slack.
+
+  The deliverable is a single `.gitlab-ci.yml` definition valid
+  for both projects, using project-path conditions to gate
+  downstream- and upstream-specific jobs, explicit stage
+  declarations, `needs`/`dependencies` for strict cross-stage
+  ordering, and a defined set of masked and plain CI/CD variables
+  for authentication, registry access, and notification delivery.
 
 doctype: md-report
-
 # }}} // %+
 ---
+
 <!-- {{{ #TAG: TODO:(toc) // -->
 
 <!-- markdownlint-disable MD012 -->
