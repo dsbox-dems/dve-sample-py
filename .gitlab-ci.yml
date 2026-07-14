@@ -1,22 +1,88 @@
+# =============================================================================
+# .gitlab-ci.yml
+#
+# Shared release pipeline for the dve-simple-py codebase.
+# This exact file lives in both projects:
+#   - ub-dems/dve-simple-py        (private downstream fork, branches main/development)
+#   - ub-dems-public/dve-simple-py (public upstream, branch main)
+#
+# The pipeline is tag-triggered (v*.*.*) and splits into two cooperating
+# pipeline RUNS in two different projects:
+#   1. Downstream validates, opens the release MR, and (on manual approval)
+#      merges + tags upstream.
+#   2. Creating that tag on upstream via the API starts a SECOND, independent
+#      pipeline in the upstream project, which builds, pushes, mirrors, and
+#      notifies.
+# =============================================================================
 ---
-# ---------------------------------------------------------------------------
-# Disk-budget notes
-# ---------------------------------------------------------------------------
-# GitLab SaaS shared runners carry a 20 GB working-directory quota.
-# The CUDA-bundled torch wheel + triton alone exceed this budget.
-#
-# Fix: redirect the "torch-gpu" named index to the CPU wheel server for all
-# CI jobs via UV_INDEX_TORCH_GPU.  Downstream consumers running on GPU hosts
-# omit this variable and continue to receive CUDA wheels from the cu130 index.
-#
-# Cache strategy: persist only $UV_CACHE_DIR (downloaded wheel archives).
-# Do NOT cache .venv — extracting from the wheel cache is fast (~30 s) and
-# avoids the cache-serialisation phase that itself hits the disk quota.
-# ---------------------------------------------------------------------------
+spec:
+  inputs:
+    gd-release-op-upstram-merge:
+      default: true
+    gd-release-op-upstram-mirror:
+      default: true
+    gd-downstream-project:
+      default: "ub-dems/vs-base/dve-simple-py"
+    gd-upstram-project:
+      default: "ub-dems-public/ds-labs/dve-simple-py"
+    gd-upstram-project-enc:
+      default: "ub-dems-public%2Fds-labs%2Fdve-simple-py"
+    gd-downstrem-project-head:
+      default: "develop"
+    gd-downstrem-project-main:
+      default: "main"
+    gd-upstram-project-main:
+      default: "main"
+    gd-version-schema:
+      regex: ^\d\.\d+(\.\d+)?$
+    gd-python-version:
+      default: 3.14
+    environment:
+      options:
+        - development
+        - staging
+        - production
+      default: production
+---
 
-image: python:3.14-slim
+stages:
+  - lint
+  - test
+  - release
+  - publish
+
+
+default:
+  image: python:$[[ inputs.gd-python-version ]]-slim
 
 variables:
+
+  # Non-sensitive defaults only. REGISTRY_URL, REGISTRY_USER, REGISTRY_PASSWORD,
+  # UPSTREAM_TOKEN, GITHUB_MIRROR_URL, NOTIFY_EMAILS, SMTP_*, SLACK_WEBHOOK_URL
+  # are pre-configured project CI/CD variables and are intentionally NOT
+  # redeclared here.
+  DOWNSTREAM_PROJECT_PATH: "$[[ inputs.gd-downstream-project ]]"
+  UPSTREAM_PROJECT_PATH: "$[[ inputs.gd-upstram-project ]]"
+  UPSTREAM_PROJECT_PATH_ENCODED: "$[[ gd-upstram-project-enc ]]"
+  MR_SOURCE_BRANCH: "$[[ gd-downstram-project-main ]]"
+  MR_TARGET_BRANCH: "$[[ gd-upstram-project-main ]]"
+  GIT_DEPTH: "0"
+
+  # ---------------------------------------------------------------------------
+  # Disk-budget notes
+  # ---------------------------------------------------------------------------
+  # GitLab SaaS shared runners carry a 20 GB working-directory quota.
+  # The CUDA-bundled torch wheel + triton alone exceed this budget.
+  #
+  # Fix: redirect the "torch-gpu" named index to the CPU wheel server for all
+  # CI jobs via UV_INDEX_TORCH_GPU.  Downstream consumers running on GPU hosts
+  # omit this variable and continue to receive CUDA wheels from the cu130 index.
+  #
+  # Cache strategy: persist only $UV_CACHE_DIR (downloaded wheel archives).
+  # Do NOT cache .venv — extracting from the wheel cache is fast (~30 s) and
+  # avoids the cache-serialisation phase that itself hits the disk quota.
+  # ---------------------------------------------------------------------------
+
   # --- uv installation ---
   UV_VERSION: "latest"
 
@@ -34,41 +100,93 @@ variables:
   # --- never use the system Python; always use uv-managed interpreter ---
   UV_PYTHON_PREFERENCE: "only-managed"
 
-# Only the uv download cache is persisted.  .venv is intentionally excluded.
+
 cache:
-  key:
-    files:
-      - pyproject.toml
-      - uv.lock
-  paths:
-    - .cache/uv
   policy: pull-push
+  # key:
+  #   files:
+  #     - pyproject.toml
+  #     - uv.lock
+  # paths:
+  #   - .cache/uv
 
-stages:
-  - lint
-  - test
-
-# ---------------------------------------------------------------------------
-# Shared setup fragment — referenced via YAML anchors
-# ---------------------------------------------------------------------------
-.install_uv: &install_uv
-  - echo "#__init__"
-  - env
-  - df -h
-  - apt-get update -qq && apt-get install -y --no-install-recommends ca-certificates curl git
-  - rm -rf /var/lib/apt/lists/*
-  - curl -LsSf https://astral.sh/uv/install.sh | sh
-  - export PATH="$HOME/.local/bin:$PATH"
-  - uv --version
 
 # ---------------------------------------------------------------------------
-# lint stage
+# Context Rules
 # ---------------------------------------------------------------------------
 
-linting:
-  stage: lint
+.ctx-develop:
+  rules:
+    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-downstream-project ]]'
+    - if: '$CI_COMMIT_BRANCH == "$[[ inputs.gd-downstream-project-head ]]"'
+
+.ctx-release-tag:
+  rules:
+    - if: '"$[[ inputs.gd-release-op-upstram-merge ]]'
+    - if: '$CI_COMMIT_TAG =~ /$[[ inputs.gd-version-schema ]]/'
+
+.ctx-release-downstream:
+  extends:
+    - .ctx-release-tag
+  rules:
+    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-downstream-project ]]'
+    - if: '$CI_COMMIT_BRANCH == "$[[ inputs.gd-downstream-project-main ]]"'
+
+.ctx-release-upstream:
+  extends:
+    - .ctx-release-tag
+  rules:
+    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-downstream-project ]]'
+    - if: '$CI_COMMIT_BRANCH == "$[[ inputs.gd-downstream-project-main ]]"'
+
+# -----------------------------------------------------------------------------
+# Base Images
+# -----------------------------------------------------------------------------
+
+.gitlab-api-base:
+  image: alpine:3.20
+  variables:
+    GIT_STRATEGY: none
   before_script:
-    - *install_uv
+    - apk add --no-cache curl jq
+
+.notify-base:
+  extends:
+    - .gitlab-api-base
+  before_script:
+    - apk add --no-cache msmtp
+
+.podman-base:
+  image: quay.io/podman/stable:v5
+
+.uv-validate-base:
+  image: python:$[[ inputs.gd-python-version ]]-slim
+  variables:
+    UV_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/uv"
+  cache:
+    # Only the uv download cache is persisted.  .venv is intentionally excluded.
+    key: "uv-${CI_COMMIT_REF_SLUG}"
+    # files:
+    #   - pyproject.toml
+    #   - uv.lock
+    paths:
+      - .cache/uv
+  before_script:
+    - echo "#__uv:init__"
+    - env
+    - df -h
+    # - apt-get update -qq
+    # - apt-get install -y --no-install-recommends ca-certificates curl git
+    # - rm -rf /var/lib/apt/lists/*
+    # - curl -LsSf https://astral.sh/uv/install.sh | sh
+    # - export PATH="$HOME/.local/bin:$PATH"
+    - pip install --quiet uv
+    # - uv sync --frozen
+
+.uv-validate-lint:
+  extends:
+    - .uv-validate-base
+  before_script:
     # Lint jobs operate on source text only.
     # --only-group dev  : install ruff and its peers; skip main dependencies.
     # --no-install-project : do not install the project package itself.
@@ -78,36 +196,55 @@ linting:
     - uv pip list
     - du -sh .venv
     - df -h
-  script:
-    - uv run ruff check .
-    - uv run ruff format --check .
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
 
-typing:
-  stage: lint
+.uv-validate-check:
+  extends:
+    - .uv-validate-base
   before_script:
-    - *install_uv
     # pyright requires all project imports to be resolvable, so main deps
     # (including CPU torch) must be present.  UV_INDEX_TORCH_GPU redirects
     # the cu130 index to the CPU wheel server; triton is not a dep of CPU torch.
     - uv sync --group dev
     - df -h
+
+.uv-validate-test:
+  extends:
+    - .uv-validate-base
+  before_script:
+    # pyright requires all project imports to be resolvable, so main deps
+    # (including CPU torch) must be present.  UV_INDEX_TORCH_GPU redirects
+    # the cu130 index to the CPU wheel server; triton is not a dep of CPU torch.
+    - uv sync --group dev
+
+
+# ---------------------------------------------------------------------------
+# lint stage
+# ---------------------------------------------------------------------------
+
+linting:
+  stage: lint
+  extends:
+    - .ctx-develop
+    - .uv-validate-lint
+  script:
+    - uv run ruff check .
+    - uv run ruff format --check .
+
+typing:
+  stage: lint
+  extends:
+    - .ctx-develop
+    - .uv-validate-check
   script:
     - uv run pyright
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
 
 licensing:
   stage: lint
-  before_script:
-    - *install_uv
-    - uv sync --group dev
-    - df -h
+  extends:
+    - .ctx-develop
+    - .uv-validate-check
   script:
     - uv run reuse lint
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
 
 # ---------------------------------------------------------------------------
 # test stage
@@ -115,11 +252,9 @@ licensing:
 
 testing:
   stage: test
-  before_script:
-    - *install_uv
-    # Same sync scope as typing: main deps + dev group, CPU torch.
-    - uv sync --group dev
-    - df -h
+  extends:
+    - .ctx-develop
+    - .uv-validate-test
   script:
     - uv run pytest -v
   rules:
@@ -127,76 +262,12 @@ testing:
 
 
 
-# =============================================================================
-# .gitlab-ci.yml
-#
-# Shared release pipeline for the dve-simple-py codebase.
-# This exact file lives in both projects:
-#   - ub-dems/dve-simple-py        (private downstream fork, branches main/development)
-#   - ub-dems-public/dve-simple-py (public upstream, branch main)
-#
-# The pipeline is tag-triggered (v*.*.*) and splits into two cooperating
-# pipeline RUNS in two different projects:
-#   1. Downstream validates, opens the release MR, and (on manual approval)
-#      merges + tags upstream.
-#   2. Creating that tag on upstream via the API starts a SECOND, independent
-#      pipeline in the upstream project, which builds, pushes, mirrors, and
-#      notifies.
-# =============================================================================
-
-stages:
-  - validate
-  - merge-request
-  - upstream-merge
-  - image-build
-  - image-push
-  - mirror-push
-  - notify
-
-variables:
-  # Non-sensitive defaults only. REGISTRY_URL, REGISTRY_USER, REGISTRY_PASSWORD,
-  # UPSTREAM_TOKEN, GITHUB_MIRROR_URL, NOTIFY_EMAILS, SMTP_*, SLACK_WEBHOOK_URL
-  # are pre-configured project CI/CD variables and are intentionally NOT
-  # redeclared here.
-  UPSTREAM_PROJECT_PATH: "ub-dems-public/dve-simple-py"
-  DOWNSTREAM_PROJECT_PATH: "ub-dems/dve-simple-py"
-  UPSTREAM_PROJECT_PATH_ENCODED: "ub-dems-public%2Fdve-simple-py"
-  MR_SOURCE_BRANCH: "main"
-  MR_TARGET_BRANCH: "main"
-  GIT_DEPTH: "0"
-
 # Primary pipeline trigger: pipelines are only created for tags matching
-# v*.*.*. Every job's own `rules:` below only needs to add project scoping.
+# *.*.*. Every job's own `rules:` below only needs to add project scoping.
 workflow:
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+    - if: '$CI_COMMIT_TAG =~ /$[[ inputs.gd-version-schema ]]/'
     - when: never
-
-# -----------------------------------------------------------------------------
-# Hidden templates
-# -----------------------------------------------------------------------------
-
-.uv-validate-base:
-  image: python:3.12-slim
-  variables:
-    UV_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/uv"
-  cache:
-    key: "uv-${CI_COMMIT_REF_SLUG}"
-    paths:
-      - .cache/uv
-  before_script:
-    - pip install --quiet uv
-    - uv sync --frozen
-
-.gitlab-api-base:
-  image: alpine:3.20
-  variables:
-    GIT_STRATEGY: none
-  before_script:
-    - apk add --no-cache curl jq
-
-.podman-base:
-  image: quay.io/podman/stable:v5
 
 # -----------------------------------------------------------------------------
 # Stage: validate (downstream only)
