@@ -470,7 +470,8 @@ trigger-upstream-merge-and-tag:
 mirror-push:
   stage: release
   extends:
-    - .ctx-release-mirror
+    - .ctx-release-upstream
+    # - .ctx-release-mirror
     - .git-base
   dependencies: []
   variables:
