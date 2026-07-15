@@ -63,9 +63,9 @@ variables:
   # redeclared here.
   DOWNSTREAM_PROJECT_PATH: "$[[ inputs.gd-downstream-project ]]"
   UPSTREAM_PROJECT_PATH: "$[[ inputs.gd-upstram-project ]]"
-  UPSTREAM_PROJECT_PATH_ENCODED: "$[[ gd-upstram-project-enc ]]"
-  MR_SOURCE_BRANCH: "$[[ gd-downstram-project-main ]]"
-  MR_TARGET_BRANCH: "$[[ gd-upstram-project-main ]]"
+  UPSTREAM_PROJECT_PATH_ENCODED: "$[[ inputs.gd-upstram-project-enc ]]"
+  MR_SOURCE_BRANCH: "$[[ inputs.gd-downstram-project-main ]]"
+  MR_TARGET_BRANCH: "$[[ inputs.gd-upstram-project-main ]]"
   GIT_DEPTH: "0"
 
   # ---------------------------------------------------------------------------
