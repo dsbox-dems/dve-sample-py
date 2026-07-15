@@ -159,7 +159,7 @@ cache:
   extends:
     - .ctx-release-upstream
   rules:
-    - if: '$[[ inputs.gd-release-op-upstream-notify ]] == "1"'
+    - if: '"$[[ inputs.gd-release-op-upstream-notify ]]" == "1"'
 
 
 # -----------------------------------------------------------------------------
