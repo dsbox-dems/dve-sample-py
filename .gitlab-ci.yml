@@ -126,7 +126,7 @@ cache:
 
 .ctx-release-tag:
   rules:
-    - if: '$[[ inputs.gd-release-op-upstream-merge ]] == 1'
+    - if: '"$[[ inputs.gd-release-op-upstream-merge ]]" == "1"'
     - if: '$CI_COMMIT_TAG =~ /$[[ inputs.gd-version-schema ]]/'
 
 .ctx-release-downstream:
@@ -147,13 +147,13 @@ cache:
   extends:
     - .ctx-release-upstream
   rules:
-    - if: '$[[ inputs.gd-release-op-upstream-mirror ]] == "1"'
+    - if: '"$[[ inputs.gd-release-op-upstream-mirror ]]" == "1"'
 
 .ctx-release-image:
   extends:
     - .ctx-release-upstream
   rules:
-    - if: '$[[ inputs.gd-release-op-upstream-image ]] == "1"'
+    - if: '"$[[ inputs.gd-release-op-upstream-image ]]" == "1"'
 
 .ctx-release-notify:
   extends:
@@ -469,8 +469,7 @@ trigger-upstream-merge-and-tag:
 mirror-push:
   stage: release
   extends:
-    - .ctx-release-upstream
-    # - .ctx-release-mirror
+    - .ctx-release-mirror
     - .git-base
   dependencies: []
   variables:
@@ -494,8 +493,7 @@ mirror-push:
 build-base-images:
   stage: release
   extends:
-    - .ctx-release-upstream
-    #- .ctx-release-image
+    - .ctx-release-image
     - .podman-base
   needs: []
   dependencies: []
@@ -524,8 +522,7 @@ build-base-images:
 push-base-images:
   stage: release
   extends:
-    - .ctx-release-upstream
-    #- .ctx-release-image
+    - .ctx-release-image
     - .podman-base
   needs:
     - job: build-base-images
