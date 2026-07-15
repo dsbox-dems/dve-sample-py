@@ -495,7 +495,8 @@ mirror-push:
 build-base-images:
   stage: release
   extends:
-    - .ctx-release-image
+    - .ctx-release-upstream
+    #- .ctx-release-image
     - .podman-base
   needs: []
   dependencies: []
@@ -524,7 +525,8 @@ build-base-images:
 push-base-images:
   stage: release
   extends:
-    - .ctx-release-image
+    - .ctx-release-upstream
+    #- .ctx-release-image
     - .podman-base
   needs:
     - job: build-base-images
