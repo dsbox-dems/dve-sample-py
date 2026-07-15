@@ -18,9 +18,9 @@
 spec:
   inputs:
     gd-release-op-upstram-merge:
-      default: true
+      default: 'true'
     gd-release-op-upstram-mirror:
-      default: true
+      default: 'true'
     gd-downstream-project:
       default: "ub-dems/vs-base/dve-simple-py"
     gd-upstram-project:
@@ -34,9 +34,9 @@ spec:
     gd-upstram-project-main:
       default: "main"
     gd-version-schema:
-      regex: ^\d\.\d+(\.\d+)?$
+      regex: '^\d\.\d+(\.\d+)?$'
     gd-python-version:
-      default: 3.14
+      default: '3.14'
     environment:
       options:
         - development
@@ -259,7 +259,6 @@ testing:
     - uv run pytest -v
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
-
 
 
 # Primary pipeline trigger: pipelines are only created for tags matching
@@ -592,4 +591,3 @@ notify-slack:
         --header "Content-Type: application/json" \
         --data "{\"text\": \"Release ${CI_COMMIT_TAG} published for ${CI_PROJECT_PATH}. Images pushed to ${REGISTRY_URL}. Mirrored to GitHub.\"}" \
         "${SLACK_WEBHOOK_URL}"
-
