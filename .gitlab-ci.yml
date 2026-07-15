@@ -17,21 +17,21 @@
 ---
 spec:
   inputs:
-    gd-release-op-upstram-merge:
+    gd-release-op-upstream-merge:
       default: '1'
-    gd-release-op-upstram-mirror:
+    gd-release-op-upstream-mirror:
       default: '1'
     gd-downstream-project:
       default: "ub-dems/vs-base/dve-simple-py"
-    gd-upstram-project:
+    gd-upstream-project:
       default: "ub-dems-public/ds-labs/dve-simple-py"
-    gd-upstram-project-enc:
+    gd-upstream-project-enc:
       default: "ub-dems-public%2Fds-labs%2Fdve-simple-py"
     gd-downstrem-project-head:
       default: "develop"
-    gd-downstrem-project-main:
+    gd-downstream-project-main:
       default: "main"
-    gd-upstram-project-main:
+    gd-upstream-project-main:
       default: "main"
     gd-version-schema:
       default: '^\d\.\d+(\.\d+)?$'
@@ -62,10 +62,10 @@ variables:
   # are pre-configured project CI/CD variables and are intentionally NOT
   # redeclared here.
   DOWNSTREAM_PROJECT_PATH: "$[[ inputs.gd-downstream-project ]]"
-  UPSTREAM_PROJECT_PATH: "$[[ inputs.gd-upstram-project ]]"
-  UPSTREAM_PROJECT_PATH_ENCODED: "$[[ inputs.gd-upstram-project-enc ]]"
-  MR_SOURCE_BRANCH: "$[[ inputs.gd-downstram-project-main ]]"
-  MR_TARGET_BRANCH: "$[[ inputs.gd-upstram-project-main ]]"
+  UPSTREAM_PROJECT_PATH: "$[[ inputs.gd-upstream-project ]]"
+  UPSTREAM_PROJECT_PATH_ENCODED: "$[[ inputs.gd-upstream-project-enc ]]"
+  MR_SOURCE_BRANCH: "$[[ inputs.gd-downstream-project-main ]]"
+  MR_TARGET_BRANCH: "$[[ inputs.gd-upstream-project-main ]]"
   GIT_DEPTH: "0"
 
   # ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ cache:
 
 .ctx-release-tag:
   rules:
-    - if: '$[[ inputs.gd-release-op-upstram-merge ]] == 1'
+    - if: '$[[ inputs.gd-release-op-upstream-merge ]] == 1'
     - if: '$CI_COMMIT_TAG =~ /$[[ inputs.gd-version-schema ]]/'
 
 .ctx-release-downstream:
@@ -143,7 +143,7 @@ cache:
   extends:
     - .ctx-release-tag
   rules:
-    - if: '$[[ inputs.gd-release-op-upstram-mirror ]] == 1'
+    - if: '$[[ inputs.gd-release-op-upstream-mirror ]] == 1'
 
 # -----------------------------------------------------------------------------
 # Base Images
