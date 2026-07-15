@@ -552,8 +552,7 @@ push-base-images:
 release-notify-email:
   stage: release
   extends:
-    - .ctx-release-upstream
-    # - .ctx-release-notify
+    - .ctx-release-notify
     - .notify-base
   dependencies: []
   variables:
@@ -586,8 +585,7 @@ release-notify-email:
 release-notify-slack:
   stage: release
   extends:
-    - .ctx-release-upstream
-    # - .ctx-release-notify
+    - .ctx-release-notify
     - .notify-base
   dependencies: []
   variables:
