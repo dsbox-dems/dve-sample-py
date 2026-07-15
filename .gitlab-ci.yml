@@ -140,8 +140,8 @@ cache:
   extends:
     - .ctx-release-tag
   rules:
-    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-downstream-project ]]"'
-    - if: '$CI_COMMIT_BRANCH == "$[[ inputs.gd-downstream-project-main ]]"'
+    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-upstream-project ]]"'
+    - if: '$CI_COMMIT_BRANCH == "$[[ inputs.gd-upstream-project-main ]]"'
 
 .ctx-release-mirror:
   extends:
