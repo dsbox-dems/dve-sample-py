@@ -147,19 +147,19 @@ cache:
   extends:
     - .ctx-release-upstream
   rules:
-    - if: '$[[ inputs.gd-release-op-upstream-mirror ]] == 1'
+    - if: '$[[ inputs.gd-release-op-upstream-mirror ]] == "1"'
 
 .ctx-release-image:
   extends:
     - .ctx-release-upstream
   rules:
-    - if: '$[[ inputs.gd-release-op-upstream-image ]] == 1'
+    - if: '$[[ inputs.gd-release-op-upstream-image ]] == "1"'
 
 .ctx-release-notify:
   extends:
     - .ctx-release-upstream
   rules:
-    - if: '$[[ inputs.gd-release-op-upstream-notify ]] == 1'
+    - if: '$[[ inputs.gd-release-op-upstream-notify ]] == "1"'
 
 
 # -----------------------------------------------------------------------------
