@@ -532,7 +532,7 @@ push-base-images:
     - job: build-base-images
       artifacts: true
   dependencies:
-    - build-image
+    - build-base-images
   script:
     - podman login -u "${REGISTRY_USER}" -p "${REGISTRY_PASSWORD}" "${REGISTRY_URL}"
     - |
