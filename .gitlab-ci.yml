@@ -393,11 +393,10 @@ create-merge-request:
 #                    MANUAL (see "Stage 3 approval gate" above)
 # Required vars    : UPSTREAM_TOKEN
 trigger-upstream-merge-and-tag:
-  extends: .gitlab-api-base
-  stage: upstream-merge
-  rules:
-    - if: '$CI_PROJECT_PATH == "ub-dems/dve-simple-py"'
-      when: manual
+  extends:
+    - .ctx-release-downstream
+    - .gitlab-api-base
+  stage: release
   needs:
     - job: create-merge-request
       artifacts: true
