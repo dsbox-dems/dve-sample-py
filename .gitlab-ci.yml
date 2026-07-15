@@ -27,7 +27,7 @@ spec:
       default: "ub-dems-public/ds-labs/dve-simple-py"
     gd-upstream-project-enc:
       default: "ub-dems-public%2Fds-labs%2Fdve-simple-py"
-    gd-downstreem-project-head:
+    gd-downstream-project-head:
       default: "develop"
     gd-downstream-project-main:
       default: "main"
