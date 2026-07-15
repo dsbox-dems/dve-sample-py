@@ -21,6 +21,10 @@ spec:
       default: '1'
     gd-release-op-upstream-mirror:
       default: '1'
+    gd-release-op-upstream-image:
+      default: '0'
+    gd-release-op-upstream-notify:
+      default: '0'
     gd-downstream-project:
       default: "ub-dems/vs-base/dve-simple-py"
     gd-upstream-project:
@@ -141,9 +145,22 @@ cache:
 
 .ctx-release-mirror:
   extends:
-    - .ctx-release-tag
+    - .ctx-release-upstream
   rules:
     - if: '$[[ inputs.gd-release-op-upstream-mirror ]] == 1'
+
+.ctx-release-image:
+  extends:
+    - .ctx-release-upstream
+  rules:
+    - if: '$[[ inputs.gd-release-op-upstream-image ]] == 1'
+
+.ctx-release-notify:
+  extends:
+    - .ctx-release-upstream
+  rules:
+    - if: '$[[ inputs.gd-release-op-upstream-notify ]] == 1'
+
 
 # -----------------------------------------------------------------------------
 # Base Images
@@ -153,6 +170,11 @@ cache:
   image: alpine:3.20
   variables:
     GIT_STRATEGY: none
+  before_script:
+    - apk add --no-cache curl jq
+
+.git-base:
+  image: alpine/git:2.45.2
   before_script:
     - apk add --no-cache curl jq
 
@@ -222,9 +244,16 @@ cache:
     # the cu130 index to the CPU wheel server; triton is not a dep of CPU torch.
     - uv sync --group dev
 
+# ===============================================================================
+# Pipeline: VALIDATION: downstream head only
+# -------------------------------------------------------------------------------
+# - after feature branch merge-request commit
+# - befere head -> main MR (blocking)
+# ===============================================================================
+
 
 # ---------------------------------------------------------------------------
-# lint stage
+# Stage: lint (downstream head only)
 # ---------------------------------------------------------------------------
 
 linting:
@@ -233,8 +262,15 @@ linting:
     - .ctx-develop
     - .uv-validate-lint
   script:
-    - uv run ruff check .
-    - uv run ruff format --check .
+    - uv run ruff check
+
+fornatting:
+  stage: lint
+  extends:
+    - .ctx-develop
+    - .uv-validate-lint
+  script:
+    - uv run ruff format --check
 
 typing:
   stage: lint
@@ -253,7 +289,7 @@ licensing:
     - uv run reuse lint
 
 # ---------------------------------------------------------------------------
-# test stage
+# Stage: test (downstream head only)
 # ---------------------------------------------------------------------------
 
 testing:
@@ -263,9 +299,14 @@ testing:
     - .uv-validate-test
   script:
     - uv run pytest -v
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
 
+
+# ===============================================================================
+# Pipeline: RELEASE: downstream main + upstream main
+# -------------------------------------------------------------------------------
+# - after downstram main annotated version tag commit
+# - forward downstram main -> upstream main MR
+# ===============================================================================
 
 # Primary pipeline trigger: pipelines are only created for tags matching
 # *.*.*. Every job's own `rules:` below only needs to add project scoping.
@@ -275,78 +316,44 @@ workflow:
     - when: never
 
 # -----------------------------------------------------------------------------
-# Stage: validate (downstream only)
+# Stage: release #validation (downstream only)
 # -----------------------------------------------------------------------------
 
-# Project scope    : downstream only (ub-dems/dve-simple-py)
-# Trigger condition: tag v*.*.* (workflow:rules) AND downstream project path
-# Required vars    : none
-pyright-check:
-  extends: .uv-validate-base
-  stage: validate
-  rules:
-    - if: '$CI_PROJECT_PATH == "ub-dems/dve-simple-py"'
-  dependencies: []
-  script:
-    - uv run pyright
-
-# Project scope    : downstream only (ub-dems/dve-simple-py)
-# Trigger condition: tag v*.*.* (workflow:rules) AND downstream project path
-# Required vars    : none
-ruff-check:
-  extends: .uv-validate-base
-  stage: validate
-  rules:
-    - if: '$CI_PROJECT_PATH == "ub-dems/dve-simple-py"'
-  needs:
-    - job: pyright-check
-  dependencies: []
+release-checks:
+  stage: release
+  extends:
+    - .ctx-release-downstream
+    - .uv-validate-check
   script:
     - uv run ruff check
-
-# Project scope    : downstream only (ub-dems/dve-simple-py)
-# Trigger condition: tag v*.*.* (workflow:rules) AND downstream project path
-# Required vars    : none
-ruff-format-check:
-  extends: .uv-validate-base
-  stage: validate
-  rules:
-    - if: '$CI_PROJECT_PATH == "ub-dems/dve-simple-py"'
-  needs:
-    - job: ruff-check
-  dependencies: []
-  script:
     - uv run ruff format --check
+    - uv run pyright
+    - uv run reuse lint
 
-# Project scope    : downstream only (ub-dems/dve-simple-py)
-# Trigger condition: tag v*.*.* (workflow:rules) AND downstream project path
-# Required vars    : none
-pytest-cov:
-  extends: .uv-validate-base
-  stage: validate
-  rules:
-    - if: '$CI_PROJECT_PATH == "ub-dems/dve-simple-py"'
-  needs:
-    - job: ruff-format-check
-  dependencies: []
+release-tests:
+  stage: release
+  extends:
+    - .ctx-release-downstream
+    - .uv-validate-test
   script:
-    - uv run pytest --cov
+    - uv run pytest -v
+    # - uv run pytest -v --cov
 
 # -----------------------------------------------------------------------------
-# Stage: merge-request (downstream only)
+# Stage: release #merge-request (downstream only) - upstream MR create
 # -----------------------------------------------------------------------------
 
-# Project scope    : downstream only (ub-dems/dve-simple-py)
-# Trigger condition: tag v*.*.* (workflow:rules) AND downstream project path
+# Project scope    : downstream only
+# Trigger condition: tag *.*.* (workflow:rules) AND downstream project path
 # Required vars    : UPSTREAM_TOKEN
 create-merge-request:
-  extends: .gitlab-api-base
-  stage: merge-request
-  rules:
-    - if: '$CI_PROJECT_PATH == "ub-dems/dve-simple-py"'
-  needs:
-    - job: pytest-cov
-  dependencies: []
+  extends:
+    - .ctx-release-downstream
+    - .gitlab-api-base
+  stage: release
+  dependencies:
+    - release-checks
+    - release-tests
   script:
     - |
       UPSTREAM_PROJECT_ID=$(curl --silent --show-error --fail \
@@ -378,7 +385,7 @@ create-merge-request:
       dotenv: mr.env
 
 # -----------------------------------------------------------------------------
-# Stage: upstream-merge (downstream only, manual gate)
+# Stage: release #merge-request (downstream only) - upstream MR merge + tag
 # -----------------------------------------------------------------------------
 
 # Project scope    : downstream only (ub-dems/dve-simple-py)
@@ -453,28 +460,51 @@ trigger-upstream-merge-and-tag:
         "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_ID}/repository/tags"
 
 # -----------------------------------------------------------------------------
-# Stage: image-build (upstream only)
+# Stage: mirror-push (upstream only)
 # -----------------------------------------------------------------------------
 
-# Project scope    : upstream only (ub-dems-public/dve-simple-py)
-# Trigger condition: tag v*.*.* (workflow:rules) AND upstream project path;
+# Project scope    : upstream only
+# Trigger condition: tag *.*.* (workflow:rules) AND upstream project path;
+#                    runs only if enabled
+# Required vars    : GITHUB_MIRROR_URL
+mirror-push:
+  stage: release
+  extends:
+    - .ctx-release-mirror
+    - .git-base
+  dependencies: []
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: "0"
+  script:
+    - git remote add mirror "${GITHUB_MIRROR_URL}" || git remote set-url mirror "${GITHUB_MIRROR_URL}"
+    - git push --force-with-lease mirror "${CI_COMMIT_TAG}"
+    - git push --force-with-lease mirror "HEAD:refs/heads/main"
+
+
+# -----------------------------------------------------------------------------
+# Stage: release #publish (unstream only) - podman build + save
+# -----------------------------------------------------------------------------
+
+# Project scope    : upstream only
+# Trigger condition: tag *.*.* (workflow:rules) AND upstream project path;
 #                    this run starts because the tag above was created on the
 #                    upstream project via the API in the previous stage
 # Required vars    : none
-build-image:
-  extends: .podman-base
-  stage: image-build
-  rules:
-    - if: '$CI_PROJECT_PATH == "ub-dems-public/dve-simple-py"'
+build-base-images:
+  stage: release
+  extends:
+    - .ctx-release-image
+    - .podman-base
   needs: []
   dependencies: []
   parallel:
     matrix:
       # Placeholder identifiers — replace with the real image names produced
       # by scripts/build-images.sh (see "Additional notes" below).
-      - IMAGE_NAME: ["runtime", "cli", "docs"]
+      - IMAGE_NAME: ["anchor", "cuda", "base", "runtime"]
   script:
-    - scripts/build-images.sh "${IMAGE_NAME}"
+    - build.sh image "${IMAGE_NAME}"
     - mkdir -p images
     - podman save -o "images/${IMAGE_NAME}.tar" "localhost/${IMAGE_NAME}:${CI_COMMIT_TAG}"
   artifacts:
@@ -490,69 +520,41 @@ build-image:
 # Trigger condition: tag v*.*.* (workflow:rules) AND upstream project path;
 #                    runs only if every build-image matrix job succeeded
 # Required vars    : REGISTRY_URL, REGISTRY_USER, REGISTRY_PASSWORD
-push-images:
-  extends: .podman-base
-  stage: image-push
-  rules:
-    - if: '$CI_PROJECT_PATH == "ub-dems-public/dve-simple-py"'
+push-base-images:
+  stage: release
+  extends:
+    - .ctx-release-image
+    - .podman-base
   needs:
-    - job: build-image
+    - job: build-base-images
       artifacts: true
   dependencies:
     - build-image
   script:
     - podman login -u "${REGISTRY_USER}" -p "${REGISTRY_PASSWORD}" "${REGISTRY_URL}"
     - |
-      for IMAGE_NAME in runtime cli docs; do
+      for IMAGE_NAME in anchor, cuda, base, runtime; do
         podman load -i "images/${IMAGE_NAME}.tar"
         podman push "localhost/${IMAGE_NAME}:${CI_COMMIT_TAG}" \
           "${REGISTRY_URL}/${IMAGE_NAME}:${CI_COMMIT_TAG}"
       done
 
 # -----------------------------------------------------------------------------
-# Stage: mirror-push (upstream only)
-# -----------------------------------------------------------------------------
-
-# Project scope    : upstream only (ub-dems-public/dve-simple-py)
-# Trigger condition: tag v*.*.* (workflow:rules) AND upstream project path;
-#                    runs only if image-push succeeded
-# Required vars    : GITHUB_MIRROR_URL
-mirror-push:
-  stage: mirror-push
-  image: alpine/git:2.45.2
-  rules:
-    - if: '$CI_PROJECT_PATH == "ub-dems-public/dve-simple-py"'
-  needs:
-    - job: push-images
-  dependencies: []
-  variables:
-    GIT_STRATEGY: clone
-    GIT_DEPTH: "0"
-  script:
-    - git remote add mirror "${GITHUB_MIRROR_URL}" || git remote set-url mirror "${GITHUB_MIRROR_URL}"
-    - git push --force-with-lease mirror "${CI_COMMIT_TAG}"
-    - git push --force-with-lease mirror "HEAD:refs/heads/main"
-
-# -----------------------------------------------------------------------------
-# Stage: notify (upstream only)
+# Stage: release #notify (upstream only) - email + slack
 # -----------------------------------------------------------------------------
 
 # Project scope    : upstream only (ub-dems-public/dve-simple-py)
 # Trigger condition: tag v*.*.* (workflow:rules) AND upstream project path;
 #                    runs only if mirror-push succeeded
 # Required vars    : NOTIFY_EMAILS, SMTP_HOST, SMTP_USER, SMTP_PASSWORD
-notify-email:
-  stage: notify
-  image: alpine:3.20
-  rules:
-    - if: '$CI_PROJECT_PATH == "ub-dems-public/dve-simple-py"'
-  needs:
-    - job: mirror-push
+release-notify-email:
+  stage: release
+  extends:
+    - .ctx-release-notify
+    - .notify-base
   dependencies: []
   variables:
     GIT_STRATEGY: none
-  before_script:
-    - apk add --no-cache msmtp
   script:
     - |
       cat > /tmp/msmtprc <<-EOF
@@ -574,26 +576,22 @@ notify-email:
           | msmtp -a default --file=/tmp/msmtprc "${RECIPIENT}"
       done
 
-# Project scope    : upstream only (ub-dems-public/dve-simple-py)
+# Project scope    : upstream only
 # Trigger condition: tag v*.*.* (workflow:rules) AND upstream project path;
 #                    runs only if mirror-push succeeded
 # Required vars    : SLACK_WEBHOOK_URL
-notify-slack:
-  stage: notify
-  image: alpine:3.20
-  rules:
-    - if: '$CI_PROJECT_PATH == "ub-dems-public/dve-simple-py"'
-  needs:
-    - job: mirror-push
+release-notify-slack:
+  stage: release
+  extends:
+    - .ctx-release-notify
+    - .notify-base
   dependencies: []
   variables:
     GIT_STRATEGY: none
-  before_script:
-    - apk add --no-cache curl
   script:
     - |
       curl --silent --show-error --fail \
         --request POST \
         --header "Content-Type: application/json" \
-        --data "{\"text\": \"Release ${CI_COMMIT_TAG} published for ${CI_PROJECT_PATH}. Images pushed to ${REGISTRY_URL}. Mirrored to GitHub.\"}" \
+        --data "{\"text\": \"Release ${CI_COMMIT_TAG} published for ${CI_PROJECT_PATH}.\"}" \
         "${SLACK_WEBHOOK_URL}"
