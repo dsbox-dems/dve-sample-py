@@ -114,6 +114,11 @@ cache:
   # paths:
   #   - .cache/uv
 
+workflow:
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /^WIP/
+      when: never
+
 
 # ---------------------------------------------------------------------------
 # Context Rules
@@ -307,13 +312,6 @@ testing:
 # - after downstram main annotated version tag commit
 # - forward downstram main -> upstream main MR
 # ===============================================================================
-
-# Primary pipeline trigger: pipelines are only created for tags matching
-# *.*.*. Every job's own `rules:` below only needs to add project scoping.
-workflow:
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /$[[ inputs.gd-version-schema ]]/'
-    - when: never
 
 # -----------------------------------------------------------------------------
 # Stage: release #validation (downstream only)
