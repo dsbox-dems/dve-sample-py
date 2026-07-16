@@ -84,94 +84,92 @@ doctype: md-report
 
 [^](#toc)
 
-
 ## Role
 
-You are an expert in GitLab CI/CD pipelines applied in multi-repository environments.
+You are an expert in GitLab CI/CD pipelines for multi-repository environments, specialising in:
 
-You need to target testing and deployments on multi-environment setting (`development`. `testing`, `staging`, `production`).
+- targeting testing and deployment across multiple environments (`development`, `testing`, `staging`, `production`)
+- authorising CI/CD pipeline jobs across a multi-repository setup (public upstream repository, private downstream fork, and public GitHub mirror)
+- Python project automation using `uv`, including pre-release validation with `pyright`, `ruff`, and `pytest`, and post-release container image build and delivery via Podman to a public container registry
+- DevOps best practices for private Git-based, multi-environment configuration management and versioning
 
-You need to authorize CI/CD pipelines jobs to operate on a multi-repository setting ("Upstram"/"Downstrem" on GitLab or "Master/Mirror" GitLab and GitHub).
+## Terminology
 
-You specialise in Python project automation using `uv`, including pre-release validation via `pyright`, `ruff`, and `pytest`, and post-release container image generation and delivery via Podman to a public container registry.
+To avoid ambiguity, use these terms consistently throughout your response:
 
-You are ea expert on "DevOps" best practices on (Private) Git support for multi-environment configuration management and versioning.
+- _upstream_ — the canonical public repository
+- _downstream_ — the private fork, extended with unmerged features
+- _mirror_ — the public GitHub copy of the upstream repository
 
 ## Context
 
-Consider this scenario, where two GitLab projects share the same Python codebase managed with `uv`:
+Two GitLab projects share the same Python codebase, managed with `uv`:
 
 - _Public upstream project_: `ub-dems-public/ds-lab/dve-simple-py`, branch `main`
-  - This is the canonical public-facing repository.
-
 - _Private downstream project_: `ub-dems/vs-base/dve-simple-py`, branches `main` and `development`
-  - This is a fork of the upstream project, extended with additional features not yet
-    merged upstream.
+- _Public mirror project_ (GitHub): `ub-dems/dve-simple-py`, branch `main`
 
-- _Public mirror project_: `ub-dems/dve-simple-py`, branch `main`
-  - This is an upstream repository mirror on GitHub.
+Requirements to address:
 
+- inter-repository authorisation so that pipelines in the downstream project can trigger merge requests and tag jobs on the upstream project, and push the codebase to the mirror
+- public container registry credentials, available as CI/CD pipeline variables
+- environment-dependent configuration data (API access tokens, database credentials), available consistently across CI/CD pipelines, local development, and application runtime
 
-You need to manage inter-repository authorization, for GitLab pipelines for downstream triggering upstream merge-requests and upstream tag job, git pushing codebase to GitHub mirror.
-
-Also, credentials for Public container registry must be accessible as variables in pipelines.
-
-Additional sensible configuration data, like API access-tokens and database credentials, all environment dependent, must be available not only in pipelines but also for local development and application execution runtime.
+Before answering, reason through each environment (`development`, `testing`, `staging`, `production`) and each repository (upstream, downstream, mirror) as a distinct combination, so that environment-specific and repository-specific nuances are not collapsed into a single generic answer.
 
 ## Objective
 
+1. Configuration management best practices
+   - constraint: all configuration data must reside in private GitLab repositories
+   - constraint: avoid duplication between GitLab CI/CD variables and local development/runtime configuration
+   - _deliverable_: a pros/cons comparison of `git submodule` versus a parallel checkout of a configuration repository (accessed via relative path, no symbolic links), with a final recommendation
 
-1. Discuss "DevOps" best practices on configuration management, with these contraints:
-   - all configuration data must be kept in private (gitlab) repositories
-   - avoid duplication in configurations supporting both GitLab CI/CD variables and local development and appliation runtime
-   - in this context, `git submodule` option for configuration management tends to be awkward. But discuss "prons and cons" of this option.
-   - as alternative to `git submodule`, consider parallel checkout of config repo, accessible via relative path, avoiding symbolic links.
+2. GitLab environment support for multi-environment pipelines
+   - pipeline targets: `development`, `testing`, `staging`, `production`
+   - _deliverable_: a strategy, with a supporting table (environment → configuration source URL → resolution mechanism), for resolving the correct configuration URL per environment
 
-2. Descrive GitLab "environment" support for CI/CD pipelines:
-   - assume pipeline targets are: `development`. `testing`, `staging`, `production`
-   - define a strategy to connect the 'correct' configuration URL (from private GitLab configuration repository)
-     
-3. Inter-Repository (GitLab/GitLab and GitLab/GitHub) configuration:
-   - These authorizations are required only for CI/CD pipelines, not in local development
-   - the `.gitlab-ci.yml` contains a `spec.input` header. How is it possible to override defaults ?
+3. Inter-repository authorisation (GitLab-to-GitLab and GitLab-to-GitHub)
+   - constraint: authorisation is required only for CI/CD pipelines, not for local development
+   - _deliverable_: an explanation of how default values declared in a `spec:inputs:` header can be overridden at pipeline trigger time, including which override mechanisms apply to protected branches/environments
 
-4. Public container image registry credentials
-   - `podman push` must be supported in all contexts: GitLab pipelines but also in local development
-   - the same applies for API access-tokens and database credentials.
+4. Public container registry and secrets availability
+   - constraint: `podman push` must work identically in GitLab pipelines and local development
+   - constraint: the same applies to API access tokens and database credentials
+   - _deliverable_: a table mapping each secret type to its storage location and retrieval mechanism, per context (pipeline vs. local)
 
-5. "DevOps" strategies:
-   - propose some possible operative procedures to address this topic.
-   - discuss critical points and compare "prons and cons" of alternatives.
-   - provide references to online materials (articles, tutorials, discussions).
-   to build all container images; treat each image as an independent parallel job with a
-   failure-aware dependency chain
+5. Parallel container image builds
+   - constraint: each container image is built as an independent parallel job
+   - constraint: the job graph must implement a failure-aware dependency chain
+   - _deliverable_: a description (or `.gitlab-ci.yml` sketch) of the job graph and its failure-handling behaviour
 
-
+6. DevOps strategy synthesis
+   - propose concrete operative procedures covering objectives 1–5
+   - discuss critical points and compare the pros and cons of the alternatives considered
+   - provide references to relevant online materials (articles, tutorials, discussions)
 
 ## Output Format
 
-- Reply in clear formatted "GitLab Flavored Markdown (GLFM)" Markdown,
-with precise (lint) validation:
-  - codeblock delimiters ``` placed atline start). Avoid codeblock nesting.
-  - use _underscore markup_ for emphasys
-  - prefer nested headings to text markup with asterisks
-  - use only "dash" for unordered lists, with correct indentation
-  - insert appropriate blank line separation after headings, list and codeblocks
+Reply in clear, lint-valid GitLab Flavored Markdown (GLFM):
 
-- Ignore document formatting markup, like:
-  - <details><summary> HTML blocks
-  - {=latex} codeblocks
-  - [!tip] [!note] block quotes
-  - code folding tags ("three curly braces pairs")
-  - internal links: e.g. [^]
+- place codeblock delimiters (```) at the start of the line; avoid nested codeblocks
+- use _underscore markup_ for emphasis
+- prefer nested headings over asterisk-based text markup
+- use dashes only for unordered lists, with correct indentation
+- insert a blank line after every heading, list, and codeblock
 
-- At the end, provide, as Markdown footnotes, a list of references to
-online documentation resources, linked to answer text where
-appropriate. To avoid reference clashing with other part of the
-document, prefix references with the string "rf-".
+Disregard the following non-standard formatting markup if encountered elsewhere:
 
-- Add any additional important information not explicitly required in
-an "Additional Notes" section.
+- `<details><summary>` HTML blocks
+- `{=latex}` codeblocks
+- `[!tip]` / `[!note]` blockquotes
+- triple-curly-brace code-folding tags
+- internal links (e.g. `[^]`)
+
+At the end of the response, list references to online documentation as Markdown footnotes, prefixed with `rf-` to avoid clashing with other references in the document, and link them inline to the relevant answer text.
+
+Add any additional relevant information not explicitly requested, under an _Additional Notes_ section.
+
+
 
 <details>
 <summary></summary>
