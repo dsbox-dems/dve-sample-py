@@ -200,8 +200,7 @@ Add any additional relevant information not explicitly requested, under an _Addi
 [^](#toc) **_GitLab CI/CD multi-repo setup_**
 
 
----
-> ===( Sonnet 5 [`medium`] )=================================================================
+> ===( Sonnet-5 [`medium`] )=====
 
 
 For managing CI/CD across multiple GitLab repositories, there are several complementary strategies depending on how much sharing and coordination you need. Here's the landscape:
@@ -267,8 +266,7 @@ A common production setup: a `ci-components` repo owning versioned components �
 
 What's your situation — are you dealing with many microservice repos needing consistent CI, or a few repos that need to coordinate deploys with each other? That'll help narrow down which pattern fits best.
 
----
-> ===( Sonnet 5 [`medium`] )=================================================================
+> ===( Sonnet-5 [`high`] )====
 
 
 ## Environment × Repository Combinations
@@ -462,12 +460,23 @@ The main trade-off worth re-stating: this design favours explicitness (a bootstr
 - `uv` fits naturally into the parallel-build job template as the tool used inside each `Containerfile`'s build stage; keeping `pyright`/`ruff`/`pytest` as an earlier, non-matrixed stage means a lint/type/test failure blocks all three image builds before any `podman build` even starts, which is usually cheaper than letting all three builds run and fail independently.
 - Because upstream is public, anonymous read access already exists for the mirror and for anyone inspecting the codebase — the authorisation work in objective 3 is entirely about _write_ operations (MRs, tags, pushes), not about protecting read access to the code itself.
 
-- [^ac-inputs]: GitLab Docs, ["CI/CD Inputs"](https://docs.gitlab.com/ci/inputs/)
-- [^ac-yaml-needs]: GitLab Docs, ["CI/CD YAML syntax reference" (`needs`, `parallel:matrix`)](https://docs.gitlab.com/ci/yaml/)
-- [^ac-jobtoken]: GitLab, ["CI/CD job token" reference](https://github.com/gitlabhq/gitlabhq/blob/master/doc/ci/jobs/ci_job_token.md)
-- [^ac-protectedvars]: GitLab, ["CI Protected Variables"](https://runbooks.gitlab.com/ci/protected-variables/)
-- [^ac-environments]: GitLab Docs, ["Environments" (environment-scoped variables)](https://docs.gitlab.com/ci/environments/)
-- [^ac-mirror]: GitLab Docs, ["Repository mirroring"](https://docs.gitlab.com/user/project/repository/mirror)
+### References
+
+- see[^ac-inputs]: GitLab Docs, ["CI/CD Inputs"](https://docs.gitlab.com/ci/inputs/)
+- see[^ac-yaml-needs]: GitLab Docs, ["CI/CD YAML syntax reference" (`needs`, `parallel:matrix`)](https://docs.gitlab.com/ci/yaml/)
+- see[^ac-jobtoken]: GitLab, ["CI/CD job token" reference](https://github.com/gitlabhq/gitlabhq/blob/master/doc/ci/jobs/ci_job_token.md)
+- see[^ac-protectedvars]: GitLab, ["CI Protected Variables"](https://runbooks.gitlab.com/ci/protected-variables/)
+- see[^ac-environments]: GitLab Docs, ["Environments" (environment-scoped variables)](https://docs.gitlab.com/ci/environments/)
+- see[^ac-mirror]: GitLab Docs, ["Repository mirroring"](https://docs.gitlab.com/user/project/repository/mirror)
+
+
+
+[^ac-inputs]: GitLab Docs, ["CI/CD Inputs"](https://docs.gitlab.com/ci/inputs/)
+[^ac-yaml-needs]: GitLab Docs, ["CI/CD YAML syntax reference" (`needs`, `parallel:matrix`)](https://docs.gitlab.com/ci/yaml/)
+[^ac-jobtoken]: GitLab, ["CI/CD job token" reference](https://github.com/gitlabhq/gitlabhq/blob/master/doc/ci/jobs/ci_job_token.md)
+[^ac-protectedvars]: GitLab, ["CI Protected Variables"](https://runbooks.gitlab.com/ci/protected-variables/)
+[^ac-environments]: GitLab Docs, ["Environments" (environment-scoped variables)](https://docs.gitlab.com/ci/environments/)
+[^ac-mirror]: GitLab Docs, ["Repository mirroring"](https://docs.gitlab.com/user/project/repository/mirror)
 
 
 
@@ -658,8 +667,12 @@ When using `uv` in CI/CD, ensure you utilise its caching capabilities. Set the `
 
 ## References
 
-- [^ag-1]: [GitLab Job Token documentation](https://docs.gitlab.com/ee/ci/jobs/ci_job_token.html)
-- [^ag-2]: [GitLab CI/CD Components and Inputs](https://docs.gitlab.com/ee/ci/components/)
+- see[^ag-1]: [GitLab Job Token documentation](https://docs.gitlab.com/ee/ci/jobs/ci_job_token.html)
+- see[^ag-2]: [GitLab CI/CD Components and Inputs](https://docs.gitlab.com/ee/ci/components/)
+
+
+[^ag-1]: [GitLab Job Token documentation](https://docs.gitlab.com/ee/ci/jobs/ci_job_token.html)
+[^ag-2]: [GitLab CI/CD Components and Inputs](https://docs.gitlab.com/ee/ci/components/)
 
 
 # A:1 (ChatGPT)
@@ -1215,17 +1228,31 @@ This minimises wasted CI time while preserving release integrity.
 
 ### References
 
-- [^at-gitlab-project-access]: GitLab Docs — [*Project Access Tokens*](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens/)
-- [^at-gitlab-inputs]: GitLab Docs — [*CI/CD Inputs (`spec:inputs`)*](https://docs.gitlab.com/ee/ci/inputs/)
-- [^at-gitlab-components]: GitLab Docs — [*CI/CD Components*](https://docs.gitlab.com/ee/ci/components/)
-- [^at-gitlab-environments]: GitLab Docs — [*Environments and Protected Environments*](https://docs.gitlab.com/ee/ci/environments/)
-- [^at-gitlab-variables]: GitLab Docs — [*CI/CD Variables*](https://docs.gitlab.com/ee/ci/variables/)
-- [^at-gitlab-job-token]: GitLab Docs — [*CI_JOB_TOKEN*](https://docs.gitlab.com/ee/ci/jobs/ci_job_token.html)
-- [^at-gitlab-needs]: GitLab Docs — [*Directed Acyclic Graph Pipelines (`needs`)*](https://docs.gitlab.com/ee/ci/yaml/needs/)
-- [^at-podman-login]: Podman Documentation — [*podman login*](https://docs.podman.io/en/latest/markdown/podman-login.1.html)
-- [^at-uv]: Astral - [`uv` Documentation](https://docs.astral.sh/uv/)
-- [^at-github-fgpat]: GitHub Docs — [*Managing Fine-grained Personal Access Tokens*](https://docs.github.com/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
-- [^at-sops]: Mozilla - [SOPS Documentation](https://github.com/getsops/sops)
+- see[^at-gitlab-project-access]: GitLab Docs — [*Project Access Tokens*](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens/)
+- see[^at-gitlab-inputs]: GitLab Docs — [*CI/CD Inputs (`spec:inputs`)*](https://docs.gitlab.com/ee/ci/inputs/)
+- see[^at-gitlab-components]: GitLab Docs — [*CI/CD Components*](https://docs.gitlab.com/ee/ci/components/)
+- see[^at-gitlab-environments]: GitLab Docs — [*Environments and Protected Environments*](https://docs.gitlab.com/ee/ci/environments/)
+- see[^at-gitlab-variables]: GitLab Docs — [*CI/CD Variables*](https://docs.gitlab.com/ee/ci/variables/)
+- see[^at-gitlab-job-token]: GitLab Docs — [*CI_JOB_TOKEN*](https://docs.gitlab.com/ee/ci/jobs/ci_job_token.html)
+- see[^at-gitlab-needs]: GitLab Docs — [*Directed Acyclic Graph Pipelines (`needs`)*](https://docs.gitlab.com/ee/ci/yaml/needs/)
+- see[^at-podman-login]: Podman Documentation — [*podman login*](https://docs.podman.io/en/latest/markdown/podman-login.1.html)
+- see[^at-uv]: Astral - [`uv` Documentation](https://docs.astral.sh/uv/)
+- see[^at-github-fgpat]: GitHub Docs — [*Managing Fine-grained Personal Access Tokens*](https://docs.github.com/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+- see[^at-sops]: Mozilla - [SOPS Documentation](https://github.com/getsops/sops)
+
+
+
+[^at-gitlab-project-access]: GitLab Docs — [*Project Access Tokens*](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens/)
+[^at-gitlab-inputs]: GitLab Docs — [*CI/CD Inputs (`spec:inputs`)*](https://docs.gitlab.com/ee/ci/inputs/)
+[^at-gitlab-components]: GitLab Docs — [*CI/CD Components*](https://docs.gitlab.com/ee/ci/components/)
+[^at-gitlab-environments]: GitLab Docs — [*Environments and Protected Environments*](https://docs.gitlab.com/ee/ci/environments/)
+[^at-gitlab-variables]: GitLab Docs — [*CI/CD Variables*](https://docs.gitlab.com/ee/ci/variables/)
+[^at-gitlab-job-token]: GitLab Docs — [*CI_JOB_TOKEN*](https://docs.gitlab.com/ee/ci/jobs/ci_job_token.html)
+[^at-gitlab-needs]: GitLab Docs — [*Directed Acyclic Graph Pipelines (`needs`)*](https://docs.gitlab.com/ee/ci/yaml/needs/)
+[^at-podman-login]: Podman Documentation — [*podman login*](https://docs.podman.io/en/latest/markdown/podman-login.1.html)
+[^at-uv]: Astral - [`uv` Documentation](https://docs.astral.sh/uv/)
+[^at-github-fgpat]: GitHub Docs — [*Managing Fine-grained Personal Access Tokens*](https://docs.github.com/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+[^at-sops]: Mozilla - [SOPS Documentation](https://github.com/getsops/sops)
 
 
 
@@ -1542,12 +1569,21 @@ publish-release:
 
 ## References
 
-- [^ad-1]: GitLab documentation, [“Spec:inputs – Pipeline inputs for triggered pipelines.”](https://docs.gitlab.com/ee/ci/yaml/#specinputs)
-- [^ad-2]: GitLab documentation, [“Multi‑project pipelines.”](https://docs.gitlab.com/ee/ci/pipelines/multi_project_pipelines.html)
-- [^ad-3]: GitLab documentation, [“Job artifacts and `needs` with `optional`.”](https://docs.gitlab.com/ee/ci/yaml/#needsoptional)
-- [^ad-4]: GitLab documentation, [“Project access tokens.”](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html)
-- [^ad-5]: Mozilla SOPS – [“Secrets OPerationS.”](https://github.com/getsops/sops)
-- [^ad-6]: Podman documentation, [“`podman login` and `podman push`.”](https://docs.podman.io/en/latest/markdown/podman-login.1.html)
+- see[^ad-1]: GitLab documentation, [“Spec:inputs – Pipeline inputs for triggered pipelines.”](https://docs.gitlab.com/ee/ci/yaml/#specinputs)
+- see[^ad-2]: GitLab documentation, [“Multi‑project pipelines.”](https://docs.gitlab.com/ee/ci/pipelines/multi_project_pipelines.html)
+- see[^ad-3]: GitLab documentation, [“Job artifacts and `needs` with `optional`.”](https://docs.gitlab.com/ee/ci/yaml/#needsoptional)
+- see[^ad-4]: GitLab documentation, [“Project access tokens.”](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html)
+- see[^ad-5]: Mozilla SOPS – [“Secrets OPerationS.”](https://github.com/getsops/sops)
+- see[^ad-6]: Podman documentation, [“`podman login` and `podman push`.”](https://docs.podman.io/en/latest/markdown/podman-login.1.html)
+
+
+
+[^ad-1]: GitLab documentation, [“Spec:inputs – Pipeline inputs for triggered pipelines.”](https://docs.gitlab.com/ee/ci/yaml/#specinputs)
+[^ad-2]: GitLab documentation, [“Multi‑project pipelines.”](https://docs.gitlab.com/ee/ci/pipelines/multi_project_pipelines.html)
+[^ad-3]: GitLab documentation, [“Job artifacts and `needs` with `optional`.”](https://docs.gitlab.com/ee/ci/yaml/#needsoptional)
+[^ad-4]: GitLab documentation, [“Project access tokens.”](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html)
+[^ad-5]: Mozilla SOPS – [“Secrets OPerationS.”](https://github.com/getsops/sops)
+[^ad-6]: Podman documentation, [“`podman login` and `podman push`.”](https://docs.podman.io/en/latest/markdown/podman-login.1.html)
 
 
 
@@ -1716,14 +1752,25 @@ Another critical point is secret scope. Masking helps with log leakage, but it i
 
 ## References
 
-- [^ap-1] [GitLab CI/CD inputs](https://docs.gitlab.com/ci/inputs/).
-- [^ap-2] [GitLab CI/CD variables](https://docs.gitlab.com/ci/variables/).
-- [^ap-3] [Protected environments](https://docs.gitlab.com/ci/environments/protected_environments/).
-- [^ap-4] [Trigger pipelines with the API](https://docs.gitlab.com/ci/triggers/).
-- [^ap-5] [GitLab pipelines overview](https://docs.gitlab.com/ci/pipelines/).
-- [^ap-6] [`needs` keyword reference](https://docs.gitlab.com/ci/yaml/needs/).
-- [^ap-7] [Job artifacts](https://docs.gitlab.com/ci/jobs/job_artifacts/).
-- [^ap-8] [Cross-project pipelines](https://about.gitlab.com/blog/cross-project-pipeline/).
+- see[^ap-1] [GitLab CI/CD inputs](https://docs.gitlab.com/ci/inputs/).
+- see[^ap-2] [GitLab CI/CD variables](https://docs.gitlab.com/ci/variables/).
+- see[^ap-3] [Protected environments](https://docs.gitlab.com/ci/environments/protected_environments/).
+- see[^ap-4] [Trigger pipelines with the API](https://docs.gitlab.com/ci/triggers/).
+- see[^ap-5] [GitLab pipelines overview](https://docs.gitlab.com/ci/pipelines/).
+- see[^ap-6] [`needs` keyword reference](https://docs.gitlab.com/ci/yaml/needs/).
+- see[^ap-7] [Job artifacts](https://docs.gitlab.com/ci/jobs/job_artifacts/).
+- see[^ap-8] [Cross-project pipelines](https://about.gitlab.com/blog/cross-project-pipeline/).
+
+
+
+[^ap-1] [GitLab CI/CD inputs](https://docs.gitlab.com/ci/inputs/).
+[^ap-2] [GitLab CI/CD variables](https://docs.gitlab.com/ci/variables/).
+[^ap-3] [Protected environments](https://docs.gitlab.com/ci/environments/protected_environments/).
+[^ap-4] [Trigger pipelines with the API](https://docs.gitlab.com/ci/triggers/).
+[^ap-5] [GitLab pipelines overview](https://docs.gitlab.com/ci/pipelines/).
+[^ap-6] [`needs` keyword reference](https://docs.gitlab.com/ci/yaml/needs/).
+[^ap-7] [Job artifacts](https://docs.gitlab.com/ci/jobs/job_artifacts/).
+[^ap-8] [Cross-project pipelines](https://about.gitlab.com/blog/cross-project-pipeline/).
 
 
 
@@ -2054,13 +2101,22 @@ deploy:production:
 
 ### **References**
 
-- [^av-1] [GitLab CI/CD Variables](https://docs.gitlab.com/ee/ci/variables/)
-- [^av-2] [GitLab `needs` Keyword](https://docs.gitlab.com/ee/ci/yaml/#needs)
-- [^av-3] [GitLab Trigger Pipelines](https://docs.gitlab.com/ee/ci/pipelines/downstream-pipelines.html)
-- [^av-4] [GitLab Protected Environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-- [^av-5] [Podman Login](https://docs.podman.io/en/latest/markdown/podman-login.1.html)
-- [^av-6] [Python `python-dotenv`](https://pypi.org/project/python-dotenv/)
-- [^av-7] [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+- see[^av-1] [GitLab CI/CD Variables](https://docs.gitlab.com/ee/ci/variables/)
+- see[^av-2] [GitLab `needs` Keyword](https://docs.gitlab.com/ee/ci/yaml/#needs)
+- see[^av-3] [GitLab Trigger Pipelines](https://docs.gitlab.com/ee/ci/pipelines/downstream-pipelines.html)
+- see[^av-4] [GitLab Protected Environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+- see[^av-5] [Podman Login](https://docs.podman.io/en/latest/markdown/podman-login.1.html)
+- see[^av-6] [Python `python-dotenv`](https://pypi.org/project/python-dotenv/)
+- see[^av-7] [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+
+
+[^av-1] [GitLab CI/CD Variables](https://docs.gitlab.com/ee/ci/variables/)
+[^av-2] [GitLab `needs` Keyword](https://docs.gitlab.com/ee/ci/yaml/#needs)
+[^av-3] [GitLab Trigger Pipelines](https://docs.gitlab.com/ee/ci/pipelines/downstream-pipelines.html)
+[^av-4] [GitLab Protected Environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+[^av-5] [Podman Login](https://docs.podman.io/en/latest/markdown/podman-login.1.html)
+[^av-6] [Python `python-dotenv`](https://pypi.org/project/python-dotenv/)
+[^av-7] [Git Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 
 ---
 
