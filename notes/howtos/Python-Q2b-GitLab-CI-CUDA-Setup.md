@@ -6,7 +6,7 @@ subtitle: |
 
 # {{{ // %+
 
-category: DVE-Howto
+category: GitLab-HOWTO
 keywords: [GEN, GitLab-CI, CUDA, PyTorch, Astral-uv, Micromamba]
 abstract: |
   This technical report addresses the disk-quota constraints

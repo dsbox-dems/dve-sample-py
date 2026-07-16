@@ -6,8 +6,10 @@ subtitle: |
   image delivery, and release notification for the
   `dve-simple-py` codebase across public and private GitLab
   repositories
+
 # {{{ // %+
-category: Python-HOWTO
+
+category: GitLab-HOWTO
 keywords: [GEN, GitLab-CI-CD, uv, Podman, Pyright-Ruff-Pytest, Container-Registry, Multi-repository-Release]
 abstract: |
   This report specifies a GitLab CI/CD pipeline coordinating a
