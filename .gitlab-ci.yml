@@ -1,22 +1,92 @@
+# =============================================================================
+# .gitlab-ci.yml
+#
+# Shared release pipeline for the dve-simple-py codebase.
+# This exact file lives in both projects:
+#   - ub-dems/dve-simple-py        (private downstream fork, branches main/development)
+#   - ub-dems-public/dve-simple-py (public upstream, branch main)
+#
+# The pipeline is tag-triggered (v*.*.*) and splits into two cooperating
+# pipeline RUNS in two different projects:
+#   1. Downstream validates, opens the release MR, and (on manual approval)
+#      merges + tags upstream.
+#   2. Creating that tag on upstream via the API starts a SECOND, independent
+#      pipeline in the upstream project, which builds, pushes, mirrors, and
+#      notifies.
+# =============================================================================
 ---
-# ---------------------------------------------------------------------------
-# Disk-budget notes
-# ---------------------------------------------------------------------------
-# GitLab SaaS shared runners carry a 20 GB working-directory quota.
-# The CUDA-bundled torch wheel + triton alone exceed this budget.
-#
-# Fix: redirect the "torch-gpu" named index to the CPU wheel server for all
-# CI jobs via UV_INDEX_TORCH_GPU.  Downstream consumers running on GPU hosts
-# omit this variable and continue to receive CUDA wheels from the cu130 index.
-#
-# Cache strategy: persist only $UV_CACHE_DIR (downloaded wheel archives).
-# Do NOT cache .venv — extracting from the wheel cache is fast (~30 s) and
-# avoids the cache-serialisation phase that itself hits the disk quota.
-# ---------------------------------------------------------------------------
+spec:
+  inputs:
+    gd-release-op-upstream-merge:
+      default: '1'
+    gd-release-op-upstream-mirror:
+      default: '1'
+    gd-release-op-upstream-image:
+      default: '0'
+    gd-release-op-upstream-notify:
+      default: '0'
+    gd-downstream-project:
+      default: "ub-dems/vs-base/dve-simple-py"
+    gd-upstream-project:
+      default: "ub-dems-public/ds-labs/dve-simple-py"
+    gd-upstream-project-enc:
+      default: "ub-dems-public%2Fds-labs%2Fdve-simple-py"
+    gd-downstream-project-head:
+      default: "develop"
+    gd-downstream-project-main:
+      default: "main"
+    gd-upstream-project-main:
+      default: "main"
+    gd-version-schema:
+      default: '^\d\.\d+(\.\d+)?$'
+    gd-python-version:
+      default: '3.14'
+    environment:
+      options:
+        - development
+        - staging
+        - production
+      default: production
+---
 
-image: python:3.14-slim
+stages:
+  - lint
+  - test
+  - release
+  - publish
+
+
+default:
+  image: python:$[[ inputs.gd-python-version ]]-slim
 
 variables:
+
+  # Non-sensitive defaults only. REGISTRY_URL, REGISTRY_USER, REGISTRY_PASSWORD,
+  # UPSTREAM_TOKEN, GITHUB_MIRROR_URL, NOTIFY_EMAILS, SMTP_*, SLACK_WEBHOOK_URL
+  # are pre-configured project CI/CD variables and are intentionally NOT
+  # redeclared here.
+  DOWNSTREAM_PROJECT_PATH: "$[[ inputs.gd-downstream-project ]]"
+  UPSTREAM_PROJECT_PATH: "$[[ inputs.gd-upstream-project ]]"
+  UPSTREAM_PROJECT_PATH_ENCODED: "$[[ inputs.gd-upstream-project-enc ]]"
+  MR_SOURCE_BRANCH: "$[[ inputs.gd-downstream-project-main ]]"
+  MR_TARGET_BRANCH: "$[[ inputs.gd-upstream-project-main ]]"
+  GIT_DEPTH: "0"
+
+  # ---------------------------------------------------------------------------
+  # Disk-budget notes
+  # ---------------------------------------------------------------------------
+  # GitLab SaaS shared runners carry a 20 GB working-directory quota.
+  # The CUDA-bundled torch wheel + triton alone exceed this budget.
+  #
+  # Fix: redirect the "torch-gpu" named index to the CPU wheel server for all
+  # CI jobs via UV_INDEX_TORCH_GPU.  Downstream consumers running on GPU hosts
+  # omit this variable and continue to receive CUDA wheels from the cu130 index.
+  #
+  # Cache strategy: persist only $UV_CACHE_DIR (downloaded wheel archives).
+  # Do NOT cache .venv — extracting from the wheel cache is fast (~30 s) and
+  # avoids the cache-serialisation phase that itself hits the disk quota.
+  # ---------------------------------------------------------------------------
+
   # --- uv installation ---
   UV_VERSION: "latest"
 
@@ -34,41 +104,124 @@ variables:
   # --- never use the system Python; always use uv-managed interpreter ---
   UV_PYTHON_PREFERENCE: "only-managed"
 
-# Only the uv download cache is persisted.  .venv is intentionally excluded.
+
 cache:
-  key:
-    files:
-      - pyproject.toml
-      - uv.lock
-  paths:
-    - .cache/uv
   policy: pull-push
+  # key:
+  #   files:
+  #     - pyproject.toml
+  #     - uv.lock
+  # paths:
+  #   - .cache/uv
 
-stages:
-  - lint
-  - test
-
-# ---------------------------------------------------------------------------
-# Shared setup fragment — referenced via YAML anchors
-# ---------------------------------------------------------------------------
-.install_uv: &install_uv
-  - echo "#__init__"
-  - env
-  - df -h
-  - apt-get update -qq && apt-get install -y --no-install-recommends ca-certificates curl git
-  - rm -rf /var/lib/apt/lists/*
-  - curl -LsSf https://astral.sh/uv/install.sh | sh
-  - export PATH="$HOME/.local/bin:$PATH"
-  - uv --version
+workflow:
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /^WIP/
+      when: never
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_REF_PROTECTED == "true"
 
 # ---------------------------------------------------------------------------
-# lint stage
+# Context Rules
 # ---------------------------------------------------------------------------
 
-linting:
-  stage: lint
+.ctx-develop:
+  rules:
+    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-downstream-project ]]"'
+    - if: '$CI_COMMIT_BRANCH == "$[[ inputs.gd-downstream-project-head ]]"'
+
+.ctx-release-tag:
+  rules:
+    - if: '"$[[ inputs.gd-release-op-upstream-merge ]]" == "1"'
+    - if: '$CI_COMMIT_TAG =~ /$[[ inputs.gd-version-schema ]]/'
+
+.ctx-release-downstream:
+  extends:
+    - .ctx-release-tag
+  rules:
+    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-downstream-project ]]"'
+    - if: '$CI_COMMIT_BRANCH == "$[[ inputs.gd-downstream-project-main ]]"'
+
+.ctx-release-upstream:
+  extends:
+    - .ctx-release-tag
+  rules:
+    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-upstream-project ]]"'
+    - if: '$CI_COMMIT_BRANCH == "$[[ inputs.gd-upstream-project-main ]]"'
+
+.ctx-release-mirror:
+  extends:
+    - .ctx-release-upstream
+  rules:
+    - if: '"$[[ inputs.gd-release-op-upstream-mirror ]]" == "1"'
+
+.ctx-release-image:
+  extends:
+    - .ctx-release-upstream
+  rules:
+    - if: '"$[[ inputs.gd-release-op-upstream-image ]]" == "1"'
+
+.ctx-release-notify:
+  extends:
+    - .ctx-release-upstream
+  rules:
+    - if: '"$[[ inputs.gd-release-op-upstream-notify ]]" == "1"'
+
+
+# -----------------------------------------------------------------------------
+# Base Images
+# -----------------------------------------------------------------------------
+
+.gitlab-api-base:
+  image: alpine:3.20
+  variables:
+    GIT_STRATEGY: none
   before_script:
-    - *install_uv
+    - apk add --no-cache curl jq
+
+.git-base:
+  image: alpine/git:2.45.2
+  before_script:
+    - apk add --no-cache curl jq
+
+.notify-base:
+  extends:
+    - .gitlab-api-base
+  before_script:
+    - apk add --no-cache msmtp
+
+.podman-base:
+  image: quay.io/podman/stable:v5
+
+.uv-validate-base:
+  image: python:$[[ inputs.gd-python-version ]]-slim
+  variables:
+    UV_CACHE_DIR: "${CI_PROJECT_DIR}/.cache/uv"
+  cache:
+    # Only the uv download cache is persisted.  .venv is intentionally excluded.
+    key: "uv-${CI_COMMIT_REF_SLUG}"
+    # files:
+    #   - pyproject.toml
+    #   - uv.lock
+    paths:
+      - .cache/uv
+  before_script:
+    - echo "#__uv:init__"
+    - env
+    - df -h
+    # - apt-get update -qq
+    # - apt-get install -y --no-install-recommends ca-certificates curl git
+    # - rm -rf /var/lib/apt/lists/*
+    # - curl -LsSf https://astral.sh/uv/install.sh | sh
+    # - export PATH="$HOME/.local/bin:$PATH"
+    - pip install --quiet uv
+    # - uv sync --frozen
+
+.uv-validate-lint:
+  extends:
+    - .uv-validate-base
+  before_script:
     # Lint jobs operate on source text only.
     # --only-group dev  : install ruff and its peers; skip main dependencies.
     # --no-install-project : do not install the project package itself.
@@ -78,49 +231,366 @@ linting:
     - uv pip list
     - du -sh .venv
     - df -h
-  script:
-    - uv run ruff check .
-    - uv run ruff format --check .
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
 
-typing:
-  stage: lint
+.uv-validate-check:
+  extends:
+    - .uv-validate-base
   before_script:
-    - *install_uv
     # pyright requires all project imports to be resolvable, so main deps
     # (including CPU torch) must be present.  UV_INDEX_TORCH_GPU redirects
     # the cu130 index to the CPU wheel server; triton is not a dep of CPU torch.
     - uv sync --group dev
     - df -h
+
+.uv-validate-test:
+  extends:
+    - .uv-validate-base
+  before_script:
+    # pyright requires all project imports to be resolvable, so main deps
+    # (including CPU torch) must be present.  UV_INDEX_TORCH_GPU redirects
+    # the cu130 index to the CPU wheel server; triton is not a dep of CPU torch.
+    - uv sync --group dev
+
+# ===============================================================================
+# Pipeline: VALIDATION: downstream head only
+# -------------------------------------------------------------------------------
+# - after feature branch merge-request commit
+# - befere head -> main MR (blocking)
+# ===============================================================================
+
+
+# ---------------------------------------------------------------------------
+# Stage: lint (downstream head only)
+# ---------------------------------------------------------------------------
+
+linting:
+  stage: lint
+  extends:
+    - .ctx-develop
+    - .uv-validate-lint
+  script:
+    - uv run ruff check
+
+fornatting:
+  stage: lint
+  extends:
+    - .ctx-develop
+    - .uv-validate-lint
+  script:
+    - uv run ruff format --check
+
+typing:
+  stage: lint
+  extends:
+    - .ctx-develop
+    - .uv-validate-check
   script:
     - uv run pyright
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
 
 licensing:
   stage: lint
-  before_script:
-    - *install_uv
-    - uv sync --group dev
-    - df -h
+  extends:
+    - .ctx-develop
+    - .uv-validate-check
   script:
     - uv run reuse lint
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
 
 # ---------------------------------------------------------------------------
-# test stage
+# Stage: test (downstream head only)
 # ---------------------------------------------------------------------------
 
 testing:
   stage: test
-  before_script:
-    - *install_uv
-    # Same sync scope as typing: main deps + dev group, CPU torch.
-    - uv sync --group dev
-    - df -h
+  extends:
+    - .ctx-develop
+    - .uv-validate-test
   script:
     - uv run pytest -v
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+
+# ===============================================================================
+# Pipeline: RELEASE: downstream main + upstream main
+# -------------------------------------------------------------------------------
+# - after downstram main annotated version tag commit
+# - forward downstram main -> upstream main MR
+# ===============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage: release #validation (downstream only)
+# -----------------------------------------------------------------------------
+
+release-checks:
+  stage: release
+  extends:
+    - .ctx-release-downstream
+    - .uv-validate-check
+  script:
+    - uv run ruff check
+    - uv run ruff format --check
+    - uv run pyright
+    - uv run reuse lint
+
+release-tests:
+  stage: release
+  extends:
+    - .ctx-release-downstream
+    - .uv-validate-test
+  script:
+    - uv run pytest -v
+    # - uv run pytest -v --cov
+
+# -----------------------------------------------------------------------------
+# Stage: release #merge-request (downstream only) - upstream MR create
+# -----------------------------------------------------------------------------
+
+# Project scope    : downstream only
+# Trigger condition: tag *.*.* (workflow:rules) AND downstream project path
+# Required vars    : UPSTREAM_TOKEN
+create-merge-request:
+  extends:
+    - .ctx-release-downstream
+    - .gitlab-api-base
+  stage: release
+  dependencies:
+    - release-checks
+    - release-tests
+  script:
+    - |
+      UPSTREAM_PROJECT_ID=$(curl --silent --show-error --fail \
+        --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+        "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_PATH_ENCODED}" | jq -r .id)
+
+      RESPONSE=$(curl --silent --show-error --fail \
+        --request POST \
+        --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+        --data-urlencode "source_branch=${MR_SOURCE_BRANCH}" \
+        --data-urlencode "target_branch=${MR_TARGET_BRANCH}" \
+        --data-urlencode "target_project_id=${UPSTREAM_PROJECT_ID}" \
+        --data-urlencode "title=Release ${CI_COMMIT_TAG}: sync downstream to upstream main" \
+        --data-urlencode "description=Automated release MR for tag ${CI_COMMIT_TAG}. Source: ${CI_PROJECT_PATH}@${CI_COMMIT_SHA}." \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests")
+
+      MR_IID=$(echo "${RESPONSE}" | jq -r '.iid // empty')
+      if [ -z "${MR_IID}" ]; then
+        echo "Failed to create merge request:"
+        echo "${RESPONSE}" | jq .
+        exit 1
+      fi
+
+      echo "Created MR !${MR_IID} on upstream project ${UPSTREAM_PROJECT_ID}"
+      echo "MR_IID=${MR_IID}" >> mr.env
+      echo "UPSTREAM_PROJECT_ID=${UPSTREAM_PROJECT_ID}" >> mr.env
+  artifacts:
+    reports:
+      dotenv: mr.env
+
+# -----------------------------------------------------------------------------
+# Stage: release #merge-request (downstream only) - upstream MR merge + tag
+# -----------------------------------------------------------------------------
+
+# Project scope    : downstream only (ub-dems/dve-simple-py)
+# Trigger condition: tag v*.*.* (workflow:rules) AND downstream project path;
+#                    MANUAL (see "Stage 3 approval gate" above)
+# Required vars    : UPSTREAM_TOKEN
+trigger-upstream-merge-and-tag:
+  extends:
+    - .ctx-release-downstream
+    - .gitlab-api-base
+  stage: release
+  needs:
+    - job: create-merge-request
+      artifacts: true
+  dependencies:
+    - create-merge-request
+  script:
+    - |
+      echo "Waiting for the upstream validation pipeline on MR !${MR_IID} ..."
+      PIPELINE_STATUS="none"
+      for i in $(seq 1 60); do
+        MR_JSON=$(curl --silent --show-error --fail \
+          --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+          "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_ID}/merge_requests/${MR_IID}")
+        PIPELINE_STATUS=$(echo "${MR_JSON}" | jq -r '.head_pipeline.status // "none"')
+        echo "  upstream pipeline status: ${PIPELINE_STATUS}"
+        [ "${PIPELINE_STATUS}" = "success" ] && break
+        if [ "${PIPELINE_STATUS}" = "failed" ] || [ "${PIPELINE_STATUS}" = "canceled" ]; then
+          echo "Upstream validation pipeline did not succeed. Aborting."
+          exit 1
+        fi
+        sleep 30
+      done
+      if [ "${PIPELINE_STATUS}" != "success" ]; then
+        echo "Timed out waiting for the upstream validation pipeline."
+        exit 1
+      fi
+
+      curl --silent --show-error --fail \
+        --request PUT \
+        --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+        --data-urlencode "should_remove_source_branch=false" \
+        --data-urlencode "merge_commit_message=Release ${CI_COMMIT_TAG}" \
+        "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_ID}/merge_requests/${MR_IID}/merge"
+
+      echo "Waiting for the merge to complete ..."
+      MR_STATE="unknown"
+      for i in $(seq 1 20); do
+        MR_JSON=$(curl --silent --show-error --fail \
+          --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+          "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_ID}/merge_requests/${MR_IID}")
+        MR_STATE=$(echo "${MR_JSON}" | jq -r .state)
+        if [ "${MR_STATE}" = "merged" ]; then
+          MERGE_COMMIT_SHA=$(echo "${MR_JSON}" | jq -r .merge_commit_sha)
+          break
+        fi
+        sleep 15
+      done
+      if [ "${MR_STATE}" != "merged" ]; then
+        echo "Merge request was not merged in time."
+        exit 1
+      fi
+
+      echo "Tagging upstream main at ${MERGE_COMMIT_SHA} as ${CI_COMMIT_TAG}"
+      curl --silent --show-error --fail \
+        --request POST \
+        --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+        --data-urlencode "tag_name=${CI_COMMIT_TAG}" \
+        --data-urlencode "ref=${MERGE_COMMIT_SHA}" \
+        --data-urlencode "message=Release ${CI_COMMIT_TAG}" \
+        "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_ID}/repository/tags"
+
+# -----------------------------------------------------------------------------
+# Stage: mirror-push (upstream only)
+# -----------------------------------------------------------------------------
+
+# Project scope    : upstream only
+# Trigger condition: tag *.*.* (workflow:rules) AND upstream project path;
+#                    runs only if enabled
+# Required vars    : GITHUB_MIRROR_URL
+mirror-push:
+  stage: release
+  extends:
+    - .ctx-release-mirror
+    - .git-base
+  dependencies: []
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: "0"
+  script:
+    - git remote add mirror "${GITHUB_MIRROR_URL}" || git remote set-url mirror "${GITHUB_MIRROR_URL}"
+    - git push --force-with-lease mirror "${CI_COMMIT_TAG}"
+    - git push --force-with-lease mirror "HEAD:refs/heads/main"
+
+
+# -----------------------------------------------------------------------------
+# Stage: release #publish (unstream only) - podman build + save
+# -----------------------------------------------------------------------------
+
+# Project scope    : upstream only
+# Trigger condition: tag *.*.* (workflow:rules) AND upstream project path;
+#                    this run starts because the tag above was created on the
+#                    upstream project via the API in the previous stage
+# Required vars    : none
+build-base-images:
+  stage: release
+  extends:
+    - .ctx-release-image
+    - .podman-base
+  needs: []
+  dependencies: []
+  parallel:
+    matrix:
+      # Placeholder identifiers — replace with the real image names produced
+      # by scripts/build-images.sh (see "Additional notes" below).
+      - IMAGE_NAME: ["anchor", "cuda", "base", "runtime"]
+  script:
+    - build.sh image "${IMAGE_NAME}"
+    - mkdir -p images
+    - podman save -o "images/${IMAGE_NAME}.tar" "localhost/${IMAGE_NAME}:${CI_COMMIT_TAG}"
+  artifacts:
+    paths:
+      - "images/${IMAGE_NAME}.tar"
+    expire_in: "1 day"
+
+# -----------------------------------------------------------------------------
+# Stage: image-push (upstream only)
+# -----------------------------------------------------------------------------
+
+# Project scope    : upstream only (ub-dems-public/dve-simple-py)
+# Trigger condition: tag v*.*.* (workflow:rules) AND upstream project path;
+#                    runs only if every build-image matrix job succeeded
+# Required vars    : REGISTRY_URL, REGISTRY_USER, REGISTRY_PASSWORD
+push-base-images:
+  stage: release
+  extends:
+    - .ctx-release-image
+    - .podman-base
+  needs:
+    - job: build-base-images
+      artifacts: true
+  dependencies:
+    - build-base-images
+  script:
+    - podman login -u "${REGISTRY_USER}" -p "${REGISTRY_PASSWORD}" "${REGISTRY_URL}"
+    - |
+      for IMAGE_NAME in anchor, cuda, base, runtime; do
+        podman load -i "images/${IMAGE_NAME}.tar"
+        podman push "localhost/${IMAGE_NAME}:${CI_COMMIT_TAG}" \
+          "${REGISTRY_URL}/${IMAGE_NAME}:${CI_COMMIT_TAG}"
+      done
+
+# -----------------------------------------------------------------------------
+# Stage: release #notify (upstream only) - email + slack
+# -----------------------------------------------------------------------------
+
+# Project scope    : upstream only (ub-dems-public/dve-simple-py)
+# Trigger condition: tag v*.*.* (workflow:rules) AND upstream project path;
+#                    runs only if mirror-push succeeded
+# Required vars    : NOTIFY_EMAILS, SMTP_HOST, SMTP_USER, SMTP_PASSWORD
+release-notify-email:
+  stage: release
+  extends:
+    - .ctx-release-notify
+    - .notify-base
+  dependencies: []
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - |
+      cat > /tmp/msmtprc <<-EOF
+      account default
+      host ${SMTP_HOST}
+      port 587
+      auth on
+      user ${SMTP_USER}
+      password ${SMTP_PASSWORD}
+      tls on
+      from ${SMTP_USER}
+      EOF
+      chmod 600 /tmp/msmtprc
+
+      IFS=',' read -ra RECIPIENTS <<< "${NOTIFY_EMAILS}"
+      for RECIPIENT in "${RECIPIENTS[@]}"; do
+        printf "Subject: Release %s published\n\nRelease %s of %s has been merged, tagged, built and mirrored to GitHub.\n" \
+          "${CI_COMMIT_TAG}" "${CI_COMMIT_TAG}" "${CI_PROJECT_PATH}" \
+          | msmtp -a default --file=/tmp/msmtprc "${RECIPIENT}"
+      done
+
+# Project scope    : upstream only
+# Trigger condition: tag v*.*.* (workflow:rules) AND upstream project path;
+#                    runs only if mirror-push succeeded
+# Required vars    : SLACK_WEBHOOK_URL
+release-notify-slack:
+  stage: release
+  extends:
+    - .ctx-release-notify
+    - .notify-base
+  dependencies: []
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - |
+      curl --silent --show-error --fail \
+        --request POST \
+        --header "Content-Type: application/json" \
+        --data "{\"text\": \"Release ${CI_COMMIT_TAG} published for ${CI_PROJECT_PATH}.\"}" \
+        "${SLACK_WEBHOOK_URL}"
