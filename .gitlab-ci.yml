@@ -175,6 +175,7 @@ workflow:
   rules:
     - if: '"$[[ inputs.gd-dotenv-has-config ]]" == "1"'
       when: never
+    - when: always
 
 .ctx-external-config:
   interruptible: true
@@ -189,6 +190,7 @@ workflow:
       when: never
     - if: '$CI_COMMIT_BRANCH != "$[[ inputs.gd-downstream-project-head ]]"'
       when: never
+    - when: always
 
 .ctx-release-tag:
   interruptible: false
@@ -196,8 +198,6 @@ workflow:
     - if: '"$[[ inputs.gd-release-op-upstream-merge ]]" != "1"'
       when: never
     - if: '$CI_COMMIT_TAG =~ /$[[ inputs.gd-version-schema ]]/'
-      when: always
-    - when: never
 
 .ctx-release-downstream:
   extends:
@@ -415,7 +415,7 @@ linting:
   script:
     - uv run ruff check
 
-fornatting:
+formatting:
   stage: lint
   extends:
     - .ctx-develop
