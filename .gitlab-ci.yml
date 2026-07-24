@@ -189,6 +189,7 @@ workflow:
   extends:
     - .gitlab-api-base
   before_script:
+    - !reference [.gitlab-api-base, before_script]
     - apk add --no-cache msmtp
 
 .podman-base:
@@ -222,6 +223,7 @@ workflow:
   extends:
     - .uv-validate-base
   before_script:
+    - !reference [.uv-validate-base, before_script]
     # Lint jobs operate on source text only.
     # --only-group dev  : install ruff and its peers; skip main dependencies.
     # --no-install-project : do not install the project package itself.
@@ -236,6 +238,7 @@ workflow:
   extends:
     - .uv-validate-base
   before_script:
+    - !reference [.uv-validate-base, before_script]
     # pyright requires all project imports to be resolvable, so main deps
     # (including CPU torch) must be present.  UV_INDEX_TORCH_GPU redirects
     # the cu130 index to the CPU wheel server; triton is not a dep of CPU torch.
@@ -246,6 +249,7 @@ workflow:
   extends:
     - .uv-validate-base
   before_script:
+    - !reference [.uv-validate-base, before_script]
     # pyright requires all project imports to be resolvable, so main deps
     # (including CPU torch) must be present.  UV_INDEX_TORCH_GPU redirects
     # the cu130 index to the CPU wheel server; triton is not a dep of CPU torch.
