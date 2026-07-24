@@ -210,12 +210,12 @@ workflow:
     - echo "#__uv:init__"
     - env
     - df -h
-    # - apt-get update -qq
-    # - apt-get install -y --no-install-recommends ca-certificates curl git
-    # - rm -rf /var/lib/apt/lists/*
-    # - curl -LsSf https://astral.sh/uv/install.sh | sh
-    # - export PATH="$HOME/.local/bin:$PATH"
-    - pip install --quiet uv
+    - apt-get update -qq
+    - apt-get install -y --no-install-recommends ca-certificates curl git
+    - rm -rf /var/lib/apt/lists/*
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+    - export PATH="$HOME/.local/bin:$PATH"
+    # - pip install --quiet uv
     # - uv sync --frozen
 
 .uv-validate-lint:
