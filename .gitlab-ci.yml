@@ -41,12 +41,25 @@ spec:
       default: '^\d\.\d+(\.\d+)?$'
     gd-python-version:
       default: '3.14'
+    gd-dotenv-file:
+      default: '.env'
+    gd-dotenv-default:
+      default: '.env.default'
+    gd-dotenv-has-config:
+      default: '0'
+    gd-dotenv-config-url:
+      default: "https://gitlab.com/ub-dems/vs-base/dve-simple-py.conf.git"
+    gd-dotenv-config-branch:
+      default: "main"
+    gd-dotenv-config-path:
+      default: "../conf"
     environment:
       options:
         - development
+        - testing
         - staging
         - production
-      default: production
+      default: development
 ---
 
 stages:
@@ -117,6 +130,13 @@ variables:
   # --- never use the system Python; always use uv-managed interpreter ---
   UV_PYTHON_PREFERENCE: "only-managed"
 
+  # ------------------------------------------------------------------------
+  # --- CONFIGURATION (.env)
+  # ------------------------------------------------------------------------
+
+  # --- uv `--env-file` option ---
+  UV_ENV_FILE: "$[[ inputs.gd-dotenv-file ]]"
+
 
 cache:
   policy: pull-push
@@ -149,6 +169,18 @@ workflow:
 # ---------------------------------------------------------------------------
 # Context Rules
 # ---------------------------------------------------------------------------
+
+.ctx-default-config:
+  interruptible: true
+  rules:
+    - if: '"$[[ inputs.gd-dotenv-has-config ]]" == "1"'
+      when: never
+
+.ctx-external-config:
+  interruptible: true
+  rules:
+    - if: '"$[[ inputs.gd-dotenv-has-config ]]" != "1"'
+      when: never
 
 .ctx-develop:
   interruptible: true
@@ -302,13 +334,74 @@ workflow:
     # the cu130 index to the CPU wheel server; triton is not a dep of CPU torch.
     - uv sync --group dev
 
+
+# ===============================================================================
+# Common: CONFIGURATION: .env configuration repository
+# -------------------------------------------------------------------------------
+# - parallel private configuration repo clone, relative to project (../conf)
+# - can be customized by environment (development, testing, staging, production)
+# - if not enabled, `.env` uv default to `.env.default` (versioned file)
+# ===============================================================================
+
+config-int:
+  stage: .pre
+  extends:
+    - .ctx-default-config
+    - .git-base
+  script:
+    - cp "$[[ inputs.gd-dotenv-default ]]" "$[[ inputs.gd-dotenv-file ]]" || true
+
+.config-ext:
+  stage: .pre
+  extends:
+    - .ctx-external-config
+    - .git-base
+  rules:
+    - !reference [.ctx-external-config, rules]
+  script:
+    - export CONFIG_REF="$[[ inputs.gd-dotenv-config-branch ]]"
+    - git clone --branch "$CONFIG_REF" "$[[ inputs.gd-dotenv-config-url ]]" $[[ inputs.gd-dotenv-config-path ]]
+    - export CONFIG_ENV="envs/$[[ inputs.environment ]]"/.env
+    - export CONFIG_FILE="$[[ inputs.gd-dotenv-config-path ]]/$CONFIG_ENV"
+    - if [ ! -f "$CONFIG_FILE" ] ; then export CONFIG_FILE="$[[ inputs.gd-dotenv-config-path ]]/.env"; fi
+    - cp "$CONFIG_FILE" "$[[ inputs.gd-dotenv-file ]]" || true
+  artifacts:
+    paths:
+      - "$[[ inputs.gd-dotenv-config-path ]]"
+
+config-ext-development:
+  stage: .pre
+  extends:
+    - .ctx-develop
+    - .config-ext
+  rules:
+    - !reference [.ctx-develop, rules]
+    - !reference [.config-ext, rules]
+
+config-ext-staging:
+  stage: .pre
+  extends:
+    - .ctx-release-downstream
+    - .config-ext
+  rules:
+    - !reference [.ctx-release-downstream, rules]
+    - !reference [.config-ext, rules]
+
+config-ext-production:
+  stage: .pre
+  extends:
+    - .ctx-release-upstream
+    - .config-ext
+  rules:
+    - !reference [.ctx-release-upstream, rules]
+    - !reference [.config-ext, rules]
+
 # ===============================================================================
 # Pipeline: VALIDATION: downstream head only
 # -------------------------------------------------------------------------------
 # - after feature branch merge-request commit
 # - befere head -> main MR (blocking)
 # ===============================================================================
-
 
 # ---------------------------------------------------------------------------
 # Stage: lint (downstream head only)
