@@ -57,7 +57,20 @@ stages:
 
 
 default:
+  # see: https://docs.gitlab.com/ci/runners/hosted_runners/linux/
+  tags:
+    - saas-linux-small-amd64
+    # - saas-linux-medium-amd64
+    # - saas-linux-large-amd64
+    # - saas-linux-xlarge-amd64
+    # - saas-linux-2xlarge-amd64
+    # - saas-linux-medium-amd64-gpu-standard
+
   image: python:$[[ inputs.gd-python-version ]]-slim
+  # CUDA images:
+  # - nvcr.io/nvidia/cuda:12.1.1-base-ubuntu22.04
+  # - https://youtu.be/tElegG4NCZ0?si=ZRk01nBHpLjKjoeB
+
 
 variables:
 
@@ -115,58 +128,92 @@ cache:
   #   - .cache/uv
 
 workflow:
+  auto_cancel:
+    on_new_commit: interruptible
   rules:
-    - if: $CI_COMMIT_MESSAGE =~ /^WIP/
+    - if: $CI_COMMIT_MESSAGE =~ /^WIP.*/
       when: never
-    - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_REF_PROTECTED == "true"
+    # - if: $CI_COMMIT_REF_PROTECTED == "false"
+    #   when: manual
+    #   allow_failure: true
+    # - if: $CI_COMMIT_TAG
+    # - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # - if: $CI_COMMIT_REF_PROTECTED == "true"
+    # - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^f.*/
+    #   when: never
+    # - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+    #   when: never
+    # - if: $CI_COMMIT_BRANCH
 
 # ---------------------------------------------------------------------------
 # Context Rules
 # ---------------------------------------------------------------------------
 
 .ctx-develop:
+  interruptible: true
   rules:
-    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-downstream-project ]]"'
-    - if: '$CI_COMMIT_BRANCH == "$[[ inputs.gd-downstream-project-head ]]"'
+    - if: '$CI_PROJECT_PATH != "$[[ inputs.gd-downstream-project ]]"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH != "$[[ inputs.gd-downstream-project-head ]]"'
+      when: never
 
 .ctx-release-tag:
+  interruptible: false
   rules:
-    - if: '"$[[ inputs.gd-release-op-upstream-merge ]]" == "1"'
+    - if: '"$[[ inputs.gd-release-op-upstream-merge ]]" != "1"'
+      when: never
     - if: '$CI_COMMIT_TAG =~ /$[[ inputs.gd-version-schema ]]/'
+      when: always
+    - when: never
 
 .ctx-release-downstream:
   extends:
     - .ctx-release-tag
+  environment:
+    name: staging
   rules:
-    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-downstream-project ]]"'
-    - if: '$CI_COMMIT_BRANCH == "$[[ inputs.gd-downstream-project-main ]]"'
+    - !reference [.ctx-release-tag, rules]
+    - if: '$CI_PROJECT_PATH != "$[[ inputs.gd-downstream-project ]]"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH != "$[[ inputs.gd-downstream-project-main ]]"'
+      when: never
 
 .ctx-release-upstream:
   extends:
     - .ctx-release-tag
+  environment:
+    name: production
   rules:
-    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-upstream-project ]]"'
-    - if: '$CI_COMMIT_BRANCH == "$[[ inputs.gd-upstream-project-main ]]"'
+    - !reference [.ctx-release-tag, rules]
+    - if: '$CI_PROJECT_PATH != "$[[ inputs.gd-upstream-project ]]"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH != "$[[ inputs.gd-upstream-project-main ]]"'
+      when: never
 
 .ctx-release-mirror:
   extends:
     - .ctx-release-upstream
   rules:
-    - if: '"$[[ inputs.gd-release-op-upstream-mirror ]]" == "1"'
+    - !reference [.ctx-release-upstream, rules]
+    - if: '"$[[ inputs.gd-release-op-upstream-mirror ]]" != "1"'
+      when: never
 
 .ctx-release-image:
   extends:
     - .ctx-release-upstream
   rules:
-    - if: '"$[[ inputs.gd-release-op-upstream-image ]]" == "1"'
+    - !reference [.ctx-release-upstream, rules]
+    - if: '"$[[ inputs.gd-release-op-upstream-image ]]" != "1"'
+      when: never
 
 .ctx-release-notify:
   extends:
     - .ctx-release-upstream
   rules:
-    - if: '"$[[ inputs.gd-release-op-upstream-notify ]]" == "1"'
+    - !reference [.ctx-release-upstream, rules]
+    - if: '"$[[ inputs.gd-release-op-upstream-notify ]]" != "1"'
+      when: never
 
 
 # -----------------------------------------------------------------------------
