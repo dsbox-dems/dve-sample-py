@@ -184,18 +184,20 @@ workflow:
   rules:
     - if: '"$[[ inputs.gd-debug-pipeline ]]" != "1"'
       when: never
+    - when: on_success  
 
 .ctx-default-config:
   interruptible: true
   rules:
     - if: '"$[[ inputs.gd-dotenv-has-config ]]" == "1"'
       when: never
+    - when: on_success  
 
 .ctx-external-config:
   interruptible: true
   rules:
     - if: '"$[[ inputs.gd-dotenv-has-config ]]" != "1"'
-      when: never
+    - when: on_success  
 
 .ctx-develop:
   interruptible: true
@@ -206,7 +208,7 @@ workflow:
     #    "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_COMMIT_BRANCH &&
     #    "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
     #   when: never
-    - when: always
+    - when: on_success  
 
 .ctx-release-tag:
   interruptible: false
