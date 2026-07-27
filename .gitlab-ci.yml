@@ -43,6 +43,8 @@ spec:
       default: '3.14'
     gd-dotenv-file:
       default: '.env'
+    gd-dotenv-strict:
+      default: '.env.exported'
     gd-dotenv-default:
       default: '.env.defaults'
     gd-dotenv-has-config:
@@ -381,9 +383,10 @@ config-int:
     - .git-full
   script:
     - cp "$[[ inputs.gd-dotenv-default ]]" "$[[ inputs.gd-dotenv-file ]]" || true
+    - cat "$[[ inputs.gd-dotenv-file ]]" | grep '^[a-zA-Z0-9_]' > "$[[ inputs.gd-dotenv-strict ]]"
   artifacts:
     reports:
-      dotenv: .env
+      dotenv: "$[[ inputs.gd-dotenv-strict ]]"
     paths:
       - "$[[ inputs.gd-dotenv-file ]]"
       
@@ -401,9 +404,10 @@ config-int:
     - export CONFIG_FILE="$[[ inputs.gd-dotenv-config-path ]]/$CONFIG_ENV"
     - if [ ! -f "$CONFIG_FILE" ] ; then export CONFIG_FILE="$[[ inputs.gd-dotenv-config-path ]]/.env"; fi
     - cp "$CONFIG_FILE" "$[[ inputs.gd-dotenv-file ]]" || true
+    - cat "$[[ inputs.gd-dotenv-file ]]" | grep '^[a-zA-Z0-9_]' > "$[[ inputs.gd-dotenv-strict ]]"
   artifacts:
     reports:
-      dotenv: .env
+      dotenv: "$[[ inputs.gd-dotenv-strict ]]"
     paths:
       - "$[[ inputs.gd-dotenv-file ]]"
       - "$[[ inputs.gd-dotenv-config-path ]]"
