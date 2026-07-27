@@ -44,7 +44,7 @@ spec:
     gd-dotenv-file:
       default: '.env'
     gd-dotenv-default:
-      default: '.env.default'
+      default: '.env.defaults'
     gd-dotenv-has-config:
       default: '0'
     gd-dotenv-config-url:
@@ -197,6 +197,7 @@ workflow:
   interruptible: true
   rules:
     - if: '"$[[ inputs.gd-dotenv-has-config ]]" != "1"'
+      when: never
     - when: on_success  
 
 .ctx-develop:
@@ -338,9 +339,6 @@ workflow:
     # --no-install-project : do not install the project package itself.
     # Result: no torch, no torchvision, no triton, minimal disk use (~150 MB).
     - uv sync --only-group dev --no-install-project
-    - uv tree --show-sizes
-    - uv pip list
-    - du -sh .venv
     - df -h
 
 .uv-validate-check:
@@ -363,6 +361,7 @@ workflow:
     # (including CPU torch) must be present.  UV_INDEX_TORCH_GPU redirects
     # the cu130 index to the CPU wheel server; triton is not a dep of CPU torch.
     - uv sync --group dev
+    - df -h
 
 
 
@@ -447,7 +446,15 @@ debug-pipeline:
     - .ctx-pipeline-debug
     - .uv-validate-lint
   script:
+    - echo "#__gitlab-ci:DEBUG__"
+    - echo "#__gitlab-ci:debug(sh.env)__"
     - env | sort
+    - echo "#__gitlab-ci:debug(uv.venv)__"
+    - uv tree --show-sizes
+    - uv pip list
+    - du -sh .venv
+    - df -h
+    - echo "#__gitlab-ci:debug(uv.env)__"
     - ls -la .env*
     - uv run bash -c env | sort
 
