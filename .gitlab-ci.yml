@@ -192,10 +192,10 @@ workflow:
   rules:
     - if: '$CI_PROJECT_PATH != "$[[ inputs.gd-downstream-project ]]"'
       when: never
-    - if: >-
-       "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_COMMIT_BRANCH &&
-       "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-      when: never
+    # - if: >-
+    #    "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_COMMIT_BRANCH &&
+    #    "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+    #   when: never
     - when: always
 
 .ctx-release-tag:
