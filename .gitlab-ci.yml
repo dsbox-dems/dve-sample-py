@@ -26,11 +26,11 @@ spec:
     gd-release-op-upstream-notify:
       default: '0'
     gd-downstream-project:
-      default: "ub-dems/vs-base/dve-simple-py"
+      default: "ub-dems/vs-base/dve-sample-py"
     gd-upstream-project:
-      default: "ub-dems-public/ds-labs/dve-simple-py"
+      default: "ub-dems-public/ds-labs/dve-sample-py"
     gd-upstream-project-enc:
-      default: "ub-dems-public%2Fds-labs%2Fdve-simple-py"
+      default: "ub-dems-public%2Fds-labs%2Fdve-sample-py"
     gd-downstream-project-head:
       default: "develop"
     gd-downstream-project-main:
@@ -48,7 +48,7 @@ spec:
     gd-dotenv-has-config:
       default: '0'
     gd-dotenv-config-url:
-      default: "https://gitlab.com/ub-dems/vs-base/dve-simple-py.conf.git"
+      default: "https://gitlab.com/ub-dems/vs-base/dve-sample-py-conf.git"
     gd-dotenv-config-branch:
       default: "main"
     gd-dotenv-config-path:
@@ -157,8 +157,8 @@ workflow:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /^WIP.*/
       when: never
-    # - if: $CI_COMMIT_REF_PROTECTED != "true"
-    #   when: never
+    - if: $CI_COMMIT_REF_PROTECTED != "true"
+      when: never
       # when: manual
       # allow_failure: true
     # - if: >-
@@ -168,8 +168,8 @@ workflow:
       # when: manual
       # allow_failure: true
     - if: $CI_COMMIT_TAG
-    # - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
-    #   when: never
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_REF_PROTECTED == "true"
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -202,12 +202,12 @@ workflow:
 .ctx-develop:
   interruptible: true
   rules:
-    # - if: '$CI_PROJECT_PATH != "$[[ inputs.gd-downstream-project ]]"'
-    #   when: never
-    # - if: >-
-    #    "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_COMMIT_BRANCH &&
-    #    "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-    #   when: never
+    - if: '$CI_PROJECT_PATH != "$[[ inputs.gd-downstream-project ]]"'
+      when: never
+    - if: >-
+       "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_COMMIT_BRANCH &&
+       "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+      when: never
     - when: on_success  
 
 .ctx-release-tag:
@@ -288,6 +288,11 @@ workflow:
   image: alpine/git:2.45.2
   before_script:
     - apk add --no-cache curl jq
+
+.git-full:
+  image: alpine:3.20
+  before_script:
+    - apk add --no-cache curl jq git
 
 .notify-base:
   extends:
@@ -374,18 +379,20 @@ config-int:
   stage: config
   extends:
     - .ctx-default-config
-    - .git-base
+    - .git-full
   script:
     - cp "$[[ inputs.gd-dotenv-default ]]" "$[[ inputs.gd-dotenv-file ]]" || true
   artifacts:
     reports:
       dotenv: .env
+    paths:
+      - "$[[ inputs.gd-dotenv-file ]]"
       
 .config-ext:
   stage: config
   extends:
     - .ctx-external-config
-    - .git-base
+    - .git-full
   rules:
     - !reference [.ctx-external-config, rules]
   script:
@@ -399,6 +406,7 @@ config-int:
     reports:
       dotenv: .env
     paths:
+      - "$[[ inputs.gd-dotenv-file ]]"
       - "$[[ inputs.gd-dotenv-config-path ]]"
 
 config-ext-development:
