@@ -65,6 +65,8 @@ spec:
 ---
 
 stages:
+  - config
+  - debug
   - lint
   - test
   - release
@@ -367,7 +369,7 @@ workflow:
 # ===============================================================================
 
 config-int:
-  stage: .pre
+  stage: config
   extends:
     - .ctx-default-config
     - .git-base
@@ -378,7 +380,7 @@ config-int:
       dotenv: .env
       
 .config-ext:
-  stage: .pre
+  stage: config
   extends:
     - .ctx-external-config
     - .git-base
@@ -398,7 +400,7 @@ config-int:
       - "$[[ inputs.gd-dotenv-config-path ]]"
 
 config-ext-development:
-  stage: .pre
+  stage: config
   extends:
     - .config-ext
     - .ctx-develop
@@ -407,7 +409,7 @@ config-ext-development:
     - !reference [.ctx-develop, rules]
 
 config-ext-staging:
-  stage: .pre
+  stage: config
   extends:
     - .config-ext
     - .ctx-release-downstream
@@ -416,7 +418,7 @@ config-ext-staging:
     - !reference [.ctx-release-downstream, rules]
 
 config-ext-production:
-  stage: .pre
+  stage: config
   extends:
     - .config-ext
     - .ctx-release-upstream
@@ -430,7 +432,7 @@ config-ext-production:
 # ===============================================================================
 
 debug-pipeline:
-  stage: .pre
+  stage: debug
   extends:
     - .ctx-pipeline-debug
     - .uv-validate-lint
