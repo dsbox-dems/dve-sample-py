@@ -184,7 +184,7 @@ workflow:
   rules:
     - if: '"$[[ inputs.gd-debug-pipeline ]]" != "1"'
       when: never
-    - when: on_success  
+    - when: always
 
 .ctx-default-config:
   interruptible: true
