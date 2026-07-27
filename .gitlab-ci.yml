@@ -53,6 +53,8 @@ spec:
       default: "main"
     gd-dotenv-config-path:
       default: "../conf"
+    gd-debug-pipeline:
+      default: '1'
     environment:
       options:
         - development
@@ -174,6 +176,12 @@ workflow:
 # ---------------------------------------------------------------------------
 # Context Rules
 # ---------------------------------------------------------------------------
+
+.ctx-pipeline-debug:
+  interruptible: true
+  rules:
+    - if: '"$[[ inputs.gd-debug-pipeline ]]" != "1"'
+      when: never
 
 .ctx-default-config:
   interruptible: true
@@ -348,6 +356,8 @@ workflow:
     - uv sync --group dev
 
 
+
+
 # ===============================================================================
 # Common: CONFIGURATION: .env configuration repository
 # -------------------------------------------------------------------------------
@@ -413,6 +423,23 @@ config-ext-production:
   rules:
     - !reference [.config-ext, rules]
     - !reference [.ctx-release-upstream, rules]
+
+
+# ===============================================================================
+# Common: CI/CD DEBUG: dump Pipeline environment
+# ===============================================================================
+
+debug-pipeline:
+  stage: .pre
+  extends:
+    - .ctx-pipeline-debug
+    - .uv-validate-lint
+  script:
+    - env | sort
+    - ls -la .env*
+    - uv run bash -c env | sort
+
+
 
 # ===============================================================================
 # Pipeline: VALIDATION: downstream head only
