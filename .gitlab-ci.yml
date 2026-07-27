@@ -153,18 +153,19 @@ workflow:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /^WIP.*/
       when: never
-    # - if: $CI_COMMIT_REF_PROTECTED == "false"
-    #   when: manual
-    #   allow_failure: true
-    # - if: $CI_COMMIT_TAG
-    # - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    # - if: $CI_COMMIT_REF_PROTECTED == "true"
-    # - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^f.*/
-    #   when: never
-    # - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    # - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
-    #   when: never
-    # - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_REF_PROTECTED == "false"
+      when: manual
+      allow_failure: true
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_REF_PROTECTED == "true"
+    - if: $CI_COMMIT_REF_PROTECTED != "true" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^f.*/
+      when: manual
+      allow_failure: true
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
 
 # ---------------------------------------------------------------------------
 # Context Rules
@@ -175,7 +176,6 @@ workflow:
   rules:
     - if: '"$[[ inputs.gd-dotenv-has-config ]]" == "1"'
       when: never
-    - when: always
 
 .ctx-external-config:
   interruptible: true
@@ -197,7 +197,8 @@ workflow:
   rules:
     - if: '"$[[ inputs.gd-release-op-upstream-merge ]]" != "1"'
       when: never
-    - if: '$CI_COMMIT_TAG =~ /$[[ inputs.gd-version-schema ]]/'
+    - if: '$CI_COMMIT_TAG !~ /$[[ inputs.gd-version-schema ]]/'
+      when: never
 
 .ctx-release-downstream:
   extends:
@@ -210,6 +211,7 @@ workflow:
       when: never
     - if: '$CI_COMMIT_BRANCH != "$[[ inputs.gd-downstream-project-main ]]"'
       when: never
+    - when: on_success  
 
 .ctx-release-upstream:
   extends:
@@ -222,30 +224,31 @@ workflow:
       when: never
     - if: '$CI_COMMIT_BRANCH != "$[[ inputs.gd-upstream-project-main ]]"'
       when: never
+    - when: on_success  
 
 .ctx-release-mirror:
   extends:
     - .ctx-release-upstream
   rules:
-    - !reference [.ctx-release-upstream, rules]
     - if: '"$[[ inputs.gd-release-op-upstream-mirror ]]" != "1"'
       when: never
+    - !reference [.ctx-release-upstream, rules]
 
 .ctx-release-image:
   extends:
     - .ctx-release-upstream
   rules:
-    - !reference [.ctx-release-upstream, rules]
     - if: '"$[[ inputs.gd-release-op-upstream-image ]]" != "1"'
       when: never
+    - !reference [.ctx-release-upstream, rules]
 
 .ctx-release-notify:
   extends:
     - .ctx-release-upstream
   rules:
-    - !reference [.ctx-release-upstream, rules]
     - if: '"$[[ inputs.gd-release-op-upstream-notify ]]" != "1"'
       when: never
+    - !reference [.ctx-release-upstream, rules]
 
 
 # -----------------------------------------------------------------------------
@@ -350,7 +353,10 @@ config-int:
     - .git-base
   script:
     - cp "$[[ inputs.gd-dotenv-default ]]" "$[[ inputs.gd-dotenv-file ]]" || true
-
+  artifacts:
+    reports:
+      dotenv: .env
+      
 .config-ext:
   stage: .pre
   extends:
@@ -366,35 +372,37 @@ config-int:
     - if [ ! -f "$CONFIG_FILE" ] ; then export CONFIG_FILE="$[[ inputs.gd-dotenv-config-path ]]/.env"; fi
     - cp "$CONFIG_FILE" "$[[ inputs.gd-dotenv-file ]]" || true
   artifacts:
+    reports:
+      dotenv: .env
     paths:
       - "$[[ inputs.gd-dotenv-config-path ]]"
 
 config-ext-development:
   stage: .pre
   extends:
-    - .ctx-develop
     - .config-ext
+    - .ctx-develop
   rules:
-    - !reference [.ctx-develop, rules]
     - !reference [.config-ext, rules]
+    - !reference [.ctx-develop, rules]
 
 config-ext-staging:
   stage: .pre
   extends:
-    - .ctx-release-downstream
     - .config-ext
+    - .ctx-release-downstream
   rules:
-    - !reference [.ctx-release-downstream, rules]
     - !reference [.config-ext, rules]
+    - !reference [.ctx-release-downstream, rules]
 
 config-ext-production:
   stage: .pre
   extends:
-    - .ctx-release-upstream
     - .config-ext
+    - .ctx-release-upstream
   rules:
-    - !reference [.ctx-release-upstream, rules]
     - !reference [.config-ext, rules]
+    - !reference [.ctx-release-upstream, rules]
 
 # ===============================================================================
 # Pipeline: VALIDATION: downstream head only
