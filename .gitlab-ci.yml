@@ -321,15 +321,12 @@ workflow:
       - .cache/uv
   before_script:
     - echo "#__uv:init__"
-    - env
     - df -h
     - apt-get update -qq
     - apt-get install -y --no-install-recommends ca-certificates curl git
     - rm -rf /var/lib/apt/lists/*
     - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH"
-    # - pip install --quiet uv
-    # - uv sync --frozen
 
 .uv-validate-lint:
   extends:
@@ -348,9 +345,6 @@ workflow:
     - .uv-validate-base
   before_script:
     - !reference [.uv-validate-base, before_script]
-    # pyright requires all project imports to be resolvable, so main deps
-    # (including CPU torch) must be present.  UV_INDEX_TORCH_GPU redirects
-    # the cu130 index to the CPU wheel server; triton is not a dep of CPU torch.
     - uv sync --group dev
     - df -h
 
@@ -491,6 +485,14 @@ formatting:
   script:
     - uv run ruff format --check
 
+licensing:
+  stage: lint
+  extends:
+    - .ctx-develop
+    - .uv-validate-lint
+  script:
+    - uv run reuse lint
+
 typing:
   stage: lint
   extends:
@@ -498,14 +500,6 @@ typing:
     - .uv-validate-check
   script:
     - uv run pyright
-
-licensing:
-  stage: lint
-  extends:
-    - .ctx-develop
-    - .uv-validate-check
-  script:
-    - uv run reuse lint
 
 # ---------------------------------------------------------------------------
 # Stage: test (downstream head only)
