@@ -19,8 +19,6 @@ spec:
   inputs:
     gd-release-op-upstream-merge:
       default: '1'
-    gd-release-op-upstream-mirror:
-      default: '1'
     gd-release-op-upstream-image:
       default: '0'
     gd-release-op-upstream-notify:
@@ -93,10 +91,31 @@ default:
 
 variables:
 
-  # Non-sensitive defaults only. REGISTRY_URL, REGISTRY_USER, REGISTRY_PASSWORD,
-  # UPSTREAM_TOKEN, GITHUB_MIRROR_URL, NOTIFY_EMAILS, SMTP_*, SLACK_WEBHOOK_URL
-  # are pre-configured project CI/CD variables and are intentionally NOT
-  # redeclared here.
+  # ---------------------------------------------------------------------------
+  # SECRETS (CI/CD only)
+  # ---------------------------------------------------------------------------
+  # The following are pre-configured project CI/CD variables
+  # and are intentionally NOT redeclared here:
+  #
+  # - GS_REGISTRY_URL,
+  # - GS_REGISTRY_USER,
+  # - GS_REGISTRY_PASSWORD,
+  # - GS_UPSTREAM_TOKEN,
+  # - GS_NOTIFY_EMAILS,
+  # - GS_SMTP_*,
+  # - GS_SLACK_WEBHOOK_URL
+  #
+  # ---------------------------------------------------------------------------
+
+
+
+  # ---------------------------------------------------------------------------
+  # VARIABLES (inputs)
+  # ---------------------------------------------------------------------------
+  # Non-sensitive defaults only.
+  #
+  # ---------------------------------------------------------------------------
+  
   DOWNSTREAM_PROJECT_PATH: "$[[ inputs.gd-downstream-project ]]"
   UPSTREAM_PROJECT_PATH: "$[[ inputs.gd-upstream-project ]]"
   UPSTREAM_PROJECT_PATH_ENCODED: "$[[ inputs.gd-upstream-project-enc ]]"
@@ -250,14 +269,6 @@ workflow:
        "$[[ inputs.gd-upstream-project-main ]]" !=  $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
       when: never
     - when: on_success  
-
-.ctx-release-mirror:
-  extends:
-    - .ctx-release-upstream
-  rules:
-    - if: '"$[[ inputs.gd-release-op-upstream-mirror ]]" != "1"'
-      when: never
-    - !reference [.ctx-release-upstream, rules]
 
 .ctx-release-image:
   extends:
@@ -563,12 +574,12 @@ create-merge-request:
   script:
     - |
       UPSTREAM_PROJECT_ID=$(curl --silent --show-error --fail \
-        --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${GS_UPSTREAM_TOKEN}" \
         "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_PATH_ENCODED}" | jq -r .id)
 
       RESPONSE=$(curl --silent --show-error --fail \
         --request POST \
-        --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${GS_UPSTREAM_TOKEN}" \
         --data-urlencode "source_branch=${MR_SOURCE_BRANCH}" \
         --data-urlencode "target_branch=${MR_TARGET_BRANCH}" \
         --data-urlencode "target_project_id=${UPSTREAM_PROJECT_ID}" \
@@ -614,7 +625,7 @@ trigger-upstream-merge-and-tag:
       PIPELINE_STATUS="none"
       for i in $(seq 1 60); do
         MR_JSON=$(curl --silent --show-error --fail \
-          --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${GS_UPSTREAM_TOKEN}" \
           "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_ID}/merge_requests/${MR_IID}")
         PIPELINE_STATUS=$(echo "${MR_JSON}" | jq -r '.head_pipeline.status // "none"')
         echo "  upstream pipeline status: ${PIPELINE_STATUS}"
@@ -632,7 +643,7 @@ trigger-upstream-merge-and-tag:
 
       curl --silent --show-error --fail \
         --request PUT \
-        --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${GS_UPSTREAM_TOKEN}" \
         --data-urlencode "should_remove_source_branch=false" \
         --data-urlencode "merge_commit_message=Release ${CI_COMMIT_TAG}" \
         "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_ID}/merge_requests/${MR_IID}/merge"
@@ -641,7 +652,7 @@ trigger-upstream-merge-and-tag:
       MR_STATE="unknown"
       for i in $(seq 1 20); do
         MR_JSON=$(curl --silent --show-error --fail \
-          --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+          --header "PRIVATE-TOKEN: ${GS_UPSTREAM_TOKEN}" \
           "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_ID}/merge_requests/${MR_IID}")
         MR_STATE=$(echo "${MR_JSON}" | jq -r .state)
         if [ "${MR_STATE}" = "merged" ]; then
@@ -658,34 +669,11 @@ trigger-upstream-merge-and-tag:
       echo "Tagging upstream main at ${MERGE_COMMIT_SHA} as ${CI_COMMIT_TAG}"
       curl --silent --show-error --fail \
         --request POST \
-        --header "PRIVATE-TOKEN: ${UPSTREAM_TOKEN}" \
+        --header "PRIVATE-TOKEN: ${GS_UPSTREAM_TOKEN}" \
         --data-urlencode "tag_name=${CI_COMMIT_TAG}" \
         --data-urlencode "ref=${MERGE_COMMIT_SHA}" \
         --data-urlencode "message=Release ${CI_COMMIT_TAG}" \
         "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_ID}/repository/tags"
-
-# -----------------------------------------------------------------------------
-# Stage: mirror-push (upstream only)
-# -----------------------------------------------------------------------------
-
-# Project scope    : upstream only
-# Trigger condition: tag *.*.* (workflow:rules) AND upstream project path;
-#                    runs only if enabled
-# Required vars    : GITHUB_MIRROR_URL
-mirror-push:
-  stage: release
-  extends:
-    - .ctx-release-mirror
-    - .git-base
-  dependencies: []
-  variables:
-    GIT_STRATEGY: clone
-    GIT_DEPTH: "0"
-  script:
-    - git remote add mirror "${GITHUB_MIRROR_URL}" || git remote set-url mirror "${GITHUB_MIRROR_URL}"
-    - git push --force-with-lease mirror "${CI_COMMIT_TAG}"
-    - git push --force-with-lease mirror "HEAD:refs/heads/main"
-
 
 # -----------------------------------------------------------------------------
 # Stage: release #publish (unstream only) - podman build + save
