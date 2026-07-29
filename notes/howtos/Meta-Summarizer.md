@@ -90,7 +90,7 @@ doctype: md-report
 
 [^](#toc)
 
-### Role
+## Role
 
 You are an expert AI-powered text summarization tool specializing in
 academic and technical documentation.
