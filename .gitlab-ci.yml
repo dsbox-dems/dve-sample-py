@@ -97,16 +97,32 @@ variables:
   # The following are pre-configured project CI/CD variables
   # and are intentionally NOT redeclared here:
   #
-  # - GS_REGISTRY_URL,
-  # - GS_REGISTRY_USER,
-  # - GS_REGISTRY_PASSWORD,
-  # - GS_UPSTREAM_TOKEN,
-  # - GS_NOTIFY_EMAILS,
-  # - GS_SMTP_*,
-  # - GS_SLACK_WEBHOOK_URL
+  # = GitLab API ==============================
+  # - GS_UPSTREAM_TOKEN
+  #
+  # = Podman Public Registry ==============================
+  # - GS_REGISTRY_URL
+  # - GS_REGISTRY_USER
+  # - GS_REGISTRY_PASSWORD
   #
   # ---------------------------------------------------------------------------
 
+  # ---------------------------------------------------------------------------
+  # DOTENV (CI/CD + Local Development + Application Runtime)
+  # ---------------------------------------------------------------------------
+  # The following are .env variables taken from:
+  #
+  # 1. "Internal Mode": .env-defaults:
+  #    if local resources or resources with external auth (Azure)
+  #
+  # 2. "External Mode": ../conf/.env:
+  #     with parallel ckeckout of a (private) configuration project
+  #
+  # = Podman Private Registry (Azure) ==============================
+  # - ACR_RESOURCE
+  # - ACR_REGISTRY
+  #
+  # ---------------------------------------------------------------------------
 
 
   # ---------------------------------------------------------------------------
