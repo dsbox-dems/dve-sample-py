@@ -26,9 +26,9 @@ spec:
     gd-downstream-project:
       default: "ub-dems/vs-base/dve-sample-py"
     gd-upstream-project:
-      default: "ub-dems-public/ds-labs/dve-sample-py"
+      default: "ub-dems/ds-labs/dve-sample-py"
     gd-upstream-project-enc:
-      default: "ub-dems-public%2Fds-labs%2Fdve-sample-py"
+      default: "ub-dems%2Fds-labs%2Fdve-sample-py"
     gd-downstream-project-head:
       default: "develop"
     gd-downstream-project-main:
@@ -278,14 +278,6 @@ workflow:
       when: never
     - !reference [.ctx-release-upstream, rules]
 
-.ctx-release-notify:
-  extends:
-    - .ctx-release-upstream
-  rules:
-    - if: '"$[[ inputs.gd-release-op-upstream-notify ]]" != "1"'
-      when: never
-    - !reference [.ctx-release-upstream, rules]
-
 
 # -----------------------------------------------------------------------------
 # Base Images
@@ -307,13 +299,6 @@ workflow:
   image: alpine:3.20
   before_script:
     - apk add --no-cache curl jq git
-
-.notify-base:
-  extends:
-    - .gitlab-api-base
-  before_script:
-    - !reference [.gitlab-api-base, before_script]
-    - apk add --no-cache msmtp
 
 .podman-base:
   image: quay.io/podman/stable:v5
@@ -562,7 +547,7 @@ release-tests:
 
 # Project scope    : downstream only
 # Trigger condition: tag *.*.* (workflow:rules) AND downstream project path
-# Required vars    : UPSTREAM_TOKEN
+# Required vars    : GS_UPSTREAM_TOKEN
 create-merge-request:
   extends:
     - .ctx-release-downstream
@@ -608,7 +593,7 @@ create-merge-request:
 # Project scope    : downstream only (ub-dems/dve-simple-py)
 # Trigger condition: tag v*.*.* (workflow:rules) AND downstream project path;
 #                    MANUAL (see "Stage 3 approval gate" above)
-# Required vars    : UPSTREAM_TOKEN
+# Required vars    : GS_UPSTREAM_TOKEN
 trigger-upstream-merge-and-tag:
   extends:
     - .ctx-release-downstream
@@ -732,59 +717,3 @@ push-base-images:
           "${REGISTRY_URL}/${IMAGE_NAME}:${CI_COMMIT_TAG}"
       done
 
-# -----------------------------------------------------------------------------
-# Stage: release #notify (upstream only) - email + slack
-# -----------------------------------------------------------------------------
-
-# Project scope    : upstream only (ub-dems-public/dve-simple-py)
-# Trigger condition: tag v*.*.* (workflow:rules) AND upstream project path;
-#                    runs only if mirror-push succeeded
-# Required vars    : NOTIFY_EMAILS, SMTP_HOST, SMTP_USER, SMTP_PASSWORD
-release-notify-email:
-  stage: release
-  extends:
-    - .ctx-release-notify
-    - .notify-base
-  dependencies: []
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - |
-      cat > /tmp/msmtprc <<-EOF
-      account default
-      host ${SMTP_HOST}
-      port 587
-      auth on
-      user ${SMTP_USER}
-      password ${SMTP_PASSWORD}
-      tls on
-      from ${SMTP_USER}
-      EOF
-      chmod 600 /tmp/msmtprc
-
-      IFS=',' read -ra RECIPIENTS <<< "${NOTIFY_EMAILS}"
-      for RECIPIENT in "${RECIPIENTS[@]}"; do
-        printf "Subject: Release %s published\n\nRelease %s of %s has been merged, tagged, built and mirrored to GitHub.\n" \
-          "${CI_COMMIT_TAG}" "${CI_COMMIT_TAG}" "${CI_PROJECT_PATH}" \
-          | msmtp -a default --file=/tmp/msmtprc "${RECIPIENT}"
-      done
-
-# Project scope    : upstream only
-# Trigger condition: tag v*.*.* (workflow:rules) AND upstream project path;
-#                    runs only if mirror-push succeeded
-# Required vars    : SLACK_WEBHOOK_URL
-release-notify-slack:
-  stage: release
-  extends:
-    - .ctx-release-notify
-    - .notify-base
-  dependencies: []
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - |
-      curl --silent --show-error --fail \
-        --request POST \
-        --header "Content-Type: application/json" \
-        --data "{\"text\": \"Release ${CI_COMMIT_TAG} published for ${CI_PROJECT_PATH}.\"}" \
-        "${SLACK_WEBHOOK_URL}"
