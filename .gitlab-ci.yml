@@ -188,6 +188,17 @@ cache:
   # paths:
   #   - .cache/uv
 
+# --------------------------------------------------------------------
+# NOTE:
+#
+#  CI_COMMIT_REF_PROTECTED is verified
+#  only if CI_COMMIT_TAG is a "Protected Tag"
+#  (Settings/Repository/Protected Tags)
+#
+#  see: https://claude.ai/share/caef5831-2efa-49ac-ac70-38dd6d05809f
+#
+# --------------------------------------------------------------------
+
 workflow:
   auto_cancel:
     on_new_commit: interruptible
@@ -196,14 +207,6 @@ workflow:
       when: never
     - if: $CI_COMMIT_REF_PROTECTED != "true"
       when: never
-      # when: manual
-      # allow_failure: true
-    # - if: >-
-    #     $CI_COMMIT_REF_PROTECTED != "true" &&
-    #     $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^f.*/
-    #   when: never
-      # when: manual
-      # allow_failure: true
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
       when: never
@@ -265,10 +268,6 @@ workflow:
     - !reference [.ctx-release-tag, rules]
     - if: '$CI_PROJECT_PATH != "$[[ inputs.gd-downstream-project ]]"'
       when: never
-    - if: >-
-       "$[[ inputs.gd-downstream-project-main ]]" !=  $CI_COMMIT_BRANCH &&
-       "$[[ inputs.gd-downstream-project-main ]]" !=  $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-      when: never
     - when: on_success  
 
 .ctx-release-upstream:
@@ -279,10 +278,6 @@ workflow:
   rules:
     - !reference [.ctx-release-tag, rules]
     - if: '$CI_PROJECT_PATH != "$[[ inputs.gd-upstream-project ]]"'
-      when: never
-    - if: >-
-       "$[[ inputs.gd-upstream-project-main ]]" !=  $CI_COMMIT_BRANCH &&
-       "$[[ inputs.gd-upstream-project-main ]]" !=  $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
       when: never
     - when: on_success  
 
@@ -383,7 +378,7 @@ workflow:
 # ===============================================================================
 
 config-int:
-  stage: config
+  stage: .pre
   extends:
     - .ctx-default-config
     - .git-full
@@ -397,7 +392,7 @@ config-int:
       - "$[[ inputs.gd-dotenv-file ]]"
       
 .config-ext:
-  stage: config
+  stage: .pre
   extends:
     - .ctx-external-config
     - .git-full
@@ -419,7 +414,7 @@ config-int:
       - "$[[ inputs.gd-dotenv-config-path ]]"
 
 config-ext-development:
-  stage: config
+  stage: .pre
   extends:
     - .config-ext
     - .ctx-develop
@@ -428,7 +423,7 @@ config-ext-development:
     - !reference [.ctx-develop, rules]
 
 config-ext-staging:
-  stage: config
+  stage: .pre
   extends:
     - .config-ext
     - .ctx-release-downstream
@@ -437,7 +432,7 @@ config-ext-staging:
     - !reference [.ctx-release-downstream, rules]
 
 config-ext-production:
-  stage: config
+  stage: .pre
   extends:
     - .config-ext
     - .ctx-release-upstream
