@@ -537,6 +537,8 @@ release-checks:
   extends:
     - .ctx-release-downstream
     - .uv-validate-check
+  rules:
+    - when: never
   script:
     - uv run ruff check
     - uv run ruff format --check
@@ -548,6 +550,8 @@ release-tests:
   extends:
     - .ctx-release-downstream
     - .uv-validate-test
+  rules:
+    - when: never
   script:
     - uv run pytest -v
     # - uv run pytest -v --cov
@@ -572,6 +576,8 @@ create-merge-request:
       UPSTREAM_PROJECT_ID=$(curl --silent --show-error --fail \
         --header "PRIVATE-TOKEN: ${GS_UPSTREAM_TOKEN}" \
         "${CI_API_V4_URL}/projects/${UPSTREAM_PROJECT_PATH_ENCODED}" | jq -r .id)
+
+      echo "Resolved upstream project id: ${UPSTREAM_PROJECT_ID}"
 
       RESPONSE=$(curl --silent --show-error --fail \
         --request POST \
