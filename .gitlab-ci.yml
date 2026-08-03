@@ -293,6 +293,14 @@ workflow:
       when: never
     - when: on_success  
 
+.ctx-release-downstream-py:
+  extends:
+    - .ctx-release-downstream
+  rules:
+    - if: '"$[[ inputs.gd-lang-op-python ]]" != "1"'
+      when: never
+    - !reference [.ctx-release-downstream, rules]
+    
 .ctx-release-image:
   extends:
     - .ctx-release-upstream
@@ -571,10 +579,8 @@ building:
 release-checks:
   stage: release
   extends:
-    - .ctx-release-downstream
+    - .ctx-release-downstream-py
     - .uv-validate-check
-  rules:
-    - when: never
   script:
     - uv run ruff check
     - uv run ruff format --check
@@ -584,13 +590,21 @@ release-checks:
 release-tests:
   stage: release
   extends:
-    - .ctx-release-downstream
+    - .ctx-release-downstream-py
     - .uv-validate-test
-  rules:
-    - when: never
   script:
     - uv run pytest -v
     # - uv run pytest -v --cov
+
+release-build:
+  stage: release
+  extends:
+    - .ctx-release-downstream-py
+    - .uv-validate-build
+  script:
+    - uv build
+    - ls -l dist
+    - du -s dist
 
 # -----------------------------------------------------------------------------
 # Stage: release #merge-request (downstream only) - upstream MR create
