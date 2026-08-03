@@ -71,6 +71,7 @@ stages:
   - debug
   - lint
   - test
+  - build
   - release
   - publish
 
