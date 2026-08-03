@@ -54,9 +54,9 @@ spec:
     gd-dotenv-config-path:
       default: "../conf"
     gd-lang-op-python:
-      default: '0'
-    gd-debug-pipeline:
       default: '1'
+    gd-debug-pipeline:
+      default: '0'
     environment:
       options:
         - development
@@ -505,7 +505,7 @@ debug-pipeline:
 # Stage: lint (downstream head only)
 # ---------------------------------------------------------------------------
 
-linting:
+linting-py:
   stage: lint
   extends:
     - .ctx-develop-py
@@ -513,7 +513,7 @@ linting:
   script:
     - uv run ruff check
 
-formatting:
+formatting-py:
   stage: lint
   extends:
     - .ctx-develop-py
@@ -529,7 +529,7 @@ licensing:
   script:
     - uv run reuse lint
 
-typing:
+typing-py:
   stage: lint
   extends:
     - .ctx-develop-py
@@ -541,7 +541,7 @@ typing:
 # Stage: test (downstream head only)
 # ---------------------------------------------------------------------------
 
-testing:
+testing-py:
   stage: test
   extends:
     - .ctx-develop-py
@@ -554,7 +554,7 @@ testing:
 # Stage: building (downstream head only)
 # ---------------------------------------------------------------------------
 
-building:
+building-py:
   stage: build
   extends:
     - .ctx-develop-py
@@ -576,7 +576,7 @@ building:
 # Stage: release #validation (downstream only)
 # -----------------------------------------------------------------------------
 
-release-checks:
+release-checks-py:
   stage: release
   extends:
     - .ctx-release-downstream-py
@@ -587,7 +587,7 @@ release-checks:
     - uv run pyright
     - uv run reuse lint
 
-release-tests:
+release-tests-py:
   stage: release
   extends:
     - .ctx-release-downstream-py
@@ -596,7 +596,7 @@ release-tests:
     - uv run pytest -v
     # - uv run pytest -v --cov
 
-release-build:
+release-build-py:
   stage: release
   extends:
     - .ctx-release-downstream-py
@@ -618,9 +618,10 @@ create-merge-request:
     - .ctx-release-downstream
     - .gitlab-api-base
   stage: release
-  dependencies:
-    - release-checks
-    - release-tests
+  # dependencies:
+  #   - release-checks-py
+  #   - release-tests-py
+  #   - release-build-py
   script:
     - |
       UPSTREAM_PROJECT_ID=$(curl --silent --show-error --fail \
