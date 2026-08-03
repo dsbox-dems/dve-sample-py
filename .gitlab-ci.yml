@@ -54,7 +54,7 @@ spec:
     gd-dotenv-config-path:
       default: "../conf"
     gd-lang-op-python:
-      default: '1'
+      default: '0'
     gd-debug-pipeline:
       default: '1'
     environment:
