@@ -54,9 +54,9 @@ spec:
     gd-dotenv-config-path:
       default: "../conf"
     gd-lang-op-python:
-      default: '0'
-    gd-debug-pipeline:
       default: '1'
+    gd-debug-pipeline:
+      default: '0'
     environment:
       options:
         - development
@@ -293,13 +293,13 @@ workflow:
       when: never
     - when: on_success  
 
-.ctx-release-downstream-py:
+.ctx-release-upstream-py:
   extends:
-    - .ctx-release-downstream
+    - .ctx-release-upstream
   rules:
     - if: '"$[[ inputs.gd-lang-op-python ]]" != "1"'
       when: never
-    - !reference [.ctx-release-downstream, rules]
+    - !reference [.ctx-release-upstream, rules]
     
 .ctx-release-image:
   extends:
@@ -505,7 +505,7 @@ debug-pipeline:
 # Stage: lint (downstream head only)
 # ---------------------------------------------------------------------------
 
-linting:
+linting-py:
   stage: lint
   extends:
     - .ctx-develop-py
@@ -513,7 +513,7 @@ linting:
   script:
     - uv run ruff check
 
-formatting:
+formatting-py:
   stage: lint
   extends:
     - .ctx-develop-py
@@ -529,7 +529,7 @@ licensing:
   script:
     - uv run reuse lint
 
-typing:
+typing-py:
   stage: lint
   extends:
     - .ctx-develop-py
@@ -541,7 +541,7 @@ typing:
 # Stage: test (downstream head only)
 # ---------------------------------------------------------------------------
 
-testing:
+testing-py:
   stage: test
   extends:
     - .ctx-develop-py
@@ -554,7 +554,7 @@ testing:
 # Stage: building (downstream head only)
 # ---------------------------------------------------------------------------
 
-building:
+building-py:
   stage: build
   extends:
     - .ctx-develop-py
@@ -573,33 +573,40 @@ building:
 # ===============================================================================
 
 # -----------------------------------------------------------------------------
-# Stage: release #validation (downstream only)
+# Stage: release #validation (upstream only)
 # -----------------------------------------------------------------------------
 
-release-checks:
+release-checks-py:
   stage: release
   extends:
-    - .ctx-release-downstream-py
+    - .ctx-release-upstream-py
     - .uv-validate-check
   script:
     - uv run ruff check
     - uv run ruff format --check
     - uv run pyright
-    - uv run reuse lint
 
-release-tests:
+release-licence:
   stage: release
   extends:
-    - .ctx-release-downstream-py
+    - .ctx-release-upstream
+    - .uv-validate-check
+  script:
+    - uv run reuse lint
+
+release-tests-py:
+  stage: release
+  extends:
+    - .ctx-release-upstream-py
     - .uv-validate-test
   script:
     - uv run pytest -v
     # - uv run pytest -v --cov
 
-release-build:
+release-build-py:
   stage: release
   extends:
-    - .ctx-release-downstream-py
+    - .ctx-release-upstream-py
     - .uv-validate-build
   script:
     - uv build
@@ -618,9 +625,10 @@ create-merge-request:
     - .ctx-release-downstream
     - .gitlab-api-base
   stage: release
-  dependencies:
-    - release-checks
-    - release-tests
+  # dependencies:
+  #   - release-checks-py
+  #   - release-tests-py
+  #   - release-build-py
   script:
     - |
       UPSTREAM_PROJECT_ID=$(curl --silent --show-error --fail \
