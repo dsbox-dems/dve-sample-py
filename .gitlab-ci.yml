@@ -259,11 +259,11 @@ workflow:
        "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
       when: never
     - if: >-
-       "$[[ gd-develop-op-downstream-check-on-commit ]]" !=  "1" &&
+       "$[[ inputs.gd-develop-op-downstream-check-on-commit ]]" !=  "1" &&
        "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_COMMIT_BRANCH
       when: never
     - if: >-
-       "$[[ gd-develop-op-downstream-check-on-merge ]]" !=  "1" &&
+       "$[[ inputs.gd-develop-op-downstream-check-on-merge ]]" !=  "1" &&
        "$[[ inputs.gd-downstream-project-head ]]" !=  $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
       when: never
     - when: on_success  
