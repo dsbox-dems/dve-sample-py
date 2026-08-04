@@ -802,7 +802,7 @@ release-build-py:
 # Stage: release (unstream only) - create gitlab release
 # -----------------------------------------------------------------------------
 
-release-build-py:
+release-collect:
   stage: release
   extends:
     - .ctx-release-upstream
