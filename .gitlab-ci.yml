@@ -60,7 +60,7 @@ spec:
     gd-lang-op-python:
       default: '1'
     gd-debug-pipeline:
-      default: '0'
+      default: '1'
     environment:
       options:
         - development
