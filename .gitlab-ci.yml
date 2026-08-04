@@ -743,6 +743,7 @@ trigger-upstream-merge:
         echo "Merge request was not merged in time."
         exit 1
       fi
+      echo "On upstream, MR !${MR_IID}: MERGED ..."
 
 
 # -----------------------------------------------------------------------------
@@ -760,6 +761,8 @@ trigger-upstream-tag:
   stage: release
   needs:
     - job: create-merge-request
+      artifacts: true
+    - job: trigger-upstream-merge
       artifacts: true
   dependencies:
     - create-merge-request
