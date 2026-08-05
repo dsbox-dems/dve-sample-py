@@ -216,6 +216,7 @@ workflow:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /^WIP.*/
       when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_REF_PROTECTED != "true"
       when: never
     - if: $CI_COMMIT_TAG
@@ -223,7 +224,6 @@ workflow:
       when: never
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_REF_PROTECTED == "true"
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH
 
 # ---------------------------------------------------------------------------
@@ -717,6 +717,13 @@ trigger-upstream-merge:
       fi
       echo "On upstream, MR !${MR_IID}: MERGED ..."
 
+      echo "Merged MR !${MR_IID} with MERGE_COMMIT_SHA=${MERGE_COMMIT_SHA} on upstream project ${UPSTREAM_PROJECT_ID}"
+      echo "MR_IID=${MR_IID}" >> mr.env
+      echo "UPSTREAM_PROJECT_ID=${UPSTREAM_PROJECT_ID}" >> mr.env
+      echo "MERGE_COMMIT_SHA=${MERGE_COMMIT_SHA}" >> mr.env
+  artifacts:
+    reports:
+      dotenv: mr.env
 
 # -----------------------------------------------------------------------------
 # Stage: merge #merge-request (downstream only) - upstream tag
