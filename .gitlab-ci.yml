@@ -351,6 +351,9 @@ workflow:
 
 .podman-base:
   image: quay.io/podman/stable:v5
+  before_script:
+    - df -h
+    - podman info
 
 .uv-validate-base:
   image: python:$[[ inputs.gd-python-version ]]-slim
@@ -584,25 +587,25 @@ building-py:
 
 
 # ===============================================================================
-# Pipeline: RELEASE: downstream main + upstream main
+# Pipeline: RELEASE - stages: merge (D), check (U), package (U), release (U)
 # -------------------------------------------------------------------------------
-# - after downstram main annotated version tag commit
-# - forward downstram main -> upstream main create MR, from downstream
-# - no upstream pipeline (only downstream) -> upstream main MR merge, from downstream
+# - after downstram main annotated version tag commit: `gd-version-schema`
+# - forward downstream main -> upstream main create MR, from downstream
+# - no upstream pipeline [^1] -> upstream main MR merge, from downstream
 # - after upstream merge -> upstream release tag, from downstream
 # - after upstream tag -> upstream release publish, from upstream
 #
-# see: https://claude.ai/share/fb5c11c1-a3bb-4dc3-bd38-1d82c178d969
+# [^1]: see: https://claude.ai/share/fb5c11c1-a3bb-4dc3-bd38-1d82c178d969
 # ===============================================================================
 
 
 # -----------------------------------------------------------------------------
 # Stage: merge #merge-request (downstream only) - upstream MR create
 # -----------------------------------------------------------------------------
-
 # Project scope    : downstream only
 # Trigger condition: tag *.*.* (workflow:rules) AND downstream project path
 # Required vars    : GS_UPSTREAM_TOKEN, GS_DOWNSTREAM_TOKEN
+
 create-merge-request:
   extends:
     - .ctx-merge-downstream
@@ -643,7 +646,6 @@ create-merge-request:
 # -----------------------------------------------------------------------------
 # Stage: merge #merge-request (downstream only) - upstream MR merge
 # -----------------------------------------------------------------------------
-
 # Project scope    : downstream only (ub-dems/dve-simple-py)
 # Trigger condition: tag v*.*.* (workflow:rules) AND downstream project path;
 #                    MANUAL (see "Stage 3 approval gate" above)
@@ -651,7 +653,7 @@ create-merge-request:
 #
 # see: "Require a commit SHA on the merge requests API"
 # - https://docs.gitlab.com/user/group/manage/#require-a-commit-sha-on-the-merge-requests-api
-#
+
 trigger-upstream-merge:
   extends:
     - .ctx-merge-downstream
@@ -717,13 +719,13 @@ trigger-upstream-merge:
 
 
 # -----------------------------------------------------------------------------
-# Stage: release #merge-request (downstream only) - upstream tag
+# Stage: merge #merge-request (downstream only) - upstream tag
 # -----------------------------------------------------------------------------
-
 # Project scope    : downstream only (ub-dems/dve-simple-py)
 # Trigger condition: tag v*.*.* (workflow:rules) AND downstream project path;
 #                    MANUAL (see "Stage 3 approval gate" above)
 # Required vars    : GS_UPSTREAM_TOKEN
+
 trigger-upstream-tag:
   extends:
     - .ctx-merge-downstream
@@ -820,14 +822,14 @@ release-collect:
 
 
 # -----------------------------------------------------------------------------
-# Stage: publish #publish (unstream only) - podman build + save
+# Stage: package #images (upstream only) - podman build + save
 # -----------------------------------------------------------------------------
-
 # Project scope    : upstream only
 # Trigger condition: tag *.*.* (workflow:rules) AND upstream project path;
 #                    this run starts because the tag above was created on the
 #                    upstream project via the API in the previous stage
 # Required vars    : none
+
 build-base-images:
   stage: package
   extends:
@@ -840,6 +842,11 @@ build-base-images:
       # Placeholder identifiers — replace with the real image names produced
       # by scripts/build-images.sh (see "Additional notes" below).
       - IMAGE_NAME: ["anchor", "cuda", "base", "runtime"]
+  before_script:
+    - !reference [.podman-base, before_script]
+    - build.sh setup"
+    - podman images
+    - df -h
   script:
     - build.sh image "${IMAGE_NAME}"
     - mkdir -p images
@@ -849,10 +856,10 @@ build-base-images:
       - "images/${IMAGE_NAME}.tar"
     expire_in: "1 day"
 
+
 # -----------------------------------------------------------------------------
 # Stage: image-push (upstream only)
 # -----------------------------------------------------------------------------
-
 # Project scope    : upstream only (ub-dems-public/dve-simple-py)
 # Trigger condition: tag v*.*.* (workflow:rules) AND upstream project path;
 #                    runs only if every build-image matrix job succeeded
