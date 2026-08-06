@@ -630,12 +630,15 @@ building-py:
 # Pipeline: RELEASE - stages: merge (D), check (U), package (U), release (U)
 # -------------------------------------------------------------------------------
 # - after downstram main annotated version tag commit: `gd-version-schema`
-# - forward downstream main -> upstream main create MR, from downstream
-# - no upstream pipeline [^1] -> upstream main MR merge, from downstream
+# - forward downstream main [^1] -> upstream main create MR, from downstream
+# - no upstream pipeline [^2] -> upstream main MR merge, from downstream
 # - after upstream merge -> upstream release tag, from downstream
 # - after upstream tag -> upstream release publish, from upstream
 #
-# [^1]: see: https://claude.ai/share/fb5c11c1-a3bb-4dc3-bd38-1d82c178d969
+# [^1]: see: "Require a commit SHA on the merge requests API"
+#  - https://docs.gitlab.com/user/group/manage/#require-a-commit-sha-on-the-merge-requests-api
+#
+# [^2]: see: https://claude.ai/share/fb5c11c1-a3bb-4dc3-bd38-1d82c178d969
 # ===============================================================================
 
 
@@ -684,15 +687,14 @@ create-merge-request:
       dotenv: mr.env
 
 # -----------------------------------------------------------------------------
-# Stage: merge #merge-request (downstream only) - upstream MR merge
+# Stage: merge #merge-request (downstream only) - trigger upstream merge
 # -----------------------------------------------------------------------------
 # Project scope    : downstream only (ub-dems/dve-simple-py)
-# Trigger condition: tag v*.*.* (workflow:rules) AND downstream project path;
-#                    MANUAL (see "Stage 3 approval gate" above)
+# Trigger condition: tag *.*.* (workflow:rules) AND downstream project path;
 # Required vars    : GS_UPSTREAM_TOKEN
+# Required auth    : CI_JOB_TOKEN
 #
-# see: "Require a commit SHA on the merge requests API"
-# - https://docs.gitlab.com/user/group/manage/#require-a-commit-sha-on-the-merge-requests-api
+# [^1]: see: "CI/CD Settings - Job token permissions"
 
 trigger-upstream-sync:
   extends:
