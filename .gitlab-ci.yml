@@ -43,6 +43,15 @@ spec:
       default: '^\d\.\d+(\.\d+)?$'
     gd-python-version:
       default: '3.14'
+    gd-image-names:
+      type: array
+      default:
+        - "anchor"
+        - "cuda"
+        - "base"
+        - "runtime"
+    gd-image-prefix:
+      default: 'ubdems'
     gd-dotenv-file:
       default: '.env'
     gd-dotenv-strict:
@@ -163,6 +172,9 @@ variables:
   MR_TARGET_BRANCH: "$[[ inputs.gd-upstream-project-main ]]"
   GIT_DEPTH: "0"
 
+  GD_IMAGE_NAMES: "$[[ inputs.gd-image-names ]]"
+  GD_IMAGE_PREFIX: "$[[ inputs.gd-image-prefix ]]/$CI_PROJECT_NAME."
+  
   GD_TRACE: "$[[ inputs.gd-trace-pipeline ]]"
   GD_DEBUG: "$[[ inputs.gd-debug-pipeline ]]"
 
@@ -946,7 +958,7 @@ package-build-images:
     matrix:
       # Placeholder identifiers — replace with the real image names produced
       # by scripts/build-images.sh (see "Additional notes" below).
-      - IMAGE_NAME: ["anchor", "cuda", "base", "runtime"]
+      - IMAGE_NAME: "$[[ inputs.gd-image-names ]]"
   before_script:
     - !reference [.podman-base, before_script]
     - build.sh setup"
@@ -985,9 +997,11 @@ publish-push-images:
   script:
     - podman login -u "${REGISTRY_USER}" -p "${REGISTRY_PASSWORD}" "${REGISTRY_URL}"
     - |
-      for IMAGE_NAME in anchor, cuda, base, runtime; do
+      images=$(echo '$[[ inputs.gd-image-names ]]' |  tr -d '[].",')
+      image_path="$[[ inputs.gd-image-prefix ]]/${CI_PROJECT_NAME}."
+      for IMAGE_NAME in $images; do
         podman load -i "images/${IMAGE_NAME}.tar"
-        podman push "localhost/${IMAGE_NAME}:${CI_COMMIT_TAG}" \
-          "${REGISTRY_URL}/${IMAGE_NAME}:${CI_COMMIT_TAG}"
+        podman push "localhost/${image_path}${IMAGE_NAME}:${CI_COMMIT_TAG}" \
+          "${REGISTRY_URL}/${image_path}${IMAGE_NAME}:${CI_COMMIT_TAG}"
       done
 
