@@ -59,6 +59,8 @@ spec:
       default: "../conf"
     gd-lang-op-python:
       default: '1'
+    gd-trace-pipeline:
+      default: '1'
     gd-debug-pipeline:
       default: '0'
     environment:
@@ -160,6 +162,11 @@ variables:
   MR_SOURCE_BRANCH: "$[[ inputs.gd-downstream-project-main ]]"
   MR_TARGET_BRANCH: "$[[ inputs.gd-upstream-project-main ]]"
   GIT_DEPTH: "0"
+
+  GD_TRACE: "$[[ inputs.gd-trace-pipeline ]]"
+  GD_DEBUG: "$[[ inputs.gd-debug-pipeline ]]"
+
+
 
   # ---------------------------------------------------------------------------
   # Disk-budget notes
@@ -738,6 +745,11 @@ upstream-merge-and-tag:
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}/merge" \
         > merge_response.json
 
+      if [ "$GD_TRACE" = "1" ]; then
+         echo "TRC: Merge Response (PUT ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}/merge):"
+         cat merge_response.json | jq .
+      fi
+
       MR_STATE=$(jq -r .state merge_response.json)
       MERGE_COMMIT_SHA=$(jq -r .merge_commit_sha merge_response.json)
 
@@ -750,6 +762,12 @@ upstream-merge-and-tag:
         MR_JSON=$(curl --silent --show-error --fail \
           --header "PRIVATE-TOKEN: ${GS_UPSTREAM_TOKEN}" \
           "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}")
+          
+        if [ "$GD_TRACE" = "1" ]; then
+           echo "TRC: Merge Response (GET ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${MR_IID}):"
+           echo "$MR_JSON" | jq .
+        fi
+          
         MR_STATE=$(echo "$MR_JSON" | jq -r .state)
         MERGE_COMMIT_SHA=$(echo "$MR_JSON" | jq -r .merge_commit_sha)
         echo "$i: waiting for MR($MR_IID): MR_STATE=$MR_STATE, MERGE_COMMIT_SHA=$MERGE_COMMIT_SHA, ..."
