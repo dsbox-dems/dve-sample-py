@@ -331,9 +331,19 @@ workflow:
       when: never
     - when: on_success
 
-.ctx-upstream-triggered:
+.ctx-commit-upstream:
+  interruptible: false
+  environment:
+    name: staging
   rules:
-    - if: '$CI_PROJECT_PATH == "$[[ inputs.gd-upstream-project ]]" && $CI_PIPELINE_SOURCE == "pipeline"'
+    - if: '$CI_PROJECT_PATH != "$[[ inputs.gd-upstream-project ]]"'
+      when: never
+    # - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: >-
+       $CI_PIPELINE_SOURCE != "pipeline" &&
+       $MERGE_SYNC_TRIGGER != "1"
+      when: never
+    - when: on_success
     
 
 .ctx-release-upstream:
@@ -731,7 +741,7 @@ trigger-upstream-sync:
 upstream-merge-and-tag:
   stage: commit
   extends:
-    - .ctx-merge-upstream
+    - .ctx-commit-upstream
     - .gitlab-api-base
   dependencies:
     - check-gate
