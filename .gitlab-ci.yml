@@ -892,6 +892,10 @@ release-collect:
     - du -s dist
     - ls -l images
     - du -s images
+  artifacts:
+    paths:
+      - "dist"
+      - "images"
 
 
 
@@ -943,6 +947,8 @@ publish-push-images:
     - .podman-base
   needs:
     - job: package-build-images
+      artifacts: true
+    - job: release-collect
       artifacts: true
   dependencies:
     - package-build-images
