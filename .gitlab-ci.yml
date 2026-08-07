@@ -725,8 +725,6 @@ trigger-upstream-sync:
   extends:
     - .ctx-merge-downstream
   stage: merge
-  dependencies:
-    - create-merge-request
   needs:
     - job: create-merge-request
       artifacts: true
