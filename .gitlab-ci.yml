@@ -40,7 +40,7 @@ spec:
     gd-upstream-project-main:
       default: "main"
     gd-version-schema:
-      default: '^\d\.\d+(\.\d+)?$'
+      default: '^\d+\.\d+\.\d+(-.+)?$'
     gd-python-version:
       default: '3.14'
     gd-image-names:
@@ -71,7 +71,7 @@ spec:
     gd-trace-pipeline:
       default: '1'
     gd-debug-pipeline:
-      default: '0'
+      default: '1'
     environment:
       options:
         - development
@@ -958,7 +958,7 @@ package-build-images:
     matrix:
       # Placeholder identifiers — replace with the real image names produced
       # by scripts/build-images.sh (see "Additional notes" below).
-      - IMAGE_NAME: "$[[ inputs.gd-image-names ]]"
+      - IMAGE_NAME: $[[ inputs.gd-image-names ]]
   before_script:
     - !reference [.podman-base, before_script]
     - build.sh setup"
@@ -979,7 +979,7 @@ package-build-images:
 # -----------------------------------------------------------------------------
 # Project scope    : upstream only (ub-dems-public/dve-simple-py)
 # Trigger condition: tag *.*.* (workflow:rules) AND upstream project path;
-# Required vars    : REGISTRY_URL, REGISTRY_USER, REGISTRY_PASSWORD
+# Required vars    : GS_REGISTRY_URL, GS_REGISTRY_USER, GS_REGISTRY_PASSWORD
 
 publish-push-images:
   stage: publish
@@ -995,13 +995,18 @@ publish-push-images:
     - package-build-images
     - release-collect
   script:
-    - podman login -u "${REGISTRY_USER}" -p "${REGISTRY_PASSWORD}" "${REGISTRY_URL}"
+    - podman login -u "${GS_REGISTRY_USER}" -p "${GS_REGISTRY_PASSWORD}" "${GS_REGISTRY_URL}"
     - |
-      images=$(echo '$[[ inputs.gd-image-names ]]' |  tr -d '[].",')
+      image_names='$[[ inputs.gd-image-names ]]' # YAML syntax
+      mapfile -t images < <(echo "$image_names" | jq -r '.[]')
       image_path="$[[ inputs.gd-image-prefix ]]/${CI_PROJECT_NAME}."
-      for IMAGE_NAME in $images; do
+      for IMAGE_NAME in ${images[@]}; do
+        echo "push image ${GS_REGISTRY_URL}/${image_path}${IMAGE_NAME}:${CI_COMMIT_TAG}, ..."
+        
         podman load -i "images/${IMAGE_NAME}.tar"
         podman push "localhost/${image_path}${IMAGE_NAME}:${CI_COMMIT_TAG}" \
-          "${REGISTRY_URL}/${image_path}${IMAGE_NAME}:${CI_COMMIT_TAG}"
+          "${GS_REGISTRY_URL}/${image_path}${IMAGE_NAME}:${CI_COMMIT_TAG}"
+          
+        echo "push image ${GS_REGISTRY_URL}/${image_path}${IMAGE_NAME}:${CI_COMMIT_TAG}, done"
       done
 
