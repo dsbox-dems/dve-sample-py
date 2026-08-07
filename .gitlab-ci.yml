@@ -45,11 +45,7 @@ spec:
       default: '3.14'
     gd-image-names:
       type: array
-      default:
-        - "anchor"
-        - "cuda"
-        - "base"
-        - "runtime"
+      default: "anchor,cuda,base,runtime"
     gd-image-prefix:
       default: 'ubdems'
     gd-dotenv-file:
@@ -958,7 +954,7 @@ package-build-images:
     matrix:
       # Placeholder identifiers — replace with the real image names produced
       # by scripts/build-images.sh (see "Additional notes" below).
-      - IMAGE_NAME: $[[ inputs.gd-image-names ]]
+      - IMAGE_NAME: $[[ inputs.gd-image-names | split(',') ]]
   before_script:
     - !reference [.podman-base, before_script]
     - build.sh setup"
@@ -997,8 +993,7 @@ publish-push-images:
   script:
     - podman login -u "${GS_REGISTRY_USER}" -p "${GS_REGISTRY_PASSWORD}" "${GS_REGISTRY_URL}"
     - |
-      image_names='$[[ inputs.gd-image-names ]]' # YAML syntax
-      mapfile -t images < <(echo "$image_names" | jq -r '.[]')
+      IFS=',' read -ra images <<< "$[[ inputs.gd-image-names ]]"
       image_path="$[[ inputs.gd-image-prefix ]]/${CI_PROJECT_NAME}."
       for IMAGE_NAME in ${images[@]}; do
         echo "push image ${GS_REGISTRY_URL}/${image_path}${IMAGE_NAME}:${CI_COMMIT_TAG}, ..."
