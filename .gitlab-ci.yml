@@ -44,7 +44,6 @@ spec:
     gd-python-version:
       default: '3.14'
     gd-image-names:
-      type: array
       default: "anchor,cuda,base,runtime"
     gd-image-prefix:
       default: 'ubdems'
