@@ -572,7 +572,7 @@ debug-pipeline:
     - echo "#__gitlab-ci:debug(sh.env)__"
     - env | sort
     - echo "#__gitlab-ci:debug(uv.venv)__"
-    - uv tree --show-sizes
+    - uv tree --group=dev --show-sizes
     - uv pip list
     - du -sh .venv
     - df -h
