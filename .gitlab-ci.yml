@@ -40,7 +40,7 @@ spec:
     gd-upstream-project-main:
       default: "main"
     gd-version-schema:
-      default: '^\d+\.\d+\.\d+(-.+)?$'
+      default: '^\d+\.\d+\.\d+(.+)?$'
     gd-python-version:
       default: '3.14'
     gd-image-names:
